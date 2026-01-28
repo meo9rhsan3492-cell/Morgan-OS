@@ -2381,8 +2381,53 @@ Best regards,
         class="fixed inset-0 bg-black/50 z-30 hidden md:hidden backdrop-blur-sm transition-opacity opacity-0">
     </div>
 
-    <!-- Cache Busting: v18.4 (UTF-8 Fix) -->
-    <script src="app.js?v=18.4"></script>
+    <!-- Failsafe Navigation Logic (Inline) -->
+    <script>
+        // Global Navigation Function (Failsafe)
+        window.switchTab = function (tabId) {
+            console.log('Switching to tab (Inline):', tabId);
+
+            // 1. UI Switch
+            document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
+            const target = document.getElementById(tabId);
+            if (target) target.classList.add('active');
+
+            document.querySelectorAll('.nav-item').forEach(btn => btn.classList.remove('active'));
+            const navBtn = document.getElementById('nav-' + tabId);
+            if (navBtn) navBtn.classList.add('active');
+
+            // 2. Try to call app.js logic if loaded
+            try {
+                if (tabId === 'exhibition' && typeof renderExpos === 'function') renderExpos();
+                if (tabId === 'dashboard' && typeof updateDashboard === 'function') updateDashboard();
+                if (tabId === 'email-templates' && typeof renderTemplateList === 'function') renderTemplateList();
+            } catch (e) {
+                console.warn('App logic not fully loaded yet:', e);
+            }
+        };
+
+        window.toggleTheme = function () {
+            const body = document.body;
+            const isLight = body.classList.contains('light-mode');
+            if (isLight) {
+                body.classList.remove('light-mode');
+                const icon = document.getElementById('theme-icon');
+                if (icon) icon.innerText = '🌙';
+                localStorage.setItem('theme', 'dark');
+            } else {
+                body.classList.add('light-mode');
+                const icon = document.getElementById('theme-icon');
+                if (icon) icon.innerText = '☀️';
+                localStorage.setItem('theme', 'light');
+            }
+        };
+
+        // Expose to window explicitly
+        window.showTab = window.switchTab;
+    </script>
+
+    <!-- Cache Busting: v18.5 (Failsafe Upgrade) -->
+    <script src="app.js?v=18.5"></script>
     <script>
         // Init Workflow Engine when tab is shown
         const originalShowTab = showTab;
