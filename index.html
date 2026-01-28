@@ -190,6 +190,50 @@
             animation: pulse-slow 8s infinite alternate;
         }
     </style>
+    <!-- Failsafe Navigation Logic (Head Injection) -->
+    <script>
+        // Global Navigation Function (Failsafe)
+        window.switchTab = function (tabId) {
+            console.log('Switching to tab (Inline Head):', tabId);
+
+            // 1. UI Switch
+            document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
+            const target = document.getElementById(tabId);
+            if (target) target.classList.add('active');
+
+            document.querySelectorAll('.nav-item').forEach(btn => btn.classList.remove('active'));
+            const navBtn = document.getElementById('nav-' + tabId);
+            if (navBtn) navBtn.classList.add('active');
+
+            // 2. Try to call app.js logic if loaded
+            try {
+                if (tabId === 'exhibition' && typeof renderExpos === 'function') renderExpos();
+                if (tabId === 'dashboard' && typeof updateDashboard === 'function') updateDashboard();
+                if (tabId === 'email-templates' && typeof renderTemplateList === 'function') renderTemplateList();
+            } catch (e) {
+                console.warn('App logic not fully loaded yet:', e);
+            }
+        };
+
+        window.toggleTheme = function () {
+            const body = document.body;
+            const isLight = body.classList.contains('light-mode');
+            if (isLight) {
+                body.classList.remove('light-mode');
+                const icon = document.getElementById('theme-icon');
+                if (icon) icon.innerText = '🌙';
+                localStorage.setItem('theme', 'dark');
+            } else {
+                body.classList.add('light-mode');
+                const icon = document.getElementById('theme-icon');
+                if (icon) icon.innerText = '☀️';
+                localStorage.setItem('theme', 'light');
+            }
+        };
+
+        // Expose to window explicitly
+        window.showTab = window.switchTab;
+    </script>
 </head>
 
 <body class="h-screen flex overflow-hidden">
@@ -245,7 +289,7 @@
             </button>
         </div>
         </div>
-        <p class="text-xs ml-7 mt-2" style="color: var(--text-secondary);">v18.2 Morgan Edition</p>
+        <p class="text-xs ml-7 mt-2 text-green-400 font-bold">v18.6 PATCHED (Stable)</p>
         </div>
         <nav class="flex-1 p-3 overflow-y-auto">
             <div class="px-4 mb-2 mt-2 text-xs font-bold text-blue-400 uppercase">核心</div>
@@ -2381,53 +2425,10 @@ Best regards,
         class="fixed inset-0 bg-black/50 z-30 hidden md:hidden backdrop-blur-sm transition-opacity opacity-0">
     </div>
 
-    <!-- Failsafe Navigation Logic (Inline) -->
-    <script>
-        // Global Navigation Function (Failsafe)
-        window.switchTab = function (tabId) {
-            console.log('Switching to tab (Inline):', tabId);
 
-            // 1. UI Switch
-            document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
-            const target = document.getElementById(tabId);
-            if (target) target.classList.add('active');
 
-            document.querySelectorAll('.nav-item').forEach(btn => btn.classList.remove('active'));
-            const navBtn = document.getElementById('nav-' + tabId);
-            if (navBtn) navBtn.classList.add('active');
-
-            // 2. Try to call app.js logic if loaded
-            try {
-                if (tabId === 'exhibition' && typeof renderExpos === 'function') renderExpos();
-                if (tabId === 'dashboard' && typeof updateDashboard === 'function') updateDashboard();
-                if (tabId === 'email-templates' && typeof renderTemplateList === 'function') renderTemplateList();
-            } catch (e) {
-                console.warn('App logic not fully loaded yet:', e);
-            }
-        };
-
-        window.toggleTheme = function () {
-            const body = document.body;
-            const isLight = body.classList.contains('light-mode');
-            if (isLight) {
-                body.classList.remove('light-mode');
-                const icon = document.getElementById('theme-icon');
-                if (icon) icon.innerText = '🌙';
-                localStorage.setItem('theme', 'dark');
-            } else {
-                body.classList.add('light-mode');
-                const icon = document.getElementById('theme-icon');
-                if (icon) icon.innerText = '☀️';
-                localStorage.setItem('theme', 'light');
-            }
-        };
-
-        // Expose to window explicitly
-        window.showTab = window.switchTab;
-    </script>
-
-    <!-- Cache Busting: v18.5 (Failsafe Upgrade) -->
-    <script src="app.js?v=18.5"></script>
+    <!-- Cache Busting: v18.6 (Final Fix) -->
+    <script src="app.js?v=18.6" defer></script>
     <script>
         // Init Workflow Engine when tab is shown
         const originalShowTab = showTab;
