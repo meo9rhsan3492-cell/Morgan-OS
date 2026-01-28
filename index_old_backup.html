@@ -1,0 +1,871 @@
+<!DOCTYPE html>
+<html lang="zh-CN" class="dark">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TDS 营销操作系统 v17.3 (优化版)</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        slate: { 850: '#1e293b', 900: '#0f172a', 950: '#020617' },
+                        primary: { 500: '#3b82f6', 600: '#2563eb', 900: '#1e3a8a' }
+                    },
+                    fontFamily: {
+< !DOCTYPE html>
+                    <html lang="zh-CN" class="dark">
+
+                        <head>
+                            <meta charset="UTF-8">
+                                <meta name="viewport" content="width=device-width, initial-scale=1.0">
+                                    <title>TDS 营销操作系统 v17.3 (优化版)</title>
+                                    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+                                        tailwind.config = {
+                                            darkMode: 'class',
+                                        theme: {
+                                            extend: {
+                                            colors: {
+                                            slate: {850: '#1e293b', 900: '#0f172a', 950: '#020617' },
+                                        primary: {500: '#3b82f6', 600: '#2563eb', 900: '#1e3a8a' }
+                    },
+                                        fontFamily: {
+                                            sans: ['Inter', 'Microsoft YaHei', 'SimHei', 'sans-serif'],
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        /* CSS变量 - 支持主题切换 */
+        :root {
+            --bg-primary: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+            --bg-secondary: #1e293b;
+            --bg-panel: rgba(30, 41, 59, 0.6);
+            --bg-input: #1e293b;
+            --bg-result: #0f172a;
+            --text-primary: #e2e8f0;
+            --text-secondary: #cbd5e1;
+            --text-tertiary: #94a3b8;
+            --border-primary: #334155;
+            --border-secondary: #475569;
+            --nav-hover: #334155;
+        }
+
+        .light-mode {
+            --bg-primary: linear-gradient(135deg, #f1f5f9 0%, #e2e8f0 100%);
+            --bg-secondary: #ffffff;
+            --bg-panel: rgba(255, 255, 255, 0.9);
+            --bg-input: #f8fafc;
+            --bg-result: #f1f5f9;
+            --text-primary: #0f172a;
+            --text-secondary: #1e293b;
+            --text-tertiary: #475569;
+            --border-primary: #e2e8f0;
+            --border-secondary: #cbd5e1;
+            --nav-hover: #f1f5f9;
+        }
+
+        /* 优化配色 - 提升对比度 */
+        body {
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            font-family: 'Inter', 'Microsoft YaHei', sans-serif;
+            transition: all 0.3s ease;
+        }
+
+        /* 动画 */
+        .fade-in {
+            animation: fadeIn 0.3s ease-out;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* UI 组件 */
+        .input-label {
+            display: block;
+            font-size: 11px;
+            font-weight: 700;
+            color: #60a5fa;
+            margin-bottom: 8px;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        .input-box {
+            width: 100%;
+            padding: 10px 12px;
+            background: var(--bg-input);
+            border: 1px solid var(--border-secondary);
+            border-radius: 8px;
+            color: var(--text-primary);
+            font-size: 14px;
+            transition: all 0.2s;
+        }
+
+        .input-box:focus {
+            outline: none;
+            border-color: #3b82f6;
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+        }
+
+        .input-box::placeholder {
+            color: var(--text-tertiary);
+        }
+
+        .select-field {
+            width: 100%;
+            padding: 10px 12px;
+            background: var(--bg-input);
+            border: 1px solid var(--border-secondary);
+            border-radius: 8px;
+            color: var(--text-primary);
+            font-size: 14px;
+            cursor: pointer;
+            appearance: none;
+            background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%2394a3b8' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3e%3c/svg%3e");
+            background-position: right 10px center;
+            background-repeat: no-repeat;
+            background-size: 20px;
+        }
+
+        .select-field:focus {
+            outline: none;
+            border-color: #3b82f6;
+            background-color: #334155;
+        }
+
+        /* 按钮 */
+        .btn-primary {
+            background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+            color: white;
+            padding: 12px 20px;
+            border-radius: 8px;
+            font-weight: 700;
+            box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
+            transition: all 0.2s;
+            cursor: pointer;
+            border: none;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(59, 130, 246, 0.4);
+        }
+
+        .btn-primary:active {
+            transform: translateY(0);
+        }
+
+        .btn-secondary {
+            background: #475569;
+            color: #e2e8f0;
+            padding: 8px 16px;
+            border-radius: 6px;
+            font-weight: 600;
+            font-size: 13px;
+            transition: all 0.2s;
+            cursor: pointer;
+            border: 1px solid #64748b;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .btn-secondary:hover {
+            background: #64748b;
+        }
+
+        /* 侧边栏优化 - 更亮的背景和更好的对比度 */
+        aside {
+            background: var(--bg-secondary);
+            border-right: 1px solid var(--border-primary);
+            transition: all 0.3s ease;
+        }
+
+        .nav-header {
+            padding: 0 16px;
+            margin: 20px 0 8px 0;
+            font-size: 10px;
+            font-weight: 700;
+            color: #60a5fa;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+        }
+
+        .nav-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 10px 12px;
+            margin: 0 8px 4px 8px;
+            border-radius: 8px;
+            color: var(--text-secondary);
+            font-weight: 500;
+            font-size: 14px;
+            cursor: pointer;
+            transition: all 0.2s;
+            border: 1px solid transparent;
+        }
+
+        .nav-item:hover {
+            background: var(--nav-hover);
+            color: var(--text-primary);
+        }
+
+        .nav-item.active {
+            background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+            color: white;
+            font-weight: 600;
+            box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
+        }
+
+        .nav-item span:first-child {
+            font-size: 18px;
+        }
+
+        /* 卡片 */
+        .panel {
+            background: var(--bg-panel);
+            border: 1px solid var(--border-primary);
+            border-radius: 12px;
+            padding: 24px;
+            backdrop-filter: blur(10px);
+            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
+            transition: all 0.3s ease;
+        }
+
+        /* 结果框 */
+        .result-box {
+            background: var(--bg-result);
+            padding: 16px;
+            border-radius: 8px;
+            border: 1px solid var(--border-primary);
+            font-family: 'Consolas', 'Monaco', monospace;
+            font-size: 13px;
+            line-height: 1.6;
+            color: var(--text-secondary);
+            white-space: pre-wrap;
+            min-height: 120px;
+            transition: all 0.3s ease;
+        }
+
+        /* 文件上传区 */
+        .drop-zone {
+            border: 2px dashed #475569;
+            border-radius: 8px;
+            padding: 32px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .drop-zone:hover {
+            border-color: #3b82f6;
+            background: rgba(59, 130, 246, 0.05);
+        }
+
+        /* 滚动条 */
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: #0f172a;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: #475569;
+            border-radius: 4px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: #64748b;
+        }
+
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+    </style>
+</head>
+
+<body class="h-screen flex overflow-hidden">
+
+    <!-- Sidebar -->
+    <aside class="w-72 flex flex-col flex-shrink-0 h-full">
+        <div class="p-6 border-b" style="border-color: var(--border-primary);">
+            <div class="flex items-center justify-between mb-2">
+                <h1 class="text-2xl font-black flex items-center gap-2" style="color: var(--text-primary);">
+                    <span class="text-blue-500">●</span> TDS<span style="color: var(--text-tertiary);">.OS</span>
+                </h1>
+                <button onclick="toggleTheme()" id="theme-toggle"
+                    class="p-2 rounded-lg hover:bg-opacity-10 hover:bg-blue-500 transition"
+                    style="color: var(--text-tertiary);" title="切换主题">
+                    <span id="theme-icon">🌙</span>
+                </button>
+            </div>
+            <p class="text-xs font-semibold ml-7" style="color: var(--text-tertiary);">v17.3 优化版</p>
+        </div>
+
+        <nav class="flex-1 p-3 overflow-y-auto">
+            <div class="nav-header">核心指挥</div>
+            <button onclick="switchTab('dashboard')" class="nav-item active" id="nav-dashboard">
+                <span>🏠</span> <span>指挥舱主页</span>
+            </button>
+
+            <div class="nav-header">知识库</div>
+            <button onclick="switchTab('product-db')" class="nav-item" id="nav-product-db">
+                <span>🗂️</span> <span>产品资料库</span>
+            </button>
+            <button onclick="switchTab('keyword-vault')" class="nav-item" id="nav-keyword-vault">
+                <span>🔑</span> <span>SEO 词库</span>
+            </button>
+
+            <div class="nav-header">策划</div>
+            <button onclick="switchTab('weekly-plan')" class="nav-item" id="nav-weekly-plan">
+                <span>📅</span> <span>内容日历</span>
+            </button>
+            <button onclick="switchTab('exhibition')" class="nav-item" id="nav-exhibition">
+                <span>🎪</span> <span>展会作战</span>
+            </button>
+
+            <div class="nav-header">执行</div>
+            <button onclick="switchTab('lead-detective')" class="nav-item" id="nav-lead-detective">
+                <span>🕵️</span> <span>线索侦探</span>
+            </button>
+            <button onclick="switchTab('ad-doctor')" class="nav-item" id="nav-ad-doctor">
+                <span>🩺</span> <span>广告诊断</span>
+            </button>
+            <button onclick="switchTab('budget')" class="nav-item" id="nav-budget">
+                <span>📊</span> <span>资金看板</span>
+            </button>
+            <button onclick="switchTab('content-agent')" class="nav-item" id="nav-content-agent">
+                <span>🧠</span> <span>全案生成器</span>
+            </button>
+        </nav>
+
+        <div class="p-4 border-t border-slate-700 text-center">
+            <div class="flex justify-center gap-4 text-xs">
+                <button onclick="exportData()" class="text-slate-400 hover:text-white transition">☁️ 备份</button>
+                <span class="text-slate-600">|</span>
+                <button onclick="document.getElementById('import-file').click()"
+                    class="text-slate-400 hover:text-white transition">📥 恢复</button>
+            </div>
+            <input type="file" id="import-file" class="hidden" onchange="importData(this)">
+        </div>
+    </aside>
+    <p class="text-slate-400 mb-8">集中管理所有营销物料与参数</p>
+    <div class="grid grid-cols-12 gap-6">
+        <div class="col-span-4 panel">
+            <h3 class="text-lg font-bold text-white mb-4">新建产品档案</h3>
+            <div class="space-y-3">
+                <div><span class="input-label">产品型号 *</span><input type="text" id="db-name" placeholder="TDS-C2200"
+                        class="input-box"></div>
+                <div><span class="input-label">应用场景</span><input type="text" id="db-scene" placeholder="金矿, 高海拔"
+                        class="input-box"></div>
+                <div><span class="input-label">核心痛点</span><input type="text" id="db-pain" placeholder="缺氧动力不足"
+                        class="input-box"></div>
+                <div><span class="input-label">详细参数</span><textarea id="db-feat" rows="3"
+                        placeholder="1800m (NQ), 15T Pull" class="input-box"></textarea></div>
+                <div>
+                    <span class="input-label">关联文件</span>
+                    <div class="drop-zone" onclick="document.getElementById('db-file').click()">
+                        <input type="file" id="db-file" class="hidden" onchange="handleFileSelect(this)">
+                        <span class="text-3xl">📂</span>
+                        <p class="text-sm text-slate-400 mt-2" id="file-label">点击上传 PDF/JPG</p>
+                    </div>
+                </div>
+            </div>
+            <button onclick="saveProduct()" class="btn-primary w-full mt-4">💾 存入知识库</button>
+        </div>
+        <div class="col-span-8 panel">
+            <div id="product-list" class="grid grid-cols-3 gap-4 min-h-[400px]">
+                <div class="col-span-3 text-center py-20 text-slate-500">
+                    <p class="text-3xl mb-2">🗂️</p>
+                    暂无数据，请从左侧录入
+                </div>
+            </div>
+        </div>
+    </div>
+    </div>
+
+    <!-- Weekly Plan -->
+    <div id="weekly-plan" class="tab-content fade-in">
+        <h2 class="text-3xl font-black text-white mb-2">内容日历规划</h2>
+        <p class="text-slate-400 mb-8">周度内容策略</p>
+        <div class="grid grid-cols-12 gap-6">
+            <div class="col-span-3">
+                <div class="panel">
+                    <span class="input-label">选择产品</span>
+                    <select id="plan-prod" class="select-field mb-4" onchange="loadProdToPlan()">
+                        <option value="">-- 从库中调取 --</option>
+                    </select>
+                    <input type="text" id="pl-name" placeholder="产品名" class="input-box mb-3" readonly>
+                    <div class="p-3 bg-slate-900 rounded text-xs text-slate-400 mb-4 min-h-[60px]" id="pl-preview">
+                        参数预览...</div>
+                    <select id="pl-lang" class="select-field mb-4">
+                        <option value="en">English</option>
+                        <option value="es">Español</option>
+                    </select>
+                    <button onclick="generateWeeklyPlan()" class="btn-primary w-full">📅 生成本周日历</button>
+                </div>
+            </div>
+            <div class="col-span-9 space-y-4">
+                <div class="panel border-l-4 border-blue-500">
+                    <h3 class="font-bold text-white mb-2">周一：直击痛点</h3>
+                    <div id="day1" class="result-box">等待生成...</div>
+                    <button onclick="copyText('day1')" class="btn-secondary mt-2">复制</button>
+                </div>
+                <div class="panel border-l-4 border-yellow-500">
+                    <h3 class="font-bold text-white mb-2">周三：硬核展示</h3>
+                    <div id="day3" class="result-box">等待生成...</div>
+                    <button onclick="copyText('day3')" class="btn-secondary mt-2">复制</button>
+                </div>
+                <div class="panel border-l-4 border-green-500">
+                    <h3 class="font-bold text-white mb-2">周五：客户证言</h3>
+                    <div id="day5" class="result-box">等待生成...</div>
+                    <button onclick="copyText('day5')" class="btn-secondary mt-2">复制</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Keyword Vault -->
+    <div id="keyword-vault" class="tab-content fade-in">
+        <h2 class="text-3xl font-black text-white mb-8">SEO 关键词金库</h2>
+        <div class="grid grid-cols-2 gap-6">
+            <div class="panel">
+                <h3 class="text-lg font-bold text-white mb-4">存储高转化词</h3>
+                <textarea id="vault-input" class="input-box font-mono text-xs" rows="15"
+                    placeholder="water well drilling rig..."></textarea>
+                <button onclick="saveKeywords()" class="btn-primary w-full mt-4">💾 存入</button>
+            </div>
+            <div class="panel">
+                <h3 class="text-lg font-bold text-white mb-4">已存词库 <span class="text-sm text-slate-500" id="kw-count">0
+                        words</span></h3>
+                <div id="vault-display" class="result-box h-64 overflow-auto mb-4">暂无数据</div>
+                <div class="grid grid-cols-2 gap-4">
+                    <button onclick="formatKeywords('exact')" class="btn-secondary">[精准匹配]</button>
+                    <button onclick="formatKeywords('phrase')" class="btn-secondary">"词组匹配"</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Exhibition -->
+    <div id="exhibition" class="tab-content fade-in">
+        <h2 class="text-3xl font-black text-white mb-8">展会作战室</h2>
+        <div class="grid grid-cols-3 gap-6">
+            <div class="panel">
+                <h3 class="text-lg font-bold text-white mb-4">添加计划</h3>
+                <input type="text" id="expo-name" placeholder="展会名称" class="input-box mb-3">
+                <input type="date" id="expo-date" class="input-box mb-4">
+                <button onclick="addExpo()" class="btn-primary w-full">加入作战图</button>
+            </div>
+            <div class="col-span-2">
+                <div id="expo-list-container" class="space-y-2">
+                    <div class="text-center text-slate-500 py-10">暂无计划</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Lead Detective -->
+    <div id="lead-detective" class="tab-content fade-in">
+        <h2 class="text-3xl font-black text-white mb-8">线索侦探</h2>
+        <div class="max-w-3xl mx-auto panel">
+            <input type="text" id="detective-url" placeholder="输入公司网址或名称" class="input-box mb-6 text-lg">
+            <div class="grid grid-cols-3 gap-4">
+                <button onclick="detectiveAction('site')" class="btn-secondary h-16 text-base">🔍 搜业务</button>
+                <button onclick="detectiveAction('node')" class="btn-secondary h-16 text-base">🧬 判身份</button>
+                <button onclick="detectiveAction('boss')" class="btn-secondary h-16 text-base">👑 挖老板</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Ad Doctor -->
+    <div id="ad-doctor" class="tab-content fade-in">
+        <h2 class="text-3xl font-black text-white mb-8">广告诊断</h2>
+        <div class="grid grid-cols-12 gap-6">
+            <div class="col-span-4 panel">
+                <select id="platform-select" class="input-box mb-4">
+                    <option value="tiktok">TikTok</option>
+                    <option value="facebook">Facebook</option>
+                    <option value="google">Google Ads</option>
+                </select>
+                <div class="grid grid-cols-2 gap-4 mb-4">
+                    <input type="number" id="ad-spend" placeholder="花费 $" class="input-box">
+                    <input type="number" id="leads-count" placeholder="线索数" class="input-box">
+                </div>
+                <button onclick="calcDoctor()" class="btn-primary w-full">🩺 诊断</button>
+            </div>
+            <div class="col-span-8 panel text-center">
+                <p class="input-label">CPL 成本</p>
+                <div id="val-cpl" class="text-6xl font-black text-white my-6">---</div>
+                <div id="doctor-advice" class="text-slate-400">等待输入...</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Budget -->
+    <div id="budget" class="tab-content fade-in">
+        <div class="flex justify-between items-center mb-8">
+            <h2 class="text-3xl font-black text-white">资金看板</h2>
+            <button onclick="resetBudget()" class="text-red-500 text-sm underline">重置</button>
+        </div>
+        <div class="grid grid-cols-3 gap-6">
+            <div class="panel">
+                <p class="input-label">总预算</p>
+                <input type="number" id="total-budget"
+                    class="text-4xl font-black bg-transparent border-none text-white w-full" value="266664"
+                    onchange="updateBudget()">
+            </div>
+            <div class="panel">
+                <p class="input-label">已消耗</p>
+                <input type="number" id="spent-amount"
+                    class="text-4xl font-black bg-transparent border-none text-red-500 w-full" value="79600"
+                    onchange="updateBudget()">
+            </div>
+            <div class="panel">
+                <p class="input-label">剩余</p>
+                <div class="text-4xl font-black text-green-500 mt-2" id="remaining-amount">---</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Content Agent -->
+    <div id="content-agent" class="tab-content fade-in">
+        <h2 class="text-3xl font-black text-white mb-8">全案生成器</h2>
+        <div class="grid grid-cols-12 gap-6">
+            <div class="col-span-4">
+                <div class="panel">
+                    <span class="input-label">快速调用</span>
+                    <select id="quick-load" class="select-field mb-4" onchange="loadProductToForm()">
+                        <option value="">-- 选择 --</option>
+                    </select>
+                    <div class="space-y-3">
+                        <div><span class="input-label">产品</span><input type="text" id="cp-product" class="input-box">
+                        </div>
+                        <div><span class="input-label">痛点</span><input type="text" id="cp-pain" class="input-box"></div>
+                        <div><span class="input-label">卖点</span><textarea id="cp-feat" rows="3"
+                                class="input-box"></textarea></div>
+                        <div><span class="input-label">语言</span>
+                            <select id="cp-lang" class="select-field">
+                                <option value="en">英语</option>
+                                <option value="es">西班牙语</option>
+                            </select>
+                        </div>
+                    </div>
+                    <button onclick="generateCampaign()" class="btn-primary w-full mt-4">🚀 生成</button>
+                </div>
+            </div>
+            <div class="col-span-8 space-y-4">
+                <div class="panel">
+                    <h3 class="font-bold text-white mb-2">🎵 TikTok</h3>
+                    <div id="res-tk" class="result-box">...</div>
+                </div>
+                <div class="panel">
+                    <h3 class="font-bold text-white mb-2">👔 LinkedIn</h3>
+                    <div id="res-li" class="result-box">...</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    </div>
+    </main>
+
+    <script>
+                                        function switchTab(tabId) {
+                                            document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
+                                        document.getElementById(tabId).classList.add('active');
+            document.querySelectorAll('.nav-item').forEach(btn => btn.classList.remove('active'));
+                                        document.getElementById('nav-' + tabId).classList.add('active');
+        }
+
+                                        let productDB = JSON.parse(localStorage.getItem('tds_product_db') || '[]');
+                                        let currentFile = null;
+
+                                        function handleFileSelect(input) {
+            if (input.files && input.files[0]) {
+                                            currentFile = input.files[0].name;
+                                        document.getElementById('file-label').innerText = "✅ " + currentFile;
+            }
+        }
+
+                                        function saveProduct() {
+            const name = document.getElementById('db-name').value;
+                                        const pain = document.getElementById('db-pain').value;
+                                        const feat = document.getElementById('db-feat').value;
+                                        const scene = document.getElementById('db-scene').value;
+                                        if (!name) return alert('请输入产品型号');
+
+                                        productDB.push({name, pain, feat, scene, file: currentFile || '无附件' });
+                                        localStorage.setItem('tds_product_db', JSON.stringify(productDB));
+                                        renderDB();
+                                        document.getElementById('db-name').value = '';
+                                        document.getElementById('db-pain').value = '';
+                                        document.getElementById('db-feat').value = '';
+                                        document.getElementById('db-scene').value = '';
+                                        document.getElementById('file-label').innerText = "点击上传 PDF/JPG";
+                                        currentFile = null;
+                                        alert("已存入知识库");
+        }
+
+                                        function renderDB() {
+            const list = document.getElementById('product-list');
+                                        updateDropdowns();
+
+                                        if (productDB.length === 0) {
+                                            list.innerHTML = `<div class="col-span-3 text-center text-slate-500 py-20">知识库为空，请从左侧录入</div>`;
+                                        return;
+            }
+
+            list.innerHTML = productDB.map((p, i) => `
+                                        <div class="p-4 bg-slate-800 rounded-lg border border-slate-700 hover:border-blue-500 transition">
+                                            <div class="flex justify-between items-start mb-3">
+                                                <h4 class="font-bold text-white">${p.name}</h4>
+                                                <button onclick="delProd(${i})" class="text-slate-500 hover:text-red-500">×</button>
+                                            </div>
+                                            <div class="space-y-1 text-xs text-slate-400">
+                                                <div><span class="text-blue-400">卖点:</span> ${p.feat.substring(0, 40)}...</div>
+                                                <div><span class="text-red-400">痛点:</span> ${p.pain}</div>
+                                            </div>
+                                        </div>
+                                        `).join('');
+        }
+
+                                        function updateDropdowns() {
+            const opts = '<option value="">-- 从库中调取 --</option>' + productDB.map((p, i) => `<option value="${i}">${p.name}</option>`).join('');
+            ['plan-prod', 'quick-load'].forEach(id => {
+                const el = document.getElementById(id);
+                                        if (el) el.innerHTML = opts;
+            });
+        }
+
+                                        function delProd(i) {
+            if (confirm('确定删除?')) {
+                                            productDB.splice(i, 1);
+                                        localStorage.setItem('tds_product_db', JSON.stringify(productDB));
+                                        renderDB();
+            }
+        }
+
+                                        function loadProdToPlan() {
+            const idx = document.getElementById('plan-prod').value;
+                                        if (idx === "") return;
+                                        const p = productDB[idx];
+                                        document.getElementById('pl-name').value = p.name;
+                                        document.getElementById('pl-preview').innerText = `核心卖点：${p.feat}\n针对痛点：${p.pain}`;
+        }
+
+                                        function generateWeeklyPlan() {
+            const idx = document.getElementById('plan-prod').value;
+                                        if (idx === "") return alert("请先选择产品");
+                                        const p = productDB[idx];
+                                        const lang = document.getElementById('pl-lang').value;
+
+                                        if (lang === 'en') {
+                                            document.getElementById('day1').innerText = `👔 Monday (LinkedIn/FB): Problem Aware\n\n"Struggling with ${p.pain}?"\n\nThe ${p.name} fixes this.\n\n#Mining`;
+                                        document.getElementById('day3').innerText = `🎵 Wednesday (TikTok): Visual Proof\n\n(Video: ${p.name} working)\n\nWatch it handle ${p.pain}!\nSpecs: ${p.feat}\n\n#Demo`;
+                                        document.getElementById('day5').innerText = `⭐ Friday: Social Proof\n\n"Best investment." - Client\n\nGet the ${p.name}.\n\n👇 Link in bio`;
+            } else {
+                                            document.getElementById('day1').innerText = `👔 Lunes: Problema\n\n¿${p.pain}?\nLa ${p.name} es la solución.`;
+                                        document.getElementById('day3').innerText = `🎵 Miércoles: Prueba\n\n(Video trabajando)\n¡Vea la ${p.name}!`;
+                                        document.getElementById('day5').innerText = `⭐ Viernes: Resultado\n\nCliente feliz.\n👇 Link`;
+            }
+        }
+
+                                        function loadProductToForm() {
+            const idx = document.getElementById('quick-load').value;
+                                        if (idx === "") return;
+                                        const p = productDB[idx];
+                                        document.getElementById('cp-product').value = p.name;
+                                        document.getElementById('cp-pain').value = p.pain;
+                                        document.getElementById('cp-feat').value = p.feat;
+        }
+
+                                        function generateCampaign() {
+            const p = document.getElementById('cp-product').value || 'Product';
+                                        const pain = document.getElementById('cp-pain').value || 'Pain';
+                                        const feat = document.getElementById('cp-feat').value || 'Features';
+                                        const lang = document.getElementById('cp-lang').value;
+
+                                        if (lang === 'en') {
+                                            document.getElementById('res-tk').innerText = `🎬 TikTok\n1️⃣ Hook: "${pain}"\n2️⃣ Proof: ${p} working\n3️⃣ CTA: Link in bio`;
+                                        document.getElementById('res-li').innerText = `🛑 LinkedIn\n\n${pain} causes issues.\n\n✅ Solution: ${p}\n${feat}\n\n📩 Contact us`;
+            } else {
+                                            document.getElementById('res-tk').innerText = `🎬 TikTok\n1️⃣ Gancho: "${pain}"\n2️⃣ Solución: ${p}\n3️⃣ CTA: Bio`;
+                                        document.getElementById('res-li').innerText = `🛑 LinkedIn\n\nProblema: ${pain}\n✅ ${p}\n${feat}`;
+            }
+        }
+
+                                        function saveKeywords() {
+                                            localStorage.setItem('tds_keywords', document.getElementById('vault-input').value);
+                                        renderKeywords();
+        }
+
+                                        function renderKeywords() {
+            const txt = localStorage.getItem('tds_keywords') || "";
+                                        document.getElementById('vault-input').value = txt;
+                                        document.getElementById('vault-display').innerText = txt || "暂无数据";
+            document.getElementById('kw-count').innerText = txt.split('\n').filter(l => l.trim()).length + " words";
+        }
+
+                                        function formatKeywords(t) {
+            const v = document.getElementById('vault-input').value;
+            const res = t === 'exact' ? v.split('\n').map(l => `[${l}]`).join('\n') : v.split('\n').map(l => `"${l}"`).join('\n');
+            navigator.clipboard.writeText(res).then(() => alert('已复制'));
+        }
+
+                                        let expos = JSON.parse(localStorage.getItem('tds_expos') || '[]');
+
+                                        function addExpo() {
+            const n = document.getElementById('expo-name').value;
+                                        const d = document.getElementById('expo-date').value;
+                                        if (!n) return alert('请输入展会名称');
+                                        expos.push({name: n, date: d });
+                                        localStorage.setItem('tds_expos', JSON.stringify(expos));
+                                        renderExpos();
+                                        updateDashboard();
+                                        document.getElementById('expo-name').value = '';
+                                        document.getElementById('expo-date').value = '';
+        }
+
+                                        function renderExpos() {
+            const list = document.getElementById('expo-list-container');
+                                        if (expos.length === 0) {
+                                            list.innerHTML = '<div class="text-center text-slate-500 py-10">暂无计划</div>';
+                                        return;
+            }
+            list.innerHTML = expos.map((ex, i) => `
+                                        <div class="panel flex justify-between items-center">
+                                            <div>
+                                                <div class="font-bold text-white">${ex.name}</div>
+                                                <div class="text-sm text-slate-400">${ex.date}</div>
+                                            </div>
+                                            <button onclick="removeExpo(${i})" class="text-red-500 hover:text-red-400">删除</button>
+                                        </div>
+                                        `).join('');
+        }
+
+                                        function removeExpo(i) {
+            if (confirm('确定删除?')) {
+                                            expos.splice(i, 1);
+                                        localStorage.setItem('tds_expos', JSON.stringify(expos));
+                                        renderExpos();
+                                        updateDashboard();
+            }
+        }
+
+                                        function detectiveAction(t) {
+                                            let val = document.getElementById('detective-url').value;
+                                        if (!val) return alert('请输入网址或名称');
+                                        let q = "";
+                                        if (t === 'site') q = `site:${val} "drilling"`;
+                                        if (t === 'node') q = `"${val}" "about us" -alibaba`;
+                                        if (t === 'boss') q = `site:linkedin.com/in/ "${val}" (CEO OR Manager)`;
+                                        window.open(`https://www.google.com/search?q=${encodeURIComponent(q)}`, '_blank');
+        }
+
+        function calcDoctor() {
+            const s = parseFloat(document.getElementById('ad-spend').value);
+            const l = parseFloat(document.getElementById('leads-count').value);
+            if (s && l) {
+                const cpl = s / l;
+                document.getElementById('val-cpl').innerText = '$' + cpl.toFixed(1);
+                localStorage.setItem('tds_last_cpl', '$' + cpl.toFixed(1));
+                updateDashboard();
+            }
+        }
+
+        function updateBudget() {
+            const t = parseFloat(document.getElementById('total-budget').value) || 266664;
+            const s = parseFloat(document.getElementById('spent-amount').value) || 79600;
+            document.getElementById('remaining-amount').innerText = (t - s).toLocaleString();
+        function exportData() {
+            const b = new Blob([JSON.stringify(localStorage)], { type: 'application/json' });
+            const a = document.createElement('a');
+            a.href = URL.createObjectURL(b);
+            a.download = 'tds_backup_' + new Date().toISOString().split('T')[0] + '.json';
+            a.click();
+        }
+
+        function importData(input) {
+            const r = new FileReader();
+            r.onload = e => {
+                Object.assign(localStorage, JSON.parse(e.target.result));
+                location.reload();
+            };
+            r.readAsText(input.files[0]);
+        }
+
+        function resetBudget() {
+            if (confirm('确定重置所有数据?')) {
+                localStorage.clear();
+                location.reload();
+            }
+        }
+
+        // 主题切换功能
+        function toggleTheme() {
+            const body = document.body;
+            const isLight = body.classList.contains('light-mode');
+            
+            if(isLight) {
+                body.classList.remove('light-mode');
+                document.getElementById('theme-icon').innerText = '🌙';
+                localStorage.setItem('theme', 'dark');
+            } else {
+                body.classList.add('light-mode');
+                document.getElementById('theme-icon').innerText = '☀️';
+                localStorage.setItem('theme', 'light');
+            }
+        }
+        
+        function loadTheme() {
+            const savedTheme = localStorage.getItem('theme');
+            if(savedTheme === 'light') {
+                document.body.classList.add('light-mode');
+                document.getElementById('theme-icon').innerText = '☀️';
+            }
+        }
+
+        window.onload = function() {
+            loadTheme();
+            renderDB(); 
+            renderKeywords(); 
+            renderExpos();
+            const total = localStorage.getItem('tds_total') || 266664;
+            const spent = localStorage.getItem('tds_spent') || 79600;
+            document.getElementById('total-budget').value = total;
+            document.getElementById('spent-amount').value = spent;
+            updateDashboard();
+        }
+    </script>
+</body>
+
+</html>

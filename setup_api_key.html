@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Morgan OS - API Key Setup</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        body {
+            background: #0f172a;
+            color: #e2e8f0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            font-family: sans-serif;
+        }
+
+        .card {
+            background: #1e293b;
+            padding: 2rem;
+            border-radius: 1rem;
+            border: 1px solid #334155;
+            width: 100%;
+            max-width: 400px;
+            text-align: center;
+        }
+
+        .input-box {
+            width: 100%;
+            padding: 0.75rem;
+            margin: 1rem 0;
+            border-radius: 0.5rem;
+            background: #0f172a;
+            border: 1px solid #475569;
+            color: white;
+        }
+
+        .btn {
+            background: #3b82f6;
+            color: white;
+            padding: 0.75rem 1.5rem;
+            border-radius: 0.5rem;
+            width: 100%;
+            font-weight: bold;
+            cursor: pointer;
+            transition: 0.2s;
+        }
+
+        .btn:hover {
+            background: #2563eb;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="card">
+        <h1 class="text-2xl font-bold mb-2">🔑 API Key 自动配置</h1>
+        <p class="text-gray-400 text-sm mb-4">正在为您写入 API Key...</p>
+
+        <input type="password" id="apiKey" class="input-box" value="AIzaSyCzmw3TBATl9QjQw-ZO97qDcPaSNEMCXV8" readonly>
+
+        <button onclick="saveKey()" class="btn">手动保存 (如果未自动跳转)</button>
+        <p id="msg" class="mt-4 text-sm text-green-400">✅ 正在自动配置并跳转...</p>
+    </div>
+
+    <script>
+        // Auto-save logic
+        window.onload = function () {
+            setTimeout(saveKey, 1000); // 1 second delay to let user see screen
+        };
+
+        function saveKey() {
+            const key = document.getElementById('apiKey').value;
+            localStorage.setItem('tds_gemini_api_key', key);
+
+            const msg = document.getElementById('msg');
+            msg.innerText = "✅ API Key 已保存! 正在返回主页...";
+            msg.classList.remove('hidden');
+
+            setTimeout(() => {
+                window.location.href = 'index.html';
+            }, 1000);
+        }
+    </script>
+</body>
+
+</html>

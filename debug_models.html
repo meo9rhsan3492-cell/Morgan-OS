@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html>
+
+<body>
+    <h1>Gemini Model Debugger</h1>
+    <button onclick="checkModels()">Check Available Models</button>
+    <pre id="output"></pre>
+    <script>
+        async function checkModels() {
+            const key = localStorage.getItem('tds_gemini_api_key');
+            if (!key) return alert('No Key');
+
+            const url = `https://generativelanguage.googleapis.com/v1beta/models?key=${key}`;
+
+            try {
+                const res = await fetch(url);
+                const data = await res.json();
+                document.getElementById('output').innerText = JSON.stringify(data, null, 2);
+            } catch (e) {
+                document.getElementById('output').innerText = e.message;
+            }
+        }
+    </script>
+</body>
+
+</html>

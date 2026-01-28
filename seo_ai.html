@@ -1,0 +1,697 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SEO AI 工作站 - TDS Marketing OS</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        :root {
+            --bg-primary: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+            --bg-secondary: #1e293b;
+            --bg-panel: rgba(30, 41, 59, 0.7);
+            --text-primary: #e2e8f0;
+            --text-secondary: #cbd5e1;
+            --border-primary: #334155;
+        }
+
+        .light-mode {
+            --bg-primary: linear-gradient(135deg, #f1f5f9 0%, #e2e8f0 100%);
+            --bg-secondary: #ffffff;
+            --bg-panel: rgba(255, 255, 255, 0.9);
+            --text-primary: #0f172a;
+            --text-secondary: #1e293b;
+            --border-primary: #e2e8f0;
+        }
+
+        body {
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            transition: all 0.3s;
+        }
+
+        .panel {
+            background: var(--bg-panel);
+            border: 1px solid var(--border-primary);
+            border-radius: 12px;
+            padding: 24px;
+            transition: all 0.3s;
+        }
+
+        .input-box {
+            width: 100%;
+            padding: 10px;
+            background: var(--bg-secondary);
+            border: 1px solid var(--border-primary);
+            border-radius: 8px;
+            color: var(--text-primary);
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #3b82f6, #2563eb);
+            color: white;
+            padding: 12px 20px;
+            border-radius: 8px;
+            font-weight: 700;
+            cursor: pointer;
+            border: none;
+            transition: all 0.2s;
+        }
+
+        .btn-primary:hover:not(:disabled) {
+            transform: translateY(-2px);
+        }
+
+        .btn-primary:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .kb-doc-item {
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .kb-doc-item:hover {
+            transform: translateX(4px);
+        }
+
+        .kb-doc-item.selected {
+            background: rgba(59, 130, 246, 0.2);
+            border-color: #3b82f6 !important;
+        }
+
+        #loading-spinner {
+            border: 3px solid rgba(255, 255, 255, 0.3);
+            border-radius: 50%;
+            border-top: 3px solid white;
+            width: 24px;
+            height: 24px;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            0% {
+                transform: rotate(0deg);
+            }
+
+            100% {
+                transform: rotate(360deg);
+            }
+        }
+    </style>
+</head>
+
+<body class="min-h-screen p-6">
+    <div class="max-w-7xl mx-auto">
+        <!-- Header -->
+        <div class="flex justify-between items-center mb-8">
+            <div>
+                <h1 class="text-4xl font-black mb-2" style="color: var(--text-primary);">
+                    <span class="text-blue-500">🤖</span> SEO AI 工作站
+                </h1>
+                <p class="text-sm" style="color: var(--text-secondary);">智能文章生成 · AI检测 · 去AI度优化</p>
+            </div>
+            <div class="flex gap-3">
+                <button onclick="toggleTheme()" class="px-4 py-2 rounded-lg hover:bg-gray-700 transition">
+                    <span id="theme-icon">🌙</span>
+                </button>
+                <a href="index.html" class="px-4 py-2 rounded-lg hover:bg-blue-500 hover:bg-opacity-20 transition"
+                    style="color: var(--text-secondary);">
+                    ← 返回主应用
+                </a>
+            </div>
+        </div>
+
+        <!-- Main Grid -->
+        <div class="grid grid-cols-12 gap-6">
+            <!-- 左栏：智能引用 (Smart Context) -->
+            <div class="col-span-3">
+                <div class="panel h-full flex flex-col">
+                    <h3 class="text-lg font-bold mb-4 flex items-center gap-2" style="color: var(--text-primary);">
+                        <span>🧠</span> 智能知识库引用
+                    </h3>
+
+                    <div class="text-xs text-gray-500 mb-2">
+                        根据主题自动引用内容：
+                    </div>
+
+                    <div id="rag-context-list"
+                        class="flex-1 space-y-2 overflow-y-auto mb-4 p-2 bg-black/20 rounded border border-gray-700">
+                        <div class="text-center py-10 text-sm opacity-50">
+                            <div class="text-2xl mb-2">⌨️</div>
+                            输入文章主题<br>自动检索知识库
+                        </div>
+                    </div>
+
+                    <div class="text-[10px] text-gray-500 text-center">
+                        数据来源: Local RAG Brain
+                    </div>
+
+                    <!-- API 配置 -->
+                    <div class="mt-4 p-4 rounded"
+                        style="background: var(--bg-secondary); border: 1px solid var(--border-primary);">
+                        <h4 class="text-sm font-bold mb-3" style="color: var(--text-primary);">⚙️ API 配置</h4>
+                        <input type="password" id="gemini-api-key" placeholder="Gemini API Key"
+                            class="input-box text-xs mb-2">
+                        <button onclick="saveApiKey()" class="btn-primary w-full text-xs">💾 保存</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 中栏：生成控制面板 -->
+            <div class="col-span-4">
+                <div class="panel h-full">
+                    <h3 class="text-lg font-bold mb-4" style="color: var(--text-primary);">📝 文章参数</h3>
+
+                    <div class="space-y-3">
+                        <div>
+                            <label class="text-xs font-bold mb-1 block"
+                                style="color: var(--text-secondary);">文章主题</label>
+                            <input type="text" id="article-topic" placeholder="例：如何选择合适的工业设备" class="input-box">
+                        </div>
+
+                        <div>
+                            <label class="text-xs font-bold mb-1 block"
+                                style="color: var(--text-secondary);">目标关键词（用逗号分隔）</label>
+                            <input type="text" id="article-keywords" placeholder="工业设备,采购指南,选型" class="input-box">
+                        </div>
+
+                        <div class="grid grid-cols-2 gap-3">
+                            <div>
+                                <label class="text-xs font-bold mb-1 block"
+                                    style="color: var(--text-secondary);">字数</label>
+                                <select id="article-length" class="input-box">
+                                    <option value="800">800字</option>
+                                    <option value="1200" selected>1200字</option>
+                                    <option value="1500">1500字</option>
+                                    <option value="2000">2000字</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label class="text-xs font-bold mb-1 block"
+                                    style="color: var(--text-secondary);">写作风格</label>
+                                <select id="article-style" class="input-box">
+                                    <option value="professional">专业</option>
+                                    <option value="casual">轻松</option>
+                                    <option value="technical">技术</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <button onclick="generateSeoArticle()" class="btn-primary w-full mt-4" id="generate-btn">
+                            <span id="generate-text">🚀 生成 SEO 文章</span>
+                            <div id="loading-spinner" class="hidden mx-auto"></div>
+                        </button>
+                    </div>
+
+                    <!-- SEO 检查结果 -->
+                    <div class="mt-6 p-4 rounded"
+                        style="background: var(--bg-secondary); border: 1px solid var(--border-primary);">
+                        <h4 class="text-sm font-bold mb-3" style="color: var(--text-primary);">📊 SEO 检查</h4>
+                        <div id="seo-check-result" class="text-xs space-y-2" style="color: var(--text-secondary);">
+                            <div class="flex justify-between">
+                                <span>H标签结构:</span>
+                                <span id="seo-h-tags">--</span>
+                            </div>
+                            <div class="flex justify-between">
+                                <span>关键词密度:</span>
+                                <span id="seo-kw-density">--</span>
+                            </div>
+                            <div class="flex justify-between">
+                                <span>段落数:</span>
+                                <span id="seo-paragraphs">--</span>
+                            </div>
+                            <div class="flex justify-between">
+                                <span>总字数:</span>
+                                <span id="seo-word-count">--</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 右栏：结果展示与优化 -->
+            <div class="col-span-5">
+                <div class="panel h-full">
+                    <div class="flex justify-between items-center mb-4">
+                        <h3 class="text-lg font-bold" style="color: var(--text-primary);">📄 生成结果</h3>
+                        <div class="flex gap-2">
+                            <button onclick="copyArticle()"
+                                class="px-3 py-1 text-xs rounded hover:bg-blue-500 hover:bg-opacity-20"
+                                style="color: var(--text-secondary);" title="复制">
+                                📋
+                            </button>
+                            <button onclick="downloadArticle()"
+                                class="px-3 py-1 text-xs rounded hover:bg-blue-500 hover:bg-opacity-20"
+                                style="color: var(--text-secondary);" title="下载">
+                                💾
+                            </button>
+                        </div>
+                    </div>
+
+                    <div id="article-output" class="p-4 rounded min-h-96 max-h-96 overflow-y-auto"
+                        style="background: var(--bg-secondary); color: var(--text-secondary);">
+                        <div class="text-center py-20 text-sm" style="color: var(--text-secondary);">
+                            <div class="text-6xl mb-4">✨</div>
+                            等待生成...
+                        </div>
+                    </div>
+
+                    <!-- AI 检测区 -->
+                    <div class="mt-4 p-4 rounded"
+                        style="background: var(--bg-secondary); border: 1px solid var(--border-primary);">
+                        <div class="flex justify-between items-center mb-3">
+                            <span class="text-sm font-bold" style="color: var(--text-primary);">🔍 AI 度检测</span>
+                            <button onclick="detectAI()"
+                                class="px-3 py-1 text-xs rounded bg-blue-500 hover:bg-blue-600 text-white"
+                                id="detect-btn">
+                                开始检测
+                            </button>
+                        </div>
+                        <div class="flex items-center gap-4 mb-2">
+                            <div class="flex-1">
+                                <div class="w-full bg-gray-700 rounded-full h-6 overflow-hidden">
+                                    <div id="ai-score-bar"
+                                        class="h-full bg-gradient-to-r from-green-500 to-red-500 transition-all"
+                                        style="width: 0%"></div>
+                                </div>
+                            </div>
+                            <div class="text-2xl font-black" id="ai-score-text" style="color: var(--text-primary);">--%
+                            </div>
+                        </div>
+                        <div id="ai-score-advice" class="text-xs" style="color: var(--text-secondary);">等待检测...</div>
+                    </div>
+
+                    <!-- 优化按钮 -->
+                    <button onclick="optimizeArticle()" class="btn-primary w-full mt-4" id="optimize-btn" disabled>
+                        ⚡ 优化去 AI 度
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // 全局变量
+        let currentArticle = '';
+        let geminiApiKey = localStorage.getItem('tds_gemini_api_key') || '';
+
+        // RAG State
+        let kbChunks = [];
+        const KB_STORAGE_KEY = 'morgan_kb_chunks';
+
+        // 主题切换
+        function toggleTheme() {
+            const body = document.body;
+            const isLight = body.classList.contains('light-mode');
+            if (isLight) {
+                body.classList.remove('light-mode');
+                document.getElementById('theme-icon').innerText = '🌙';
+                localStorage.setItem('seo_ai_theme', 'dark');
+            } else {
+                body.classList.add('light-mode');
+                document.getElementById('theme-icon').innerText = '☀️';
+                localStorage.setItem('seo_ai_theme', 'light');
+            }
+        }
+
+        function loadTheme() {
+            if (localStorage.getItem('seo_ai_theme') === 'light') {
+                document.body.classList.add('light-mode');
+                document.getElementById('theme-icon').innerText = '☀️';
+            }
+            if (geminiApiKey) {
+                document.getElementById('gemini-api-key').value = geminiApiKey;
+            }
+        }
+
+        // --- RAG Logic ---
+
+        function initRAG() {
+            const stored = localStorage.getItem(KB_STORAGE_KEY);
+            if (stored) kbChunks = JSON.parse(stored);
+
+            // Auto retrieve if topic exists
+            document.getElementById('article-topic').addEventListener('input', (e) => {
+                updateRAGContext(e.target.value);
+            });
+        }
+
+        function updateRAGContext(topic) {
+            const container = document.getElementById('rag-context-list');
+            if (!topic || topic.length < 2) {
+                container.innerHTML = '<div class="text-center py-10 text-sm opacity-50"><div class="text-2xl mb-2">⌨️</div>输入文章主题<br>自动检索知识库</div>';
+                return;
+            }
+
+            const context = retrieveContext(topic); // Use simple retrieval
+
+            if (context.length === 0) {
+                container.innerHTML = '<div class="text-center py-10 text-sm opacity-50">无相关知识库内容</div>';
+                return;
+            }
+
+            container.innerHTML = context.map(c => `
+                <div class="p-2 bg-gray-800 rounded border border-gray-700 hover:border-blue-500/50 transition-colors text-[10px]">
+                    <div class="flex justify-between text-gray-400 mb-1">
+                        <span class="truncate w-24">${c.source}</span>
+                        <span class="text-green-500">Match: ${c.score}</span>
+                    </div>
+                    <div class="text-gray-300 line-clamp-2">"${c.content}"</div>
+                </div>
+            `).join('');
+        }
+
+        function retrieveContext(query) {
+            if (kbChunks.length === 0) return [];
+            const qTokens = query.toLowerCase().split(/\s+/).filter(w => w.length > 1);
+
+            const scored = kbChunks.map(chunk => {
+                let score = 0;
+                const text = chunk.content.toLowerCase();
+                qTokens.forEach(t => { if (text.includes(t)) score += 1; });
+                return { ...chunk, score };
+            });
+
+            return scored.filter(c => c.score > 0).sort((a, b) => b.score - a.score).slice(0, 10);
+        }
+
+        // 保存 API Key
+        function saveApiKey() {
+            geminiApiKey = document.getElementById('gemini-api-key').value.trim();
+            if (geminiApiKey) {
+                localStorage.setItem('tds_gemini_api_key', geminiApiKey);
+                alert('✅ API Key 已保存');
+            } else {
+                alert('❌ 请输入有效的 API Key');
+            }
+        }
+
+        // 生成 SEO 文章
+        async function generateSeoArticle() {
+            const topic = document.getElementById('article-topic').value.trim();
+            const keywords = document.getElementById('article-keywords').value.trim();
+            const length = document.getElementById('article-length').value;
+            const style = document.getElementById('article-style').value;
+
+            if (!topic) {
+                alert('❌ 请输入文章主题');
+                return;
+            }
+
+            if (!geminiApiKey) {
+                alert('❌ 请先配置 Gemini API Key');
+                return;
+            }
+
+            // RAG Context Retrieval
+            const contextChunks = retrieveContext(topic + " " + keywords);
+            const contextText = contextChunks.map(c => c.content).join('\n\n');
+
+            // 显示加载状态
+            const generateBtn = document.getElementById('generate-btn');
+            const generateText = document.getElementById('generate-text');
+            const loadingSpinner = document.getElementById('loading-spinner');
+            generateBtn.disabled = true;
+            generateText.classList.add('hidden');
+            loadingSpinner.classList.remove('hidden');
+
+            try {
+                const prompt = buildSeoPrompt(topic, keywords, length, style, contextText);
+                const article = await callGeminiAPI(prompt);
+
+                if (article) {
+                    currentArticle = article;
+                    displayArticle(article);
+                    analyzeSEO(article, keywords);
+                    document.getElementById('detect-btn').disabled = false;
+                }
+            } catch (error) {
+                alert('❌ 生成失败: ' + error.message);
+                console.error(error);
+            } finally {
+                generateBtn.disabled = false;
+                generateText.classList.remove('hidden');
+                loadingSpinner.classList.add('hidden');
+            }
+        }
+
+        function buildSeoPrompt(topic, keywords, length, style, reference) {
+            const styleMap = {
+                'professional': '专业、严谨',
+                'casual': '轻松、易懂',
+                'technical': '技术性、详细'
+            };
+
+            let prompt = `你是一位专业的SEO内容作家。请撰写一篇符合Google SEO规范的文章。
+
+**要求：**
+1. 主题：${topic}
+2. 目标关键词：${keywords}
+3. 字数：约${length}字
+4. 写作风格：${styleMap[style]}
+5. 必须包含清晰的标题层级（H1, H2, H3）
+6. 关键词密度控制在2-3%
+7. 每个段落不超过150字
+8. 内容要有价值、原创性强
+9. 适当使用列表和要点
+
+`;
+
+            if (reference && reference.length > 50) {
+                prompt += `\n**[CRITICAL] 必须基于以下产品知识库内容撰写，严禁包含任何虚假参数：**\n"""\n${reference.substring(0, 5000)}\n"""\n\n`;
+            } else {
+                prompt += `\n(注意：知识库中未找到相关资料，请基于网路通用知识撰写，但不要捏造具体参数)\n`;
+            }
+
+            prompt += `请直接输出文章内容，使用Markdown格式，包含标题结构。`;
+
+            return prompt;
+        }
+
+        async function callGeminiAPI(prompt) {
+            const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-pro:generateContent?key=${geminiApiKey}`;
+
+            const response = await fetch(url, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    contents: [{
+                        parts: [{
+                            text: prompt
+                        }]
+                    }],
+                    generationConfig: {
+                        temperature: 0.7,
+                        maxOutputTokens: 2048,
+                    }
+                })
+            });
+
+            if (!response.ok) {
+                const error = await response.json();
+                throw new Error(error.error?.message || 'API 调用失败');
+            }
+
+            const data = await response.json();
+            return data.candidates[0]?.content?.parts[0]?.text || '';
+        }
+
+        function displayArticle(article) {
+            document.getElementById('article-output').innerHTML = `
+                <div class="prose prose-invert max-w-none" style="color: var(--text-secondary);">
+                    ${marked(article)}
+                </div>
+            `;
+        }
+
+        // 简单的 Markdown 渲染（基础版）
+        function marked(text) {
+            return text
+                .replace(/^### (.*$)/gim, '<h3 class="text-lg font-bold mt-4 mb-2">$1</h3>')
+                .replace(/^## (.*$)/gim, '<h2 class="text-xl font-bold mt-6 mb-3">$1</h2>')
+                .replace(/^# (.*$)/gim, '<h1 class="text-2xl font-black mt-8 mb-4">$1</h1>')
+                .replace(/\*\*(.*)\*\*/gim, '<strong>$1</strong>')
+                .replace(/\*(.*)\*/gim, '<em>$1</em>')
+                .replace(/\n\n/g, '</p><p class="mb-3">')
+                .replace(/^/gim, '<p class="mb-3">')
+                .replace(/$/, '</p>');
+        }
+
+        // SEO 分析
+        function analyzeSEO(article, keywords) {
+            const text = article.replace(/#/g, '').replace(/\*/g, '');
+
+            // H标签统计
+            const h1Count = (article.match(/^# /gm) || []).length;
+            const h2Count = (article.match(/^## /gm) || []).length;
+            const h3Count = (article.match(/^### /gm) || []).length;
+            document.getElementById('seo-h-tags').innerText = `H1:${h1Count} H2:${h2Count} H3:${h3Count}`;
+
+            // 关键词密度
+            if (keywords) {
+                const kwArray = keywords.split(/[,，]/);
+                let totalKw = 0;
+                kwArray.forEach(kw => {
+                    const regex = new RegExp(kw.trim(), 'gi');
+                    const matches = text.match(regex) || [];
+                    totalKw += matches.length;
+                });
+                const wordCount = text.length;
+                const density = ((totalKw / wordCount) * 100).toFixed(2);
+                document.getElementById('seo-kw-density').innerText = density + '%';
+            }
+
+            // 段落数
+            const paragraphs = text.split('\n\n').filter(p => p.trim().length > 0).length;
+            document.getElementById('seo-paragraphs').innerText = paragraphs;
+
+            // 总字数
+            document.getElementById('seo-word-count').innerText = text.length;
+        }
+
+        // AI 检测
+        function detectAI() {
+            if (!currentArticle) {
+                alert('请先生成文章');
+                return;
+            }
+
+            const aiScore = calculateAIScore(currentArticle);
+
+            // 更新进度条
+            document.getElementById('ai-score-bar').style.width = aiScore + '%';
+            document.getElementById('ai-score-text').innerText = aiScore + '%';
+
+            // 给出建议
+            let advice = '';
+            if (aiScore < 30) {
+                advice = '✅ 优秀 - 内容自然度很高';
+                document.getElementById('optimize-btn').disabled = true;
+            } else if (aiScore < 60) {
+                advice = '⚠️ 中等 - 建议进行优化';
+                document.getElementById('optimize-btn').disabled = false;
+            } else {
+                advice = '🚨 较高 - 强烈建议优化';
+                document.getElementById('optimize-btn').disabled = false;
+            }
+            document.getElementById('ai-score-advice').innerText = advice;
+        }
+
+        function calculateAIScore(text) {
+            let score = 0;
+
+            // 1. 检测AI常用短语
+            const aiPhrases = [
+                '重要的是', '值得注意', '此外', '然而', '因此', '总之',
+                '综上所述', '首先', '其次', '最后', '另外'
+            ];
+            aiPhrases.forEach(phrase => {
+                const count = (text.match(new RegExp(phrase, 'g')) || []).length;
+                score += count * 5;
+            });
+
+            // 2. 检测句子长度一致性
+            const sentences = text.split(/[。！？.!?]/);
+            const lengths = sentences.map(s => s.length);
+            const avg = lengths.reduce((a, b) => a + b, 0) / lengths.length;
+            const variance = lengths.reduce((sum, len) => sum + Math.pow(len - avg, 2), 0) / lengths.length;
+            if (variance < 50) score += 20; // 长度过于一致
+
+            // 3. 检测词汇多样性
+            const words = text.split(/\s+/);
+            const uniqueWords = new Set(words);
+            const diversity = uniqueWords.size / words.length;
+            if (diversity < 0.4) score += 15; // 词汇重复度高
+
+            // 4. 检测过度正式
+            const formalMarkers = ['鉴于', '基于', '旨在', '致力于', '有效地'];
+            formalMarkers.forEach(marker => {
+                if (text.includes(marker)) score += 3;
+            });
+
+            return Math.min(100, Math.max(0, score));
+        }
+
+        // 优化文章
+        async function optimizeArticle() {
+            if (!currentArticle) {
+                alert('请先生成文章');
+                return;
+            }
+
+            if (!geminiApiKey) {
+                alert('❌ 请先配置 Gemini API Key');
+                return;
+            }
+
+            const optimizeBtn = document.getElementById('optimize-btn');
+            optimizeBtn.disabled = true;
+            optimizeBtn.innerText = '⏳ 优化中...';
+
+            try {
+                const optimizedPrompt = `请优化以下文章，使其更具人性化和自然性。要求：
+1. 保持原意和SEO关键词
+2. 增加口语化表达
+3. 打破句子结构的规律性
+4. 添加一些个人观点或例子
+5. 适当使用不同长度的句子
+
+原文：
+${currentArticle}
+
+请直接输出优化后的内容，使用相同的Markdown格式。`;
+
+                const optimized = await callGeminiAPI(optimizedPrompt);
+
+                if (optimized) {
+                    currentArticle = optimized;
+                    displayArticle(optimized);
+                    alert('✅ 优化完成！请重新检测AI度');
+                }
+            } catch (error) {
+                alert('❌ 优化失败: ' + error.message);
+                console.error(error);
+            } finally {
+                optimizeBtn.disabled = false;
+                optimizeBtn.innerText = '⚡ 优化去 AI 度';
+            }
+        }
+
+        // 复制文章
+        function copyArticle() {
+            if (!currentArticle) {
+                alert('暂无内容可复制');
+                return;
+            }
+            navigator.clipboard.writeText(currentArticle).then(() => {
+                alert('✅ 已复制到剪贴板');
+            });
+        }
+
+        // 下载文章
+        function downloadArticle() {
+            if (!currentArticle) {
+                alert('暂无内容可下载');
+                return;
+            }
+            const blob = new Blob([currentArticle], { type: 'text/markdown' });
+            const a = document.createElement('a');
+            a.href = URL.createObjectURL(blob);
+            a.download = `seo_article_${new Date().toISOString().split('T')[0]}.md`;
+            a.click();
+        }
+
+        // 初始化
+        window.onload = function () {
+            loadTheme();
+            initRAG();
+        };
+    </script>
+</body>
+
+</html>

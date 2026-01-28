@@ -1,0 +1,914 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>广告预言家 (AdOracle) - Morgan Marketing OS</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        :root {
+            --bg-primary: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+            --bg-secondary: #1e293b;
+            --bg-panel: rgba(30, 41, 59, 0.7);
+            --text-primary: #e2e8f0;
+            --text-secondary: #cbd5e1;
+            --border-primary: #334155;
+        }
+
+        .light-mode {
+            --bg-primary: linear-gradient(135deg, #f1f5f9 0%, #e2e8f0 100%);
+            --bg-secondary: #ffffff;
+            --bg-panel: rgba(255, 255, 255, 0.9);
+            --text-primary: #0f172a;
+            --text-secondary: #1e293b;
+            --border-primary: #e2e8f0;
+        }
+
+        body {
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            transition: all 0.3s;
+        }
+
+        .panel {
+            background: var(--bg-panel);
+            border: 1px solid var(--border-primary);
+            border-radius: 12px;
+            padding: 24px;
+            transition: all 0.3s;
+        }
+
+        .input-box {
+            width: 100%;
+            padding: 12px;
+            background: var(--bg-secondary);
+            border: 1px solid var(--border-primary);
+            border-radius: 8px;
+            color: var(--text-primary);
+            transition: all 0.2s;
+        }
+
+        .input-box:focus {
+            outline: none;
+            border-color: #3b82f6;
+            box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.2);
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #8b5cf6, #6366f1);
+            color: white;
+            padding: 12px 20px;
+            border-radius: 8px;
+            font-weight: 700;
+            cursor: pointer;
+            border: none;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+
+        .btn-primary:hover:not(:disabled) {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(139, 92, 246, 0.3);
+        }
+
+        .btn-primary:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        /* Platform Cards */
+        .platform-card {
+            border: 2px solid transparent;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .platform-card:hover {
+            transform: translateY(-2px);
+            background: rgba(255, 255, 255, 0.05);
+        }
+
+        .platform-card.selected {
+            border-color: #8b5cf6;
+            background: rgba(139, 92, 246, 0.1);
+        }
+
+        /* DNA Visualizer */
+        .dna-pill {
+            font-size: 10px;
+            padding: 2px 8px;
+            border-radius: 12px;
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        #dropzone {
+            border: 2px dashed var(--border-primary);
+            transition: all 0.3s;
+        }
+
+        #dropzone.dragover {
+            border-color: #8b5cf6;
+            background: rgba(139, 92, 246, 0.1);
+        }
+
+        .score-circle {
+            width: 120px;
+            height: 120px;
+            border-radius: 50%;
+            border: 8px solid #334155;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 3rem;
+            font-weight: 900;
+            margin: 0 auto;
+            position: relative;
+        }
+
+        /* Markdown generated content styles */
+        .prose ul {
+            padding-left: 1.25em;
+            list-style-type: disc;
+            margin-bottom: 1em;
+        }
+
+        .prose li {
+            margin-bottom: 0.5em;
+        }
+
+        .prose strong {
+            color: #facc15;
+        }
+
+        /* Yellow for emphasis */
+    </style>
+</head>
+
+<body class="min-h-screen p-6">
+    <div class="max-w-7xl mx-auto">
+        <!-- Header -->
+        <div class="flex justify-between items-center mb-8">
+            <div>
+                <h1 class="text-4xl font-black mb-2 flex items-center gap-3" style="color: var(--text-primary);">
+                    <span class="text-transparent bg-clip-text bg-gradient-to-r from-purple-400 to-pink-500">🔮</span>
+                    广告预言家
+                    <span class="text-xs font-normal opacity-50 border border-gray-600 px-2 py-1 rounded ml-2">AdOracle
+                        v1.0</span>
+                </h1>
+                <p class="text-sm" style="color: var(--text-secondary);">AI 驱动的跨平台广告素材评分与预测系统</p>
+            </div>
+            <div class="flex gap-3">
+                <button onclick="openSettings()" class="px-4 py-2 rounded-lg hover:bg-gray-700 transition"
+                    title="设置 API Key">
+                    <span>⚙️</span>
+                </button>
+                <button onclick="toggleTheme()" class="px-4 py-2 rounded-lg hover:bg-gray-700 transition">
+                    <span id="theme-icon">🌙</span>
+                </button>
+                <a href="index.html" class="px-4 py-2 rounded-lg hover:bg-purple-500 hover:bg-opacity-20 transition"
+                    style="color: var(--text-secondary);">
+                    ← 返回主应用
+                </a>
+            </div>
+        </div>
+
+        <!-- Error Toast -->
+        <div id="error-message"
+            class="hidden fixed top-4 left-1/2 transform -translate-x-1/2 bg-red-600 text-white px-6 py-3 rounded-lg shadow-xl z-50 animate-bounce">
+            Error Message
+        </div>
+
+        <!-- Settings Modal -->
+        <div id="settings-modal" class="hidden fixed inset-0 bg-black/80 z-50 flex items-center justify-center p-4">
+            <div class="bg-gray-900 border border-gray-700 rounded-xl p-6 w-full max-w-md shadow-2xl">
+                <h3 class="text-xl font-bold mb-4 text-white">⚙️ 设置 API Key</h3>
+                <p class="text-sm text-gray-400 mb-4">为了使用 Gemini AI 分析能力，请输入您的 Google Gemini API Key。</p>
+                <input type="password" id="api-key-input" class="input-box mb-4" placeholder="AIzaSy...">
+                <div class="flex justify-end gap-3">
+                    <button onclick="closeSettings()"
+                        class="px-4 py-2 rounded hover:bg-gray-700 text-gray-300">取消</button>
+                    <button onclick="saveSettings()" class="btn-primary">保存</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Main Grid -->
+        <div class="grid grid-cols-12 gap-6">
+
+            <!-- Left Panel: Input & Config -->
+            <div class="col-span-12 lg:col-span-5 space-y-6">
+
+                <!-- 1. Platform Selection -->
+                <div class="panel">
+                    <h3 class="text-sm font-bold uppercase mb-4 tracking-wider text-purple-400">1. 选择投放平台</h3>
+                    <div class="grid grid-cols-2 gap-3" id="platform-grid">
+                        <!-- TikTok -->
+                        <div class="platform-card p-3 rounded-lg bg-gray-800/50" onclick="selectPlatform('TikTok')">
+                            <div class="flex items-center gap-2 mb-2">
+                                <div class="w-2 h-2 rounded-full bg-pink-500"></div>
+                                <span class="font-bold">TikTok</span>
+                            </div>
+                            <div class="flex flex-wrap gap-1">
+                                <span class="dna-pill">多巴胺</span>
+                                <span class="dna-pill">原生感</span>
+                            </div>
+                        </div>
+                        <!-- LinkedIn -->
+                        <div class="platform-card p-3 rounded-lg bg-gray-800/50" onclick="selectPlatform('LinkedIn')">
+                            <div class="flex items-center gap-2 mb-2">
+                                <div class="w-2 h-2 rounded-full bg-blue-600"></div>
+                                <span class="font-bold">LinkedIn</span>
+                            </div>
+                            <div class="flex flex-wrap gap-1">
+                                <span class="dna-pill">信任/背书</span>
+                                <span class="dna-pill">专业</span>
+                            </div>
+                        </div>
+                        <!-- WhatsApp -->
+                        <div class="platform-card p-3 rounded-lg bg-gray-800/50" onclick="selectPlatform('WhatsApp')">
+                            <div class="flex items-center gap-2 mb-2">
+                                <div class="w-2 h-2 rounded-full bg-green-500"></div>
+                                <span class="font-bold">WhatsApp</span>
+                            </div>
+                            <div class="flex flex-wrap gap-1">
+                                <span class="dna-pill">亲密社交</span>
+                                <span class="dna-pill">真实</span>
+                            </div>
+                        </div>
+                        <!-- YouTube -->
+                        <div class="platform-card p-3 rounded-lg bg-gray-800/50" onclick="selectPlatform('YouTube')">
+                            <div class="flex items-center gap-2 mb-2">
+                                <div class="w-2 h-2 rounded-full bg-red-600"></div>
+                                <span class="font-bold">YouTube</span>
+                            </div>
+                            <div class="flex flex-wrap gap-1">
+                                <span class="dna-pill">搜索意图</span>
+                                <span class="dna-pill">高信息量</span>
+                            </div>
+                        </div>
+                        <!-- Facebook -->
+                        <div class="platform-card p-3 rounded-lg bg-gray-800/50" onclick="selectPlatform('Facebook')">
+                            <div class="flex items-center gap-2 mb-2">
+                                <div class="w-2 h-2 rounded-full bg-blue-700"></div>
+                                <span class="font-bold">Facebook</span>
+                            </div>
+                            <div class="flex flex-wrap gap-1">
+                                <span class="dna-pill">社群兴趣</span>
+                                <span class="dna-pill">话题讨论</span>
+                            </div>
+                        </div>
+                        <!-- Instagram -->
+                        <div class="platform-card p-3 rounded-lg bg-gray-800/50" onclick="selectPlatform('Instagram')">
+                            <div class="flex items-center gap-2 mb-2">
+                                <div
+                                    class="w-2 h-2 rounded-full bg-gradient-to-tr from-yellow-400 via-red-500 to-purple-500">
+                                </div>
+                                <span class="font-bold">Instagram</span>
+                            </div>
+                            <div class="flex flex-wrap gap-1">
+                                <span class="dna-pill">视觉美学</span>
+                                <span class="dna-pill">生活方式</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 2. Creative Input -->
+                <div class="panel">
+                    <h3 class="text-sm font-bold uppercase mb-4 tracking-wider text-purple-400">2. 上传素材</h3>
+
+                    <!-- Image/Video Upload -->
+                    <div id="dropzone" class="rounded-lg p-6 text-center cursor-pointer mb-4 bg-black/20"
+                        onclick="document.getElementById('file-upload').click()">
+                        <input type="file" id="file-upload" class="hidden" accept="image/*,video/*,.mp4,.mov,.avi"
+                            onchange="handleFileSelect(event)">
+                        <div id="dropzone-content">
+                            <div class="text-4xl mb-2">🖼️ 🎬</div>
+                            <p class="text-sm text-gray-400">点击上传图片或视频 / 拖拽到此处</p>
+                        </div>
+                        <img id="preview-img" class="hidden max-h-48 mx-auto rounded shadow-lg">
+                        <video id="preview-video" class="hidden max-h-48 mx-auto rounded shadow-lg" controls></video>
+                    </div>
+
+                    <!-- Text Input -->
+                    <label class="text-xs font-bold text-gray-400 mb-1 block">广告文案 (必填)</label>
+                    <textarea id="ad-copy" rows="4" class="input-box" placeholder="在这里输入你的广告标题或正文..."></textarea>
+
+                    <!-- Submit Button -->
+                    <button onclick="runPrediction()" id="predict-btn"
+                        class="btn-primary w-full mt-6 text-lg relative overflow-hidden group">
+                        <span class="relative z-10 flex items-center justify-center gap-2">
+                            🔮 开始预测 (Predict)
+                        </span>
+                        <div
+                            class="absolute inset-0 bg-white/20 translate-y-full group-hover:translate-y-0 transition-transform duration-300">
+                        </div>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Right Panel: Results -->
+            <div class="col-span-12 lg:col-span-7">
+                <div class="panel h-full flex flex-col relative overflow-hidden">
+
+                    <!-- Loading Overlay -->
+                    <div id="loading-overlay"
+                        class="absolute inset-0 bg-gray-900/90 z-20 hidden flex flex-col items-center justify-center">
+                        <div
+                            class="w-16 h-16 border-4 border-purple-500 border-t-transparent rounded-full animate-spin mb-4">
+                        </div>
+                        <p class="text-purple-300 animate-pulse font-mono">正在连接 AdOracle 核心...</p>
+                        <p class="text-xs text-gray-500 mt-2">Analyzing Visuals & Copy across Platform DNA...</p>
+                    </div>
+
+                    <div class="flex justify-between items-center mb-6 border-b border-gray-700 pb-4">
+                        <h3 class="text-lg font-bold">🎯 预测报告 (Report)</h3>
+                        <div class="flex gap-2 text-xs">
+                            <div class="bg-gray-700 px-3 py-1 rounded flex items-center gap-2">
+                                <span class="w-2 h-2 rounded-full bg-gray-400" id="status-indicator"></span>
+                                <span id="current-platform-label">未选择平台</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Empty State -->
+                    <div id="result-empty" class="flex-1 flex flex-col items-center justify-center opacity-30">
+                        <div class="text-6xl mb-4">📊</div>
+                        <p>请在左侧选择平台并上传素材</p>
+                    </div>
+
+                    <!-- Result Content (Hidden by default) -->
+                    <div id="result-content" class="hidden space-y-6">
+
+                        <!-- Top Row: Score & CTR -->
+                        <div class="grid grid-cols-2 gap-6">
+                            <div class="text-center p-4 bg-black/20 rounded-xl border border-gray-700">
+                                <div class="text-xs text-gray-400 uppercase tracking-widest mb-2">平台契合度 (Fit Score)
+                                </div>
+                                <div id="score-circle" class="score-circle">--</div>
+                            </div>
+                            <div
+                                class="text-center p-4 bg-black/20 rounded-xl border border-gray-700 flex flex-col justify-center">
+                                <div class="text-xs text-gray-400 uppercase tracking-widest mb-2">预估点击率 (CTR Level)
+                                </div>
+                                <div id="ctr-level"
+                                    class="text-4xl font-black text-transparent bg-clip-text bg-gradient-to-r from-green-400 to-blue-500">
+                                    --
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Analysis Grid -->
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div class="p-4 bg-blue-900/10 border border-blue-500/20 rounded-lg">
+                                <h4 class="font-bold text-blue-400 mb-2 text-sm flex items-center gap-2">👁️ 视觉分析
+                                    (Visual)</h4>
+                                <p id="visual-analysis" class="text-sm text-gray-300 leading-relaxed">--</p>
+                            </div>
+                            <div class="p-4 bg-purple-900/10 border border-purple-500/20 rounded-lg">
+                                <h4 class="font-bold text-purple-400 mb-2 text-sm flex items-center gap-2">📝 文案分析
+                                    (Copy)</h4>
+                                <p id="copy-analysis" class="text-sm text-gray-300 leading-relaxed">--</p>
+                            </div>
+                        </div>
+
+                        <!-- Critical Flaw -->
+                        <div class="p-4 bg-red-900/20 border border-red-500/30 rounded-lg hidden" id="flaw-box">
+                            <h4 class="font-bold text-red-400 mb-1 text-sm">⚠️ 致命伤 (Critical Flaw)</h4>
+                            <p id="critical-flaw" class="text-sm text-red-200">--</p>
+                        </div>
+
+                        <!-- Suggestions -->
+                        <div>
+                            <h4 class="font-bold text-yellow-400 mb-3 text-sm flex items-center gap-2">💡 优化建议
+                                (Optimization)</h4>
+                            <ul id="suggestion-list" class="space-y-2 text-sm text-gray-300">
+                                <!-- Lists go here -->
+                            </ul>
+                        </div>
+
+                    </div>
+
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script>
+        // AdOracle Logic Module
+        // Connects UI to Gemini API for Multi-modal Ad Analysis
+
+        // Configuration
+        const PLATFORM_CRITERIA = {
+            "TikTok": {
+                "core_dna": "Dopamine Driven: High visual impact, fast pace, sound/music cues.",
+                "high_score_traits": "Strong hook in first 0.5s (spark/noise/mud), BGM sync, 1st person POV, raw/native feel.",
+                "low_score_traits": "Static PPT, traditional corporate promo style, silent, no info in first 3s.",
+                "system_prompt": "You are a TikTok Algorithm Expert. Analyze if this content stops the scroll. Focus on 'Hook', 'Pacing', and 'Native Feel'."
+            },
+            "LinkedIn": {
+                "core_dna": "Trust & Authority Driven: Professionalism, industry insight, credibility.",
+                "high_score_traits": "Real engineer on camera, clear machine specs, solving specific pain points, industry data, professional clarity.",
+                "low_score_traits": "Blurry selfies, zero-info hard ads, excessive emojis, 'spammy' copy.",
+                "system_prompt": "You are a B2B Marketing Director. Analyze if this builds trust. Focus on 'Professionalism', 'Clarity', and 'Value Prop'."
+            },
+            "WhatsApp": {
+                "core_dna": "Intimacy & Real-time Driven: Authenticity, close social distance, FOMO.",
+                "high_score_traits": "Factory shipping raw shots, mobile photography, short text ('Busy day!'), 'Happening Now' vibe.",
+                "low_score_traits": "Polished posters, long essays, robotic broadcast messages.",
+                "system_prompt": "You are a personal connection. Analyze if this feels authentic. Focus on 'Rawness', 'Brevity', and 'Urgency'."
+            },
+            "YouTube": {
+                "core_dna": "Search & Utility Driven: Info density, search intent match, CTR.",
+                "high_score_traits": "Cover: High contrast, Text Overlay, Visual Focal Point. Content: 'How to', 'Review', 'Price' in title.",
+                "low_score_traits": "Random screen grab cover, misleading title, low info density.",
+                "system_prompt": "You are a detailed Youtube Analyst. Analyze CTR potential. Focus on 'Thumbnail Pop', 'Keywords', and 'Information Density'."
+            },
+            "Facebook": {
+                "core_dna": "Community & Discussion Driven: Social interest, engagement, shareability.",
+                "high_score_traits": "Relatable scenarios, questions in copy, community focus, strong emotional trigger.",
+                "low_score_traits": "Cold corporate announcements, engagement bait without substance, ignore-able stock photos.",
+                "system_prompt": "You are a Facebook Community Manager. Analyze engagement potential. Focus on 'Social Interest', 'Discussion Starter', and 'Relatability'."
+            },
+            "Instagram": {
+                "core_dna": "Aesthetic & Aspiration Driven: Visual fidelity, lifestyle, inspiration.",
+                "high_score_traits": "High-res photography, aesthetic composition, aspirational lifestyle, 'clean girl'/'tech minimalist' vibes.",
+                "low_score_traits": "Low-light amateur photos, clutter, visual noise, bad cropping.",
+                "system_prompt": "You are an Instagram Aesthetic Curator. Analyze visual appeal. Focus on 'Composition', 'Color Grading', and 'Aspirational Vibe'."
+            }
+        };
+
+        // Global State
+        let selectedPlatform = '';
+        let currentFile = null;
+        let currentFileBase64 = '';
+        let currentFileType = ''; // 'image' or 'video'
+
+        // 1. UI Interaction
+        function selectPlatform(platformName) {
+            selectedPlatform = platformName;
+
+            // Update UI Cards
+            document.querySelectorAll('.platform-card').forEach(el => el.classList.remove('selected'));
+            const cards = Array.from(document.querySelectorAll('.platform-card'));
+            const target = cards.find(c => c.innerText.includes(platformName));
+            if (target) target.classList.add('selected');
+
+            document.getElementById('current-platform-label').innerText = platformName;
+            document.getElementById('status-indicator').className = 'w-2 h-2 rounded-full bg-green-500 animate-pulse';
+        }
+
+        function handleFileSelect(event) {
+            const file = event.target.files[0];
+            handleFiles([file]);
+        }
+
+        function handleFiles(files) {
+            const file = files[0];
+            if (!file) return;
+
+            currentFile = file;
+            const isImage = file.type.startsWith('image/');
+            const isVideo = file.type.startsWith('video/');
+
+            if (!isImage && !isVideo) return showError('请上传图片或视频文件');
+
+            currentFileType = isImage ? 'image' : 'video';
+
+            // Reset UI
+            const previewImg = document.getElementById('preview-img');
+            const previewVideo = document.getElementById('preview-video');
+            const dropzoneContent = document.getElementById('dropzone-content');
+
+            dropzoneContent.classList.add('hidden');
+
+            if (isImage) {
+                previewVideo.classList.add('hidden');
+                previewVideo.src = '';
+
+                const reader = new FileReader();
+                reader.onload = (e) => {
+                    previewImg.src = e.target.result;
+                    previewImg.classList.remove('hidden');
+                    currentFileBase64 = e.target.result.split(',')[1];
+                };
+                reader.readAsDataURL(file);
+            } else {
+                previewImg.classList.add('hidden');
+                previewImg.src = '';
+
+                const url = URL.createObjectURL(file);
+                previewVideo.src = url;
+                previewVideo.classList.remove('hidden');
+                // Video upload logic handles the file object directly, no base64 needed for large files usually,
+                // but for simple Gemini API we might need File API.
+            }
+        }
+
+        // 2. Core Prediction Logic
+        async function runPrediction() {
+            clearError();
+            console.log("Prediction started...");
+            const copy = document.getElementById('ad-copy').value;
+
+            // Validation
+            if (!selectedPlatform) return showError('请先选择投放平台 (Step 1)');
+            if (!copy && !currentFile) return showError('请输入文案或上传素材 (Step 2)');
+
+            const apiKey = localStorage.getItem('tds_gemini_api_key');
+            if (!apiKey) {
+                openSettings();
+                return showError('请先设置 Gemini API Key');
+            }
+
+            // UI Loading
+            document.getElementById('loading-overlay').classList.remove('hidden');
+
+            try {
+                const criteria = PLATFORM_CRITERIA[selectedPlatform];
+
+                // Construct Prompt
+                let promptText = `
+                Role: ${criteria.system_prompt}
+                Platform DNA: ${criteria.core_dna}
+                High Scores: ${criteria.high_score_traits}
+                Low Scores: ${criteria.low_score_traits}
+                
+                Task: Analyze the attached creative (Image/Video) and/or text.
+                Ad Copy: "${copy}"
+                
+                REQUIRED: Generate a "NotebookLM-style" Audio Overview Script.
+                - Characters: "Alex" (Data-driven, skeptical analyst) vs "Jamie" (Enthusiastic, creative visionary).
+                - Tone: Conversational, podcast-style, insightful, slightly banterous.
+                - Content: Discussing THIS specific ad's potential on ${selectedPlatform}.
+                
+                IMPORTANT: ALL OUTPUT TEXT MUST BE IN SIMPLIFIED CHINESE (简体中文).
+                Even the script dialogue must be in Chinese.
+                
+                Return STRICT JSON format:
+                {
+                    "platform_fit_score": (integer 0-10),
+                    "predicted_ctr_level": "High" | "Medium" | "Low",
+                    "visual_analysis": "string (Concise visual breakdown in Chinese)",
+                    "copy_analysis": "string (Concise copy breakdown in Chinese)",
+                    "critical_flaw": "string (The biggest dealbreaker or 'None' in Chinese)",
+                    "optimization_suggestions": ["tip 1", "tip 2", "tip 3 (in Chinese)"],
+                    "deep_dive_analysis": "string (A paragraph synthesizing why this works or fails significantly, citing specific visual elements, in Chinese)",
+                    "audio_overview_script": [
+                        {"speaker": "Alex", "text": "...(Chinese)..."},
+                        {"speaker": "Jamie", "text": "...(Chinese)..."}
+                    ]
+                }
+                `;
+
+                const parts = [{ text: promptText }];
+
+                // Media Handling
+                if (currentFile) {
+                    if (currentFileType === 'image') {
+                        parts.push({
+                            inlineData: {
+                                mimeType: currentFile.type,
+                                data: currentFileBase64
+                            }
+                        });
+                    } else if (currentFileType === 'video') {
+                        // For Video: Upload to Google File API first
+                        const fileUri = await uploadFileToGemini(apiKey, currentFile);
+
+                        // IMPORTANT: Wait for video processing to complete
+                        document.getElementById('loading-overlay').innerHTML = `
+                            <div class="text-center">
+                                <div class="text-4xl animate-bounce mb-4">⏳</div>
+                                <h3 class="text-xl font-bold text-white mb-2">正在处理视频...</h3>
+                                <p class="text-gray-400">Google AI 正在分析视频帧 (可能需要几秒钟)</p>
+                            </div>
+                        `;
+
+                        await waitForFileActive(apiKey, fileUri);
+
+                        // Restore Loading Text
+                        document.getElementById('loading-overlay').innerHTML = `
+                            <div class="text-center">
+                                <div class="text-4xl animate-spin mb-4">🔮</div>
+                                <h3 class="text-xl font-bold text-white mb-2">AI 正在预测...</h3>
+                                <p class="text-gray-400">正在分析平台 DNA 与用户心理...</p>
+                            </div>
+                        `;
+
+                        parts.push({
+                            fileData: {
+                                mimeType: currentFile.type,
+                                fileUri: fileUri
+                            }
+                        });
+                    }
+                }
+
+                // Call Gemini
+                const result = await callGemini(apiKey, parts);
+                renderResult(result);
+
+            } catch (e) {
+                console.error(e);
+                showError('预测失败: ' + e.message);
+            } finally {
+                document.getElementById('loading-overlay').classList.add('hidden');
+            }
+        }
+
+        // Poll for File State
+        async function waitForFileActive(apiKey, fileUri) {
+            const fileName = fileUri.split('/').pop();
+            const checkUrl = `https://generativelanguage.googleapis.com/v1beta/files/${fileName}?key=${apiKey}`;
+
+            let attempts = 0;
+            while (attempts < 30) { // Max 60 seconds
+                const res = await fetch(checkUrl);
+                const data = await res.json();
+
+                if (data.state === 'ACTIVE') return true;
+                if (data.state === 'FAILED') throw new Error('Video processing failed on Google servers.');
+
+                await new Promise(r => setTimeout(r, 2000)); // Wait 2s
+                attempts++;
+            }
+            throw new Error('Video processing timed out.');
+        }
+
+        // Google File API Upload (Simple Resumable/Multipart)
+        async function uploadFileToGemini(apiKey, file) {
+            // 1. Initial Resumable Request
+            const uploadUrl = `https://generativelanguage.googleapis.com/upload/v1beta/files?key=${apiKey}`;
+
+            const metadata = { file: { display_name: file.name } };
+
+            const initResponse = await fetch(uploadUrl, {
+                method: 'POST',
+                headers: {
+                    'X-Goog-Upload-Protocol': 'resumable',
+                    'X-Goog-Upload-Command': 'start',
+                    'X-Goog-Upload-Header-Content-Length': file.size,
+                    'X-Goog-Upload-Header-Content-Type': file.type,
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(metadata)
+            });
+
+            if (!initResponse.ok) throw new Error('Upload Init Failed: ' + initResponse.status);
+
+            const uploadUrlReal = initResponse.headers.get('X-Goog-Upload-URL');
+
+            // 2. Upload Bytes
+            const uploadResponse = await fetch(uploadUrlReal, {
+                method: 'POST',
+                headers: {
+                    'X-Goog-Upload-Protocol': 'resumable',
+                    'X-Goog-Upload-Command': 'upload, finalize',
+                    'X-Goog-Upload-Offset': '0',
+                    'Content-Length': file.size,
+                },
+                body: file
+            });
+
+            if (!uploadResponse.ok) throw new Error('File Upload Failed');
+
+            const uploadResult = await uploadResponse.json();
+            return uploadResult.file.uri;
+        }
+
+        async function callGemini(key, parts) {
+            // "gemini-flash-latest" is the safe alias present in your model list.
+            const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-flash-latest:generateContent?key=${key}`;
+
+            const response = await fetch(url, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    contents: [{ parts: parts }]
+                })
+            });
+
+            if (!response.ok) {
+                const err = await response.json();
+                throw new Error(err.error?.message || 'API Error');
+            }
+
+            const data = await response.json();
+            const text = data.candidates[0].content.parts[0].text;
+
+            // Parse JSON
+            try {
+                const jsonStr = text.replace(/```json/g, '').replace(/```/g, '').trim();
+                return JSON.parse(jsonStr);
+            } catch (e) {
+                console.error("Raw Text:", text);
+                throw new Error("Invalid JSON from AI");
+            }
+        }
+
+        // 3. Render
+        function renderResult(data) {
+            document.getElementById('result-empty').classList.add('hidden');
+            document.getElementById('result-content').classList.remove('hidden');
+
+            // Score & CTR (Same as before)
+            animateValue('score-circle', 0, data.platform_fit_score, 1000);
+            const scoreEl = document.getElementById('score-circle');
+            let color = '#ef4444';
+            if (data.platform_fit_score > 7) color = '#22c55e';
+            else if (data.platform_fit_score > 4) color = '#eab308';
+            scoreEl.style.borderColor = color;
+            scoreEl.style.color = color;
+            document.getElementById('ctr-level').innerText = data.predicted_ctr_level;
+
+            // Basic Analysis
+            document.getElementById('visual-analysis').innerText = data.visual_analysis;
+            document.getElementById('copy-analysis').innerText = data.copy_analysis;
+
+            // Critical Flaw
+            const flawBox = document.getElementById('flaw-box');
+            if (data.critical_flaw && data.critical_flaw !== 'None' && data.critical_flaw !== '无') {
+                flawBox.classList.remove('hidden');
+                document.getElementById('critical-flaw').innerText = data.critical_flaw;
+            } else {
+                flawBox.classList.add('hidden');
+            }
+
+            // Suggestions
+            document.getElementById('suggestion-list').innerHTML =
+                data.optimization_suggestions.map(s => `
+                    <li class="flex items-start gap-2">
+                        <span class="text-yellow-400 mt-1">⚡</span>
+                        <span>${s}</span>
+                    </li>
+                `).join('');
+
+            // NEW: Deep Dive & Audio Overview
+            renderDeepDive(data.deep_dive_analysis, data.audio_overview_script);
+        }
+
+        function renderDeepDive(analysis, script) {
+            // Check if container exists, if not create it
+            let deepDiveContainer = document.getElementById('deep-dive-container');
+            if (!deepDiveContainer) {
+                const container = document.createElement('div');
+                container.id = 'deep-dive-container';
+                container.className = 'mt-6 border-t border-gray-700 pt-6 space-y-6';
+                document.getElementById('result-content').appendChild(container);
+                deepDiveContainer = container;
+            }
+
+            let scriptHtml = '';
+            if (script && script.length > 0) {
+                scriptHtml = `
+                <div class="bg-gray-800/50 rounded-xl p-4 border border-gray-700">
+                    <h4 class="font-bold text-transparent bg-clip-text bg-gradient-to-r from-green-400 to-blue-500 mb-4 flex items-center gap-2">
+                        🎙️ Audio Overview (Script)
+                    </h4>
+                    <div class="space-y-4 max-h-60 overflow-y-auto pr-2 custom-scrollbar">
+                        ${script.map(line => `
+                            <div class="flex gap-3 text-sm ${line.speaker === 'Alex' ? 'flex-row' : 'flex-row-reverse'}">
+                                <div class="w-8 h-8 rounded-full flex items-center justify-center shrink-0 ${line.speaker === 'Alex' ? 'bg-blue-600' : 'bg-green-600'}">
+                                    ${line.speaker === 'Alex' ? 'A' : 'J'}
+                                </div>
+                                <div class="p-3 rounded-lg max-w-[80%] ${line.speaker === 'Alex' ? 'bg-blue-900/30 rounded-tl-none' : 'bg-green-900/30 rounded-tr-none'}">
+                                    <span class="block text-xs font-bold opacity-50 mb-1">${line.speaker}</span>
+                                    <p class="leading-relaxed text-gray-300">${line.text}</p>
+                                </div>
+                            </div>
+                        `).join('')}
+                    </div>
+                </div>`;
+            }
+
+            deepDiveContainer.innerHTML = `
+                <!-- Deep Dive Narrative -->
+                <div class="prose prose-invert max-w-none">
+                     <h4 class="font-bold text-purple-400 mb-2 text-sm flex items-center gap-2">🧠 深度解析 (Deep Dive)</h4>
+                     <p class="text-sm text-gray-300 leading-relaxed">${analysis}</p>
+                </div>
+                ${scriptHtml}
+            `;
+        }
+
+        function animateValue(id, start, end, duration) {
+            const obj = document.getElementById(id);
+            let startTimestamp = null;
+            const step = (timestamp) => {
+                if (!startTimestamp) startTimestamp = timestamp;
+                const progress = Math.min((timestamp - startTimestamp) / duration, 1);
+                obj.innerHTML = Math.floor(progress * (end - start) + start);
+                if (progress < 1) {
+                    window.requestAnimationFrame(step);
+                }
+            };
+            window.requestAnimationFrame(step);
+        }
+
+        // UI Helpers
+        function showError(msg) {
+            // Check if error box exists, if not create one or use alert fallback
+            let errBox = document.getElementById('error-message');
+            if (!errBox) {
+                alert(msg);
+                return;
+            }
+            errBox.innerText = msg;
+            errBox.classList.remove('hidden');
+            setTimeout(() => {
+                errBox.classList.add('hidden');
+            }, 5000);
+        }
+
+        function clearError() {
+            let errBox = document.getElementById('error-message');
+            if (errBox) errBox.classList.add('hidden');
+        }
+
+        function openSettings() {
+            document.getElementById('settings-modal').classList.remove('hidden');
+            document.getElementById('api-key-input').value = localStorage.getItem('tds_gemini_api_key') || '';
+        }
+
+        function closeSettings() {
+            document.getElementById('settings-modal').classList.add('hidden');
+        }
+
+        function saveSettings() {
+            const key = document.getElementById('api-key-input').value;
+            if (key) {
+                localStorage.setItem('tds_gemini_api_key', key);
+                closeSettings();
+                showError('API Key 已保存');
+            }
+        }
+    </script>
+    <script>
+        // Init logic for page layout (Theme etc)
+        window.onload = function () {
+            if (localStorage.getItem('seo_ai_theme') === 'light') {
+                document.body.classList.add('light-mode');
+                document.getElementById('theme-icon').innerText = '☀️';
+            }
+
+            // Drag and drop events
+            const dropzone = document.getElementById('dropzone');
+
+            ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
+                dropzone.addEventListener(eventName, preventDefaults, false);
+            });
+
+            function preventDefaults(e) {
+                e.preventDefault();
+                e.stopPropagation();
+            }
+
+            ['dragenter', 'dragover'].forEach(eventName => {
+                dropzone.addEventListener(eventName, highlight, false);
+            });
+
+            ['dragleave', 'drop'].forEach(eventName => {
+                dropzone.addEventListener(eventName, unhighlight, false);
+            });
+
+            function highlight(e) {
+                dropzone.classList.add('dragover');
+            }
+
+            function unhighlight(e) {
+                dropzone.classList.remove('dragover');
+            }
+
+            dropzone.addEventListener('drop', handleDrop, false);
+
+            function handleDrop(e) {
+                const dt = e.dataTransfer;
+                const files = dt.files;
+                handleFiles(files);
+            }
+        };
+
+        function toggleTheme() {
+            const body = document.body;
+            const isLight = body.classList.contains('light-mode');
+            if (isLight) {
+                body.classList.remove('light-mode');
+                document.getElementById('theme-icon').innerText = '🌙';
+                localStorage.setItem('seo_ai_theme', 'dark');
+            } else {
+                body.classList.add('light-mode');
+                document.getElementById('theme-icon').innerText = '☀️';
+                localStorage.setItem('seo_ai_theme', 'light');
+            }
+        }
+    </script>
+</body>
+
+</html>

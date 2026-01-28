@@ -1,0 +1,898 @@
+<!DOCTYPE html>
+<html lang="zh-CN" class="light">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TDS 营销操作系统 v21.0 (Apple Pro Design)</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Inter', '-apple-system', 'BlinkMacSystemFont', 'PingFang SC', 'sans-serif'],
+                    },
+                    colors: {
+                        apple: {
+                            bg: '#F5F5F7',
+                            card: '#FFFFFF',
+                            text: '#1D1D1F',
+                            sub: '#86868B',
+                            blue: '#0071E3',
+                            red: '#FF3B30',
+                            green: '#34C759',
+                            orange: '#FF9500',
+                            gray: '#F2F2F7',
+                            border: '#E5E5EA'
+                        }
+                    },
+                    boxShadow: {
+                        'apple-card': '0 4px 12px rgba(0, 0, 0, 0.03), 0 1px 2px rgba(0, 0, 0, 0.02)',
+                        'apple-hover': '0 8px 24px rgba(0, 0, 0, 0.06), 0 2px 4px rgba(0, 0, 0, 0.04)',
+                        'apple-float': '0 20px 40px rgba(0, 0, 0, 0.08)',
+                        'apple-sm': '0 2px 8px rgba(0, 0, 0, 0.04)',
+                        'apple-md': '0 4px 16px rgba(0, 0, 0, 0.06)'
+                    },
+                    backdropBlur: {
+
+    <!-- Sidebar -->
+    < aside class= "sidebar" >
+        <div class="logo-area">
+            <h1 class="text-xl font-bold text-apple-text tracking-tight flex items-center gap-2">
+                <div class="w-6 h-6 bg-black rounded-md flex items-center justify-center text-white text-xs">T</div>
+                TDS OS
+            </h1>
+            <p class="text-[10px] text-apple-sub font-medium mt-1 ml-8">v21.1 Apple Design</p>
+        </div>
+
+        <nav class="flex-1 overflow-y-auto py-2 px-1">
+            <button onclick="switchTab('dashboard')" class="nav-item active" id="nav-dashboard">
+                <svg class="nav-icon-svg" viewBox="0 0 24 24">
+                    <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path>
+                    <polyline points="9 22 9 12 15 12 15 22"></polyline>
+                </svg>
+                <span>指挥舱</span>
+            </button>
+
+            <div class="nav-section-title">Assets</div>
+            <button onclick="switchTab('product-db')" class="nav-item" id="nav-product-db">
+                <svg class="nav-icon-svg" viewBox="0 0 24 24">
+                    <path
+                        d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z">
+                    </path>
+                    <polyline points="3.27 6.96 12 12.01 20.73 6.96"></polyline>
+                    <line x1="12" y1="22.08" x2="12" y2="12"></line>
+                </svg>
+                <span>产品知识库</span>
+            </button>
+            <button onclick="switchTab('keyword-vault')" class="nav-item" id="nav-keyword-vault">
+                <svg class="nav-icon-svg" viewBox="0 0 24 24">
+                    <path
+                        d="M21 2l-2 2m-7.61 7.61a5.5 5.5 0 1 1-7.778 7.778 5.5 5.5 0 0 1 7.777-7.777zm0 0L15.5 7.5m0 0l3 3L22 7l-3-3m-3.5 3.5L19 4">
+                    </path>
+                </svg>
+                <span>SEO 词库</span>
+            </button>
+
+            <div class="nav-section-title">Planning</div>
+            <button onclick="switchTab('weekly-plan')" class="nav-item" id="nav-weekly-plan">
+                <svg class="nav-icon-svg" viewBox="0 0 24 24">
+                    <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
+                    <line x1="16" y1="2" x2="16" y2="6"></line>
+                    <line x1="8" y1="2" x2="8" y2="6"></line>
+                    <line x1="3" y1="10" x2="21" y2="10"></line>
+                </svg>
+                <span>内容日历</span>
+            </button>
+            <button onclick="switchTab('exhibition')" class="nav-item" id="nav-exhibition">
+                <svg class="nav-icon-svg" viewBox="0 0 24 24">
+                    <circle cx="12" cy="10" r="3"></circle>
+                    <path d="M12 21.7C17.3 17 20 13 20 10a8 8 0 1 0-16 0c0 3 2.7 7 8 11.7z"></path>
+                </svg>
+                <span>展会作战</span>
+            </button>
+
+            <div class="nav-section-title">Execution</div>
+            <button onclick="switchTab('content-gen')" class="nav-item" id="nav-content-gen">
+                <svg class="nav-icon-svg" viewBox="0 0 24 24">
+                    <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
+                    <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
+                </svg>
+                <span>全案生成器</span>
+            </button>
+            <button onclick="switchTab('lead-detective')" class="nav-item" id="nav-lead-detective">
+                <svg class="nav-icon-svg" viewBox="0 0 24 24">
+                    <circle cx="11" cy="11" r="8"></circle>
+                    <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+                </svg>
+                <span>线索侦探</span>
+            </button>
+            <button onclick="switchTab('ad-doctor')" class="nav-item" id="nav-ad-doctor">
+                <svg class="nav-icon-svg" viewBox="0 0 24 24">
+                    <path d="M22 12h-4l-3 9L9 3l-3 9H2"></path>
+                </svg>
+                <span>广告诊断</span>
+            </button>
+            <button onclick="switchTab('budget')" class="nav-item" id="nav-budget">
+                <svg class="nav-icon-svg" viewBox="0 0 24 24">
+                    <line x1="12" y1="1" x2="12" y2="23"></line>
+                    <path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"></path>
+                </svg>
+                <span>资金看板</span>
+            </button>
+        </nav>
+
+        <div class="p-4 border-t border-gray-200/50">
+            <div class="grid grid-cols-2 gap-2">
+                <button onclick="exportData()"
+                    class="text-[10px] font-medium text-apple-sub hover:text-apple-text transition-colors py-1">☁️
+                    备份</button>
+                <button onclick="document.getElementById('import-file').click()"
+                    class="text-[10px] font-medium text-apple-sub hover:text-apple-text transition-colors py-1">📥
+                    恢复</button>
+            </div>
+            <input type="file" id="import-file" class="hidden" onchange="importData(this)">
+        </div>
+    </aside>
+
+    < !--Main Content -- >
+    <main class="main-container">
+
+        <!-- 0. Dashboard -->
+        <div id="dashboard" class="tab-content active fade-in">
+            <header class="page-header">
+                <div>
+                    <h2 class="page-title">指挥舱</h2>
+                    <p class="page-desc">Overview</p>
+                </div>
+                <button onclick="switchTab('content-gen')" class="btn-blue">
+                    <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <line x1="12" y1="5" x2="12" y2="19"></line>
+                        <line x1="5" y1="12" x2="19" y2="12"></line>
+                    </svg>
+                    新建任务
+                </button>
+            </header>
+
+            <!-- 核心数据卡片：更像 Widget -->
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+                <!-- 资金卡 -->
+                <div class="card group cursor-pointer" onclick="switchTab('budget')">
+                    <div class="flex justify-between mb-4 items-center">
+                        <div class="flex items-center gap-2">
+                            <div
+                                class="w-8 h-8 rounded-full bg-blue-50 flex items-center justify-center text-apple-blue">
+                                <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                    stroke-width="2">
+                                    <line x1="12" y1="1" x2="12" y2="23"></line>
+                                    <path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"></path>
+                                </svg>
+                            </div>
+                            <span class="text-[13px] font-semibold text-apple-sub">可用预算</span>
+                        </div>
+                        <span class="text-xs font-medium text-apple-blue bg-blue-50 px-2 py-1 rounded-full">¥</span>
+                    </div>
+                    <div class="text-[32px] font-semibold text-apple-text tracking-tight mb-1" id="dash-budget">---
+                    </div>
+                    <div class="w-full bg-gray-100 h-1.5 rounded-full overflow-hidden mt-4">
+                        <div id="dash-budget-bar"
+                            class="bg-apple-blue h-full w-0 transition-all duration-1000 ease-out"></div>
+                    </div>
+                </div>
+
+                <!-- 展会卡 -->
+                <div class="card group cursor-pointer" onclick="switchTab('exhibition')">
+                    <div class="flex justify-between mb-4 items-center">
+                        <div class="flex items-center gap-2">
+                            <div class="w-8 h-8 rounded-full bg-red-50 flex items-center justify-center text-apple-red">
+                                <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                    stroke-width="2">
+                                    <path
+                                        d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z" />
+                                </svg>
+                            </div>
+                            <span class="text-[13px] font-semibold text-apple-sub">下场战役</span>
+                        </div>
+                    </div>
+                    <div class="text-[24px] font-semibold text-apple-text truncate mb-1" id="dash-expo-name">暂无计划</div>
+                    <div class="mt-3 inline-flex items-center gap-2 px-3 py-1 bg-red-50 rounded-full">
+                        <span class="text-[11px] font-bold text-apple-red">T-<span id="dash-expo-days">0</span> 天</span>
+                    </div>
+                </div>
+
+                <!-- 广告卡 -->
+                <div class="card group cursor-pointer" onclick="switchTab('ad-doctor')">
+                    <div class="flex justify-between mb-4 items-center">
+                        <div class="flex items-center gap-2">
+                            <div
+                                class="w-8 h-8 rounded-full bg-green-50 flex items-center justify-center text-apple-green">
+                                <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                    stroke-width="2">
+                                    <path d="M22 12h-4l-3 9L9 3l-3 9H2"></path>
+                                </svg>
+                            </div>
+                            <span class="text-[13px] font-semibold text-apple-sub">CPL 健康度</span>
+                        </div>
+                    </div>
+                    <div class="text-[32px] font-semibold text-apple-text mb-1" id="dash-cpl">---</div>
+                    <div class="text-[11px] font-medium text-apple-sub mt-4">最近一次诊断</div>
+                </div>
+            </div>
+
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                <div class="lg:col-span-2 card h-full flex flex-col">
+                    <div class="flex justify-between items-center mb-4">
+                        <h3 class="font-semibold text-apple-text text-sm flex items-center gap-2">
+                            <svg class="w-4 h-4 text-apple-orange" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                stroke-width="2">
+                                <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                                <polyline points="14 2 14 8 20 8"></polyline>
+                                <line x1="16" y1="13" x2="8" y2="13"></line>
+                                <line x1="16" y1="17" x2="8" y2="17"></line>
+                                <polyline points="10 9 9 9 8 9"></polyline>
+                            </svg>
+                            灵感速记
+                        </h3>
+                        <span
+                            class="text-[10px] font-medium text-apple-sub bg-gray-100 px-2 py-0.5 rounded-md">Auto-Saved</span>
+                    </div>
+                    <textarea id="quick-notes"
+                        class="result-area flex-1 bg-[#F5F5F7] focus:bg-white h-40 border-transparent"
+                        placeholder="记录稍纵即逝的想法..." oninput="saveNotes()"></textarea>
+                </div>
+
+                <div class="grid grid-cols-1 gap-4">
+                    <button onclick="switchTab('lead-detective')"
+                        class="card flex flex-row items-center gap-4 hover:scale-[1.02] transition-transform group cursor-pointer py-5">
+                        <div
+                            class="w-10 h-10 rounded-full bg-indigo-50 text-indigo-600 flex items-center justify-center text-lg">
+                            🕵️</div>
+                        <div class="text-left">
+                            <div class="font-semibold text-apple-text text-sm">验证新线索</div>
+                            <div class="text-[11px] text-apple-sub">Google 深度背调</div>
+                        </div>
+                    </button>
+                    <button onclick="switchTab('product-db')"
+                        class="card flex flex-row items-center gap-4 hover:scale-[1.02] transition-transform group cursor-pointer py-5">
+                        <div
+                            class="w-10 h-10 rounded-full bg-orange-50 text-orange-600 flex items-center justify-center text-lg">
+                            📦</div>
+                        <div class="text-left">
+                            <div class="font-semibold text-apple-text text-sm">录入新产品</div>
+                            <div class="text-[11px] text-apple-sub">PIM 资产管理</div>
+                        </div>
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- 1. 产品知识库 -->
+        <div id="product-db" class="tab-content fade-in">
+            <div class="page-header">
+                <div>
+                    <h2 class="page-title">产品知识库</h2>
+                    <p class="page-desc">PIM 营销资产管理</p>
+                </div>
+                <div class="relative">
+                    <input type="text" id="prod-search" onkeyup="renderDB()" placeholder="搜索型号..."
+                        class="input-box w-64 py-2.5 text-sm pl-9 bg-white border-gray-200 rounded-full">
+                    <span class="absolute left-3 top-3 text-gray-400"><svg class="w-4 h-4" viewBox="0 0 24 24"
+                            fill="none" stroke="currentColor" stroke-width="2">
+                            <circle cx="11" cy="11" r="8"></circle>
+                            <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+                        </svg></span>
+                </div>
+            </div>
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                <div class="card h-fit">
+                    <h3 class="font-semibold text-base mb-6 text-apple-text">入库新武器</h3>
+                    <div class="space-y-5">
+                        <div class="input-group"><span class="input-label">型号名称 *</span><input type="text" id="db-name"
+                                placeholder="TDS-C2200" class="input-box"></div>
+                        <div class="input-group"><span class="input-label">核心痛点</span><input type="text" id="db-pain"
+                                placeholder="硬岩难钻" class="input-box"></div>
+                        <div class="input-group"><span class="input-label">卖点参数</span><textarea id="db-feat" rows="3"
+                                placeholder="1800m深, 15T" class="input-box"></textarea></div>
+                        <div class="input-group"><span class="input-label">应用场景</span><input type="text" id="db-scene"
+                                placeholder="金矿" class="input-box"></div>
+                    </div>
+                    <button onclick="saveProduct()" class="btn-blue w-full mt-6 shadow-lg shadow-blue-200">💾
+                        保存至库</button>
+                </div>
+                <div class="lg:col-span-2">
+                    <div id="product-list" class="grid grid-cols-1 md:grid-cols-2 gap-4"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 2. 全案生成器 (Apple Style) -->
+        <div id="content-gen" class="tab-content fade-in">
+            <div class="page-header">
+                <h2 class="page-title">全案生成器</h2>
+                <p class="page-desc">One-Click Campaign</p>
+            </div>
+            <div class="grid grid-cols-1 xl:grid-cols-12 gap-8">
+                <div class="xl:col-span-4">
+                    <div class="card border-t-4 border-apple-blue">
+                        <div class="mb-6 relative">
+                            <span class="input-label text-apple-blue">⚡ 快速调用库存</span>
+                            <select id="quick-load"
+                                class="select-box bg-blue-50 border-transparent text-apple-blue font-semibold"
+                                onchange="loadProductToForm()">
+                                <option value="">-- 选择产品 --</option>
+                            </select>
+                        </div>
+                        <div class="space-y-5">
+                            <div class="input-group"><span class="input-label">产品</span><input type="text"
+                                    id="cp-product" class="input-box"></div>
+                            <div class="input-group"><span class="input-label">痛点</span><input type="text" id="cp-pain"
+                                    class="input-box"></div>
+                            <div class="input-group"><span class="input-label">卖点</span><textarea id="cp-feat" rows="3"
+                                    class="input-box"></textarea></div>
+                            <div class="input-group"><span class="input-label">语言</span><select id="cp-lang"
+                                    class="select-box">
+                                    <option value="en">English</option>
+                                    <option value="es">Español</option>
+                                </select></div>
+                        </div>
+                        <button onclick="generateCampaign()" class="btn-blue w-full mt-6">🚀 生成战役</button>
+                    </div>
+                </div>
+                <div class="xl:col-span-8 grid grid-cols-1 gap-6">
+                    <!-- TikTok Card -->
+                    <div class="card p-0 overflow-hidden border border-gray-200">
+                        <div class="bg-black text-white px-6 py-3 flex justify-between items-center">
+                            <h3 class="font-semibold flex items-center gap-2 text-sm">🎵 TikTok 视觉脚本</h3>
+                            <button onclick="copyText('res-tk')"
+                                class="text-xs bg-white/20 hover:bg-white/30 px-3 py-1 rounded-md transition-colors font-medium">复制</button>
+                        </div>
+                        <div class="p-6"><textarea id="res-tk" class="result-area h-auto border-0 focus:ring-0 bg-white"
+                                readonly>等待生成...</textarea></div>
+                    </div>
+                    <!-- LinkedIn Card -->
+                    <div class="card p-0 overflow-hidden border border-gray-200">
+                        <div class="bg-[#0a66c2] text-white px-6 py-3 flex justify-between items-center">
+                            <h3 class="font-semibold flex items-center gap-2 text-sm">👔 LinkedIn 深度贴</h3>
+                            <button onclick="copyText('res-li')"
+                                class="text-xs bg-white/20 hover:bg-white/30 px-3 py-1 rounded-md transition-colors font-medium">复制</button>
+                        </div>
+                        <div class="p-6"><textarea id="res-li" class="result-area h-auto border-0 focus:ring-0 bg-white"
+                                readonly>等待生成...</textarea></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 3. SEO 词库 -->
+        <div id="keyword-vault" class="tab-content fade-in">
+            <div class="page-header">
+                <h2 class="page-title">SEO 词库</h2>
+                <p class="page-desc">High-Intent Keywords</p>
+            </div>
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                <div class="card h-full">
+                    <h3 class="font-medium mb-4 text-sm">存储高转化词</h3><textarea id="vault-input"
+                        class="result-area h-64 bg-gray-50 border-transparent"
+                        placeholder="water well drilling rig..."></textarea><button onclick="saveKeywords()"
+                        class="btn-primary w-full mt-6 bg-apple-orange hover:bg-orange-600">💾 保存</button>
+                </div>
+                <div class="card h-full bg-[#F9F9F9] border-transparent">
+                    <div class="flex justify-between mb-4">
+                        <h3 class="font-medium text-sm">已存词库</h3><span
+                            class="text-xs text-apple-sub font-mono bg-white px-2 py-1 rounded border border-gray-200"
+                            id="kw-count">0 words</span>
+                    </div>
+                    <div id="vault-display"
+                        class="result-area h-64 bg-white border border-gray-200 shadow-sm overflow-y-auto">暂无数据</div>
+                    <div class="grid grid-cols-2 gap-4 mt-4"><button onclick="formatKeywords('exact')"
+                            class="btn-secondary">复制 [精准]</button><button onclick="formatKeywords('phrase')"
+                            class="btn-secondary">复制 "词组"</button></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 4. 周度规划 -->
+        <div id="weekly-plan" class="tab-content fade-in">
+            <div class="page-header">
+                <h2 class="page-title">周度规划</h2>
+                <p class="page-desc">Weekly Calendar</p>
+            </div>
+            <div class="grid grid-cols-1 xl:grid-cols-12 gap-8">
+                <div class="xl:col-span-4 card border-t-4 border-apple-blue">
+                    <div class="mb-6 relative"><span class="input-label text-apple-blue">调用产品</span><select
+                            id="plan-prod" class="select-box" onchange="loadProdToPlan()">
+                            <option value="">-- 选择 --</option>
+                        </select></div>
+                    <div class="space-y-4"><input type="text" id="pl-name" placeholder="产品" class="input-box" readonly>
+                        <div id="pl-preview"
+                            class="text-xs text-apple-sub p-3 bg-gray-50 rounded border border-gray-200 min-h-[40px]">
+                            预览...</div><select id="pl-lang" class="select-box">
+                            <option value="en">English</option>
+                            <option value="es">Español</option>
+                        </select>
+                    </div><button onclick="generateWeeklyPlan()" class="btn-blue w-full mt-6">📅 生成日历</button>
+                </div>
+                <div class="xl:col-span-8 space-y-4">
+                    <div class="card py-4 border-l-4 border-apple-blue">
+                        <div class="flex justify-between mb-2">
+                            <h3 class="font-bold text-apple-blue text-sm">周一 (痛点)</h3><button onclick="copyText('day1')"
+                                class="text-xs font-bold text-apple-blue hover:underline">复制</button>
+                        </div>
+                        <div id="day1" class="result-area border-none bg-transparent p-0">...</div>
+                    </div>
+                    <div class="card py-4 border-l-4 border-[#a142f4]">
+                        <div class="flex justify-between mb-2">
+                            <h3 class="font-bold text-[#a142f4] text-sm">周三 (硬核)</h3><button onclick="copyText('day3')"
+                                class="text-xs font-bold text-[#a142f4] hover:underline">复制</button>
+                        </div>
+                        <div id="day3" class="result-area border-none bg-transparent p-0">...</div>
+                    </div>
+                    <div class="card py-4 border-l-4 border-apple-green">
+                        <div class="flex justify-between mb-2">
+                            <h3 class="font-bold text-apple-green text-sm">周五 (信任)</h3><button
+                                onclick="copyText('day5')"
+                                class="text-xs font-bold text-apple-green hover:underline">复制</button>
+                        </div>
+                        <div id="day5" class="result-area border-none bg-transparent p-0">...</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 5. 展会 -->
+        <div id="exhibition" class="tab-content fade-in">
+            <div class="page-header">
+                <h2 class="page-title">展会作战室</h2>
+                <p class="page-desc">Expo Timeline</p>
+            </div>
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                <div class="card h-fit">
+                    <h3 class="font-medium text-sm mb-4">➕ 添加计划</h3>
+                    <div class="space-y-4">
+                        <div class="input-group"><span class="input-label">展会名称</span><input type="text" id="expo-name"
+                                class="input-box"></div>
+                        <div class="input-group"><span class="input-label">日期</span><input type="date" id="expo-date"
+                                class="input-box"></div>
+                    </div><button onclick="addExpo()"
+                        class="btn-primary w-full mt-6 bg-apple-red hover:bg-red-600 shadow-red-200">加入作战图</button>
+                </div>
+                <div class="lg:col-span-2 space-y-4" id="expo-list-container">
+                    <div
+                        class="text-center text-gray-400 py-20 bg-white rounded-xl border border-dashed border-gray-300">
+                        暂无计划</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 6. 侦探 -->
+        <div id="lead-detective" class="tab-content fade-in">
+            <div class="page-header">
+                <h2 class="page-title">线索侦探</h2>
+                <p class="page-desc">Lead Intelligence</p>
+            </div>
+            <div class="max-w-3xl mx-auto card shadow-apple-md">
+                <div class="input-group"><span class="input-label">目标公司网址 / 名称</span><input type="text"
+                        id="detective-url" placeholder="例: www.epiroc.com" class="input-box text-lg"></div>
+                <div class="grid grid-cols-3 gap-4 mt-6"><button onclick="detectiveAction('site')"
+                        class="btn-secondary h-14 text-sm hover:border-apple-blue hover:text-apple-blue hover:shadow-md">🔍
+                        搜业务</button><button onclick="detectiveAction('node')"
+                        class="btn-secondary h-14 text-sm hover:border-apple-orange hover:text-apple-orange hover:shadow-md">🧬
+                        判身份</button><button onclick="detectiveAction('boss')"
+                        class="btn-secondary h-14 text-sm hover:border-[#a142f4] hover:text-[#a142f4] hover:shadow-md">👑
+                        挖老板</button></div>
+            </div>
+        </div>
+
+        <!-- 7. 诊断 -->
+        <div id="ad-doctor" class="tab-content fade-in">
+            <div class="page-header">
+                <h2 class="page-title">广告诊断</h2>
+                <p class="page-desc">CPL Diagnosis</p>
+            </div>
+            <div class="grid grid-cols-1 xl:grid-cols-12 gap-8">
+                <div class="xl:col-span-4 card border-t-4 border-apple-green">
+                    <div class="space-y-5">
+                        <div class="input-group"><span class="input-label">平台</span><select id="platform-select"
+                                class="select-box">
+                                <option value="tiktok">TikTok</option>
+                                <option value="facebook">Facebook</option>
+                                <option value="google">Google Ads</option>
+                            </select></div>
+                        <div class="grid grid-cols-2 gap-4">
+                            <div class="input-group"><span class="input-label">花费 $</span><input type="number"
+                                    id="ad-spend" class="input-box"></div>
+                            <div class="input-group"><span class="input-label">线索 #</span><input type="number"
+                                    id="leads-count" class="input-box"></div>
+                        </div>
+                    </div><button onclick="calcDoctor()"
+                        class="btn-primary w-full mt-6 bg-apple-green hover:bg-green-600 shadow-green-200">🩺
+                        诊断</button>
+                </div>
+                <div class="xl:col-span-8 card flex flex-col justify-center items-center text-center">
+                    <p class="text-xs font-bold text-apple-sub uppercase tracking-widest mb-2">CPL 成本</p>
+                    <div id="val-cpl" class="text-6xl font-light text-apple-text mb-4">---</div>
+                    <div id="doctor-advice" class="px-4 py-2 bg-gray-100 rounded-lg text-sm font-medium text-apple-sub">
+                        等待输入...</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 8. 资金 -->
+        <div id="budget" class="tab-content fade-in">
+            <div class="page-header">
+                <h2 class="page-title">资金看板</h2>
+                <p class="page-desc">Budget Tracker</p><button onclick="resetBudget()"
+                    class="text-apple-red underline text-xs font-bold cursor-pointer ml-auto">重置</button>
+            </div>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <div class="card border-t-4 border-gray-400">
+                    <p class="input-label">总预算</p><input type="number" id="total-budget"
+                        class="w-full bg-transparent text-3xl font-light outline-none mt-2" value="266664"
+                        onchange="updateBudget()">
+                </div>
+                <div class="card border-t-4 border-apple-red">
+                    <p class="input-label">已消耗</p><input type="number" id="spent-amount" value="79600"
+                        class="w-full bg-transparent text-3xl font-light outline-none mt-2 text-apple-red"
+                        onchange="updateBudget()">
+                </div>
+                <div class="card border-t-4 border-apple-green">
+                    <p class="input-label">剩余</p>
+                    <div class="text-3xl font-light text-apple-green mt-2" id="remaining-amount">---</div>
+                </div>
+            </div>
+        </div>
+
+    </main>
+
+    <script>
+        function switchTab(tabId) {
+            document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
+            document.getElementById(tabId).classList.add('active');
+            document.querySelectorAll('.nav-item').forEach(btn => btn.classList.remove('active'));
+            document.getElementById('nav-' + tabId).classList.add('active');
+        }
+
+        // --- Product DB ---
+        let productDB = JSON.parse(localStorage.getItem('tds_product_db') || '[]');
+
+        function saveProduct() {
+            const name = document.getElementById('db-name').value;
+            const pain = document.getElementById('db-pain').value;
+            const feat = document.getElementById('db-feat').value;
+            const scene = document.getElementById('db-scene').value;
+            if (!name) return alert("请输入型号名称");
+            productDB.push({ name, pain, feat, scene });
+            localStorage.setItem('tds_product_db', JSON.stringify(productDB));
+            document.getElementById('db-name').value = '';
+            document.getElementById('db-pain').value = '';
+            document.getElementById('db-feat').value = '';
+            document.getElementById('db-scene').value = '';
+            renderDB();
+            alert("已保存");
+        }
+
+        function renderDB() {
+            const list = document.getElementById('product-list');
+            const sel = document.getElementById('plan-prod');
+            const quickLoad = document.getElementById('quick-load');
+            const search = document.getElementById('prod-search') ? document.getElementById('prod-search').value.toLowerCase() : "";
+
+            if (list) {
+                if (productDB.length === 0) {
+                    list.innerHTML = '<div class="col-span-2 text-center text-[#9aa0a6] py-10 border border-dashed border-[#dadce0] rounded-xl">暂无数据，请录入</div>';
+                } else {
+                    const filtered = productDB.filter(p => p.name.toLowerCase().includes(search));
+                    list.innerHTML = filtered.map((p, i) => `
+                        <div class="p-5 bg-white border border-gray-200 rounded-xl hover:shadow-apple-hover hover:border-apple-blue/30 transition-all group shadow-sm relative">
+                            <button onclick="delProd(${productDB.indexOf(p)})" class="absolute top-3 right-3 text-gray-300 hover:text-apple-red transition-colors">✕</button>
+                            <h4 class="font-semibold text-apple-text text-lg tracking-tight">${p.name}</h4>
+                            <p class="text-xs text-apple-sub mt-2 line-clamp-2 leading-relaxed">${p.feat}</p>
+                            <div class="mt-4"><span class="text-[10px] bg-gray-100 px-2.5 py-1 rounded-full text-apple-sub font-bold uppercase tracking-wide border border-gray-200">Pain: ${p.pain}</span></div>
+                        </div>
+                    `).join('');
+                }
+            }
+
+            let opts = '<option value="">-- 选择 --</option>' + productDB.map((p, i) => `<option value="${i}">${p.name}</option>`).join('');
+            if (sel) sel.innerHTML = opts;
+            if (quickLoad) quickLoad.innerHTML = opts;
+        }
+
+        function delProd(i) {
+            if (confirm('确认删除?')) {
+                productDB.splice(i, 1);
+                localStorage.setItem('tds_product_db', JSON.stringify(productDB));
+                renderDB();
+            }
+        }
+
+        // --- Helper Loaders ---
+        function loadProdToPlan() {
+            const idx = document.getElementById('plan-prod').value;
+            if (idx === "") return;
+            const p = productDB[idx];
+            document.getElementById('pl-name').value = p.name;
+            document.getElementById('pl-preview').innerText = `卖点：${p.feat}`;
+        }
+
+        function loadProductToForm() {
+            const idx = document.getElementById('quick-load').value;
+            if (idx === "") return;
+            const p = productDB[idx];
+            document.getElementById('cp-product').value = p.name;
+            document.getElementById('cp-pain').value = p.pain;
+            document.getElementById('cp-feat').value = p.feat;
+        }
+
+        // --- Core Logic ---
+        function generateCampaign() {
+            const p = document.getElementById('cp-product').value,
+                pain = document.getElementById('cp-pain').value,
+                feat = document.getElementById('cp-feat').value,
+                lang = document.getElementById('cp-lang').value;
+
+            if (!p) return alert("请填写产品信息");
+
+            let tk = lang === 'en' ?
+                `🎬 **TikTok Visuals**\n1️⃣ Hook: Shaky cam of ${pain}. Text: "Impossible?"\n2️⃣ Proof: ${p} working smoothly.\n3️⃣ CTA: "Link in bio."`
+                : `🎬 **TikTok**\nGancho: ${pain}\nSol: ${p}`;
+            let li = lang === 'en' ?
+                `👔 **LinkedIn**\nProblem: ${pain}\nSolution: ${p}\nData: ${feat}`
+                : `👔 **LinkedIn**\nProblema: ${pain}\nSolución: ${p}`;
+
+            document.getElementById('res-tk').value = tk;
+            document.getElementById('res-li').value = li;
+        }
+
+        function generateWeeklyPlan() {
+            const p = document.getElementById('pl-name').value;
+            const lang = document.getElementById('pl-lang').value;
+            if (!p) return alert("请选择产品");
+            document.getElementById('day1').innerText = lang === 'en' ? `Mon: "Struggling with...?"` : `Lunes: "¿Problemas...?"`;
+            document.getElementById('day3').innerText = lang === 'en' ? `Wed: Watch ${p} in action!` : `Miércoles: ¡Vea la potencia!`;
+            document.getElementById('day5').innerText = lang === 'en' ? `Fri: Client Success Story` : `Viernes: Caso de Éxito`;
+        }
+
+        // --- Dashboard Update (Missing Function Fixed!) ---
+        function updateDashboard() {
+            // Update budget card
+            const total = parseFloat(localStorage.getItem('tds_total')) || 266664;
+            const spent = parseFloat(localStorage.getItem('tds_spent')) || 79600;
+            const remaining = total - spent;
+            const budgetPercent = Math.max(0, Math.min(100, (remaining / total) * 100));
+
+            if (document.getElementById('dash-budget')) {
+                document.getElementById('dash-budget').innerText = '¥' + remaining.toLocaleString();
+            }
+            if (document.getElementById('dash-budget-bar')) {
+                document.getElementById('dash-budget-bar').style.width = budgetPercent + '%';
+            }
+
+            // Update expo card
+            if (expos.length > 0) {
+                const nextExpo = expos.reduce((nearest, expo) => {
+                    const expoDate = new Date(expo.date);
+                    const nearestDate = new Date(nearest.date);
+                    return expoDate < nearestDate ? expo : nearest;
+                });
+
+                const daysUntil = Math.ceil((new Date(nextExpo.date) - new Date()) / 86400000);
+
+                if (document.getElementById('dash-expo-name')) {
+                    document.getElementById('dash-expo-name').innerText = nextExpo.name;
+                }
+                if (document.getElementById('dash-expo-days')) {
+                    document.getElementById('dash-expo-days').innerText = Math.max(0, daysUntil);
+                }
+            } else {
+                if (document.getElementById('dash-expo-name')) {
+                    document.getElementById('dash-expo-name').innerText = '暂无计划';
+                }
+                if (document.getElementById('dash-expo-days')) {
+                    document.getElementById('dash-expo-days').innerText = '0';
+                }
+            }
+
+            // Update CPL card
+            const lastCPL = localStorage.getItem('tds_last_cpl') || '---';
+            if (document.getElementById('dash-cpl')) {
+                document.getElementById('dash-cpl').innerText = lastCPL;
+            }
+        }
+
+        // --- Others ---
+        let expos = JSON.parse(localStorage.getItem('tds_expos') || '[]');
+
+        function addExpo() {
+            const n = document.getElementById('expo-name').value,
+                d = document.getElementById('expo-date').value;
+            if (!n || !d) return alert("请填写完整信息");
+            expos.push({ name: n, date: d });
+            localStorage.setItem('tds_expos', JSON.stringify(expos));
+            document.getElementById('expo-name').value = '';
+            document.getElementById('expo-date').value = '';
+            renderExpos();
+            updateDashboard();
+        }
+
+        function renderExpos() {
+            const list = document.getElementById('expo-list-container');
+            if (!list) return;
+
+            if (expos.length === 0) {
+                list.innerHTML = '<div class="text-center text-gray-400 py-20 bg-white rounded-xl border border-dashed border-gray-300">暂无计划</div>';
+                return;
+            }
+
+            list.innerHTML = expos.map((ex, i) => {
+                const diff = Math.ceil((new Date(ex.date) - new Date()) / 86400000);
+                const w = Math.max(0, Math.min(100, ((120 - diff) / 120) * 100));
+                return `<div class="card group"><div class="flex justify-between text-apple-sub text-xs font-bold mb-1.5"><span>${ex.name}</span><span>T-${diff}</span></div><div class="w-full bg-gray-100 h-1.5 rounded-full overflow-hidden"><div class="bg-apple-red h-full transition-all duration-500" style="width:${w}%"></div></div><button onclick="removeExpo(${i})" class="text-[10px] text-apple-red mt-2 opacity-0 group-hover:opacity-100 transition-opacity hover:underline">删除</button></div>`;
+            }).join('');
+        }
+
+        function removeExpo(i) {
+            if (confirm('确认删除?')) {
+                expos.splice(i, 1);
+                localStorage.setItem('tds_expos', JSON.stringify(expos));
+                renderExpos();
+                updateDashboard();
+            }
+        }
+
+        function updateBudget() {
+            const t = parseFloat(document.getElementById('total-budget').value) || 266664,
+                s = parseFloat(document.getElementById('spent-amount').value) || 79600;
+            if (document.getElementById('remaining-amount'))
+                document.getElementById('remaining-amount').innerText = '¥' + (t - s).toLocaleString();
+            localStorage.setItem('tds_total', t);
+            localStorage.setItem('tds_spent', s);
+            updateDashboard();
+        }
+
+        function calcDoctor() {
+            const s = parseFloat(document.getElementById('ad-spend').value),
+                l = parseFloat(document.getElementById('leads-count').value);
+            if (!s || !l) return alert("请填写完整数据");
+
+            const cpl = s / l;
+            document.getElementById('val-cpl').innerText = '$' + cpl.toFixed(1);
+
+            // Diagnosis advice
+            let advice = '';
+            if (cpl < 20) {
+                advice = '🎉 优秀！CPL 低于行业均值';
+            } else if (cpl < 50) {
+                advice = '✅ 健康，继续优化创意';
+            } else {
+                advice = '⚠️ 偏高，建议调整受众定向';
+            }
+            document.getElementById('doctor-advice').innerText = advice;
+
+            localStorage.setItem('tds_last_cpl', '$' + cpl.toFixed(1));
+            updateDashboard();
+        }
+
+        function detectiveAction(t) {
+            let v = document.getElementById('detective-url').value;
+            if (!v) return alert("请输入目标网址或公司名称");
+            let q = t === 'boss' ? `site:linkedin.com/in/ "${v}" (CEO OR Manager)`
+                : t === 'node' ? `"${v}" (manufacturer OR supplier)`
+                    : `site:${v} "drilling"`;
+            window.open(`https://www.google.com/search?q=${encodeURIComponent(q)}`, '_blank');
+        }
+
+        function saveKeywords() {
+            localStorage.setItem('tds_keywords', document.getElementById('vault-input').value);
+            renderKeywords();
+            alert("已保存");
+        }
+
+        function renderKeywords() {
+            const t = localStorage.getItem('tds_keywords') || "";
+            if (document.getElementById('vault-input'))
+                document.getElementById('vault-input').value = t;
+            if (document.getElementById('vault-display'))
+                document.getElementById('vault-display').innerText = t || "暂无数据";
+            if (document.getElementById('kw-count')) {
+                const count = t.split('\n').filter(l => l.trim()).length;
+                document.getElementById('kw-count').innerText = count + ' words';
+            }
+        }
+
+        function formatKeywords(t) {
+            const v = document.getElementById('vault-input').value;
+            if (!v) return alert("词库为空");
+            const res = t === 'exact'
+                ? v.split('\n').map(l => `[${l}]`).join('\n')
+                : v.split('\n').map(l => `"${l}"`).join('\n');
+            navigator.clipboard.writeText(res).then(() => alert('已复制到剪贴板'));
+        }
+
+        function saveNotes() {
+            localStorage.setItem('tds_notes', document.getElementById('quick-notes').value);
+        }
+
+        function copyText(id) {
+            const el = document.getElementById(id);
+            const text = el.value || el.innerText;
+            if (!text || text === '等待生成...' || text === '...') {
+                return alert("暂无内容");
+            }
+            navigator.clipboard.writeText(text).then(() => alert('已复制到剪贴板'));
+        }
+
+        function exportData() {
+            const data = {
+                productDB: localStorage.getItem('tds_product_db'),
+                keywords: localStorage.getItem('tds_keywords'),
+                expos: localStorage.getItem('tds_expos'),
+                notes: localStorage.getItem('tds_notes'),
+                budget: {
+                    total: localStorage.getItem('tds_total'),
+                    spent: localStorage.getItem('tds_spent')
+                },
+                cpl: localStorage.getItem('tds_last_cpl'),
+                timestamp: new Date().toISOString()
+            };
+            const b = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+            const a = document.createElement('a');
+            a.href = URL.createObjectURL(b);
+            a.download = 'tds-backup-' + new Date().toISOString().split('T')[0] + '.json';
+            a.click();
+        }
+
+        function importData(input) {
+            if (!input.files || !input.files[0]) return;
+            const r = new FileReader();
+            r.onload = e => {
+                try {
+                    const data = JSON.parse(e.target.result);
+                    if (data.productDB) localStorage.setItem('tds_product_db', data.productDB);
+                    if (data.keywords) localStorage.setItem('tds_keywords', data.keywords);
+                    if (data.expos) localStorage.setItem('tds_expos', data.expos);
+                    if (data.notes) localStorage.setItem('tds_notes', data.notes);
+                    if (data.budget) {
+                        if (data.budget.total) localStorage.setItem('tds_total', data.budget.total);
+                        if (data.budget.spent) localStorage.setItem('tds_spent', data.budget.spent);
+                    }
+                    if (data.cpl) localStorage.setItem('tds_last_cpl', data.cpl);
+                    alert("数据导入成功！页面将刷新。");
+                    location.reload();
+                } catch (err) {
+                    alert("导入失败：文件格式错误");
+                }
+            };
+            r.readAsText(input.files[0]);
+        }
+
+        function resetBudget() {
+            if (confirm('确认重置所有数据？此操作不可恢复！')) {
+                localStorage.clear();
+                location.reload();
+            }
+        }
+
+        // --- Initialize on Load ---
+        window.onload = function () {
+            renderDB();
+            renderKeywords();
+            renderExpos();
+
+            if (document.getElementById('total-budget'))
+                document.getElementById('total-budget').value = localStorage.getItem('tds_total') || 266664;
+            if (document.getElementById('spent-amount'))
+                document.getElementById('spent-amount').value = localStorage.getItem('tds_spent') || 79600;
+            if (document.getElementById('quick-notes'))
+                document.getElementById('quick-notes').value = localStorage.getItem('tds_notes') || '';
+
+            updateBudget();
+            updateDashboard();
+        }
+    </script>
+    </body>
+
+</html>

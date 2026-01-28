@@ -1,0 +1,848 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TDS2026品牌渗透执行方案 V21</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f1f5f9;
+            color: #0f172a;
+        }
+
+        .card {
+            transition: all 0.2s ease-in-out;
+            display: flex;
+            flex-direction: column;
+            height: 100%;
+        }
+
+        .card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 12px 20px -5px rgba(0, 0, 0, 0.1);
+        }
+
+        .badge-value {
+            font-size: 0.65rem;
+            font-weight: 800;
+            text-transform: uppercase;
+            padding: 2px 8px;
+            border-radius: 9999px;
+            letter-spacing: 0.05em;
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            white-space: nowrap;
+        }
+
+        .val-reliable {
+            background-color: #fff1f2;
+            color: #be123c;
+            border: 1px solid #fda4af;
+        }
+
+        .val-pro {
+            background-color: #f3e8ff;
+            color: #7e22ce;
+            border: 1px solid #d8b4fe;
+        }
+
+        .val-one {
+            background-color: #eff6ff;
+            color: #1d4ed8;
+            border: 1px solid #93c5fd;
+        }
+
+        .section-header {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            margin-bottom: 1rem;
+            padding-bottom: 0.5rem;
+            border-bottom: 1px solid #e2e8f0;
+        }
+
+        .content-block {
+            margin-bottom: 1rem;
+            padding-bottom: 1rem;
+            border-bottom: 1px dashed #cbd5e1;
+        }
+
+        .content-block:last-child {
+            border-bottom: none;
+            margin-bottom: 0;
+            padding-bottom: 0;
+        }
+
+        /* 表格样式优化 */
+        .strategy-table {
+            width: 100%;
+            font-size: 0.75rem;
+            border-collapse: collapse;
+        }
+
+        .strategy-table th {
+            text-align: left;
+            padding: 8px;
+            background-color: #f8fafc;
+            border: 1px solid #e2e8f0;
+            font-weight: 700;
+            color: #334155;
+        }
+
+        .strategy-table td {
+            padding: 8px;
+            border: 1px solid #e2e8f0;
+            vertical-align: top;
+            color: #475569;
+        }
+
+        .strategy-table tr:hover td {
+            background-color: #f8fafc;
+        }
+
+        /* 业务线标题样式 */
+        .group-title {
+            font-size: 1.25rem;
+            font-weight: 800;
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding-bottom: 0.5rem;
+            border-bottom: 2px solid;
+        }
+
+        .group-water {
+            color: #1d4ed8;
+            border-color: #3b82f6;
+        }
+
+        .group-mining {
+            color: #b91c1c;
+            border-color: #ef4444;
+        }
+    </style>
+</head>
+
+<body class="bg-slate-100 min-h-screen p-4 md:p-8 pb-20">
+
+    <!-- Header -->
+    <header class="max-w-7xl mx-auto mb-8">
+        <div class="flex flex-col lg:flex-row justify-between items-start lg:items-end gap-6">
+            <div>
+                <div class="flex items-center gap-3 mb-3">
+                    <span
+                        class="bg-slate-800 text-white text-xs font-bold px-3 py-1 rounded-full uppercase tracking-wider">Strategy
+                        2026</span>
+                    <span class="text-slate-500 text-xs font-semibold uppercase tracking-wide">Brand Penetration
+                        Plan</span>
+                </div>
+                <h1 class="text-3xl md:text-4xl font-extrabold text-slate-900 tracking-tight mb-2">TDS2026品牌渗透执行方案 (V21)
+                </h1>
+                <p class="text-slate-600 font-medium">核心任务：双线并行（水井/矿山），将三大价值观“插入”到每个业务触点中。</p>
+            </div>
+
+            <!-- Brand Pillars Legend -->
+            <div class="bg-white px-5 py-4 rounded-xl shadow-sm border border-slate-200 flex flex-wrap gap-4 text-xs">
+                <div class="flex items-center gap-2">
+                    <span class="w-3 h-3 rounded-full bg-red-500"></span>
+                    <div>
+                        <span class="font-bold text-slate-800 block">可靠性能</span>
+                        <span class="text-slate-400 scale-90 block text-[10px] uppercase">Reliable</span>
+                    </div>
+                </div>
+                <div class="flex items-center gap-2">
+                    <span class="w-3 h-3 rounded-full bg-purple-500"></span>
+                    <div>
+                        <span class="font-bold text-slate-800 block">专业服务</span>
+                        <span class="text-slate-400 scale-90 block text-[10px] uppercase">Professional</span>
+                    </div>
+                </div>
+                <div class="flex items-center gap-2">
+                    <span class="w-3 h-3 rounded-full bg-blue-500"></span>
+                    <div>
+                        <span class="font-bold text-slate-800 block">一站式方案</span>
+                        <span class="text-slate-400 scale-90 block text-[10px] uppercase">One-Stop</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Strategy Overview -->
+    <section class="max-w-7xl mx-auto mb-8">
+        <div class="bg-white border border-slate-200 rounded-xl shadow-sm overflow-hidden flex flex-col md:flex-row">
+            <div class="bg-slate-900 p-6 flex items-center justify-center md:w-48 shrink-0">
+                <div class="text-center">
+                    <i data-lucide="target" class="w-8 h-8 text-white mx-auto mb-2 opacity-80"></i>
+                    <h3 class="text-white font-bold text-sm uppercase tracking-widest">Core Strategy</h3>
+                </div>
+            </div>
+            <div class="p-6 md:p-8 flex-1">
+                <h2 class="text-lg font-bold text-slate-900 mb-3">从“曝光”转向“价值验证”</h2>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6 text-xs leading-relaxed">
+                    <div>
+                        <strong class="block text-slate-900 mb-1">🎯 水井钻机组 (Water Well)</strong>
+                        <p class="text-slate-600">
+                            <strong>目标：</strong> 流量与成交。<br>
+                            <strong>核心验证：</strong> 验证“现货多” (One-Stop) 和“回本快” (Reliable)。
+                            动作侧重于展示发货实况与客户赚钱案例。
+                        </p>
+                    </div>
+                    <div>
+                        <strong class="block text-slate-900 mb-1">🏔️ 矿山钻机组 (Mining)</strong>
+                        <p class="text-slate-600">
+                            <strong>目标：</strong> 信任与方案。<br>
+                            <strong>核心验证：</strong> 验证“技术硬” (Reliable) 和“懂行” (Professional)。
+                            动作侧重于硬核拆解与长周期项目跟踪。
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Main Grid Layout -->
+    <main class="max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
+
+        <!-- Column 1: Water Well Group + Unified INS -->
+        <div class="flex flex-col gap-6">
+            <div class="group-title group-water">
+                <i data-lucide="droplet" class="w-6 h-6"></i>
+                <h2>水井钻机组 (Water Well)</h2>
+            </div>
+
+            <!-- Facebook (Table Layout) -->
+            <div class="card bg-white rounded-xl shadow-sm border border-slate-200">
+                <div class="p-4 border-b border-slate-100 bg-blue-50 rounded-t-xl flex justify-between items-center">
+                    <div class="flex items-center gap-2">
+                        <i data-lucide="facebook" class="w-5 h-5 text-blue-600"></i>
+                        <h3 class="font-bold text-slate-800">Facebook: 私域成交的主战场</h3>
+                    </div>
+                    <span class="text-[10px] font-bold text-blue-600 bg-blue-100 px-2 py-1 rounded">周更新</span>
+                </div>
+                <div class="p-5">
+                    <!-- Meta Info -->
+                    <div class="mb-4 text-xs text-slate-600 bg-slate-50 p-3 rounded border border-slate-100">
+                        <ul class="space-y-1 list-disc list-inside">
+                            <li><strong>定位：</strong> 建立信任的“证据链”和私域引流入口。</li>
+                            <li><strong>运营方向：</strong> “集市化”。不要冷冰冰的企业号，要像个繁忙的、现货紧俏的批发市场。</li>
+                        </ul>
+                    </div>
+
+                    <!-- Table -->
+                    <div class="overflow-x-auto">
+                        <table class="strategy-table">
+                            <thead>
+                                <tr>
+                                    <th class="w-1/4">内容类型</th>
+                                    <th class="w-1/12">占比</th>
+                                    <th class="w-5/12">具体内容描述 (结合劣质素材)</th>
+                                    <th class="w-1/4">对应价值观</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td><strong>发货实录</strong><br>(Shipping Proof)</td>
+                                    <td>50%</td>
+                                    <td>
+                                        <strong>照片/视频：</strong>堆满货物的仓库、装柜的叉车、打码的银行水单、DHL快递单。<br>
+                                        <strong>文案：</strong>"又一台 C200 发往智利。现货库存仅剩 2 台。"
+                                    </td>
+                                    <td><span class="badge-value val-one">一站式</span><br><span
+                                            class="text-[10px] text-slate-400">现货/物流能力</span></td>
+                                </tr>
+                                <tr>
+                                    <td><strong>财富故事</strong><br>(ROI Story)</td>
+                                    <td>30%</td>
+                                    <td>
+                                        <strong>WhatsApp截图：</strong>客户发来的任何好评，哪怕只是一个👍或一句 "Good machine"。<br>
+                                        <strong>文案：</strong>"客户的成功就是我们的成功。"
+                                    </td>
+                                    <td><span class="badge-value val-reliable">可靠性能</span><br><span
+                                            class="text-[10px] text-slate-400">真实口碑</span></td>
+                                </tr>
+                                <tr>
+                                    <td><strong>产品促销</strong><br>(Promotion)</td>
+                                    <td>20%</td>
+                                    <td>
+                                        <strong>海报：</strong>节日大促（黑五/斋月）、"买钻机送钻头"、"限时折扣"。<br>
+                                        <strong>策略：</strong>简单直接的利益刺激，提升转化率。
+                                    </td>
+                                    <td><span class="badge-value val-one">一站式</span><br><span
+                                            class="text-[10px] text-slate-400">高性价比</span></td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <!-- Footer Action -->
+                    <div class="mt-3 pt-3 border-t border-slate-100 text-[11px] text-slate-500 font-medium">
+                        • <strong>关键动作：</strong>每发一条内容，必须手动转发到 10 个相关的 Groups (群组) 中。
+                    </div>
+                </div>
+            </div>
+
+            <!-- TikTok (Refined A Section) -->
+            <div class="card bg-white rounded-xl shadow-sm border border-slate-200">
+                <div class="p-4 border-b border-slate-100 bg-slate-900 rounded-t-xl flex justify-between items-center">
+                    <div class="flex items-center gap-2">
+                        <i data-lucide="video" class="w-5 h-5 text-white"></i>
+                        <h3 class="font-bold text-white">TikTok 矩阵</h3>
+                    </div>
+                    <span class="text-[10px] font-bold text-slate-300 bg-slate-800 px-2 py-1 rounded">周更新</span>
+                </div>
+                <div class="p-5">
+                    <div class="content-block">
+                        <div class="flex justify-between items-start mb-2">
+                            <h4 class="font-bold text-sm text-slate-900">A. 视频类型规划 (Content Mix)</h4>
+                            <span class="badge-value val-reliable">可靠性能</span>
+                        </div>
+                        <div
+                            class="bg-slate-50 p-0 rounded text-[11px] text-slate-500 border border-slate-100 overflow-hidden">
+                            <table class="w-full text-left">
+                                <tr class="border-b border-slate-200 bg-slate-100">
+                                    <th class="p-2 w-1/4 font-bold text-slate-700">类型</th>
+                                    <th class="p-2 w-1/6 font-bold text-slate-700">占比</th>
+                                    <th class="p-2 font-bold text-slate-700">描述</th>
+                                </tr>
+                                <tr class="border-b border-slate-100">
+                                    <td class="p-2"><strong>作业实拍</strong><br>(Action)</td>
+                                    <td class="p-2 font-bold text-blue-600">40%</td>
+                                    <td class="p-2">泥浆喷涌、巨石崩裂、机器轰鸣。强调机器力度与工况适应性。</td>
+                                </tr>
+                                <tr class="border-b border-slate-100">
+                                    <td class="p-2"><strong>区域特供</strong><br>(Regional)</td>
+                                    <td class="p-2 font-bold text-blue-600">40%</td>
+                                    <td class="p-2">针对<strong>中东、南美</strong>客户偏好，展示耐高温、强爬坡的特定机型细节。</td>
+                                </tr>
+                                <tr>
+                                    <td class="p-2"><strong>AI 抓眼球</strong><br>(Visual Hook)</td>
+                                    <td class="p-2 font-bold text-blue-600">20%</td>
+                                    <td class="p-2">利用 AI 生成夸张的钻孔特效或奇特地质结构，前3秒完播率导向。</td>
+                                </tr>
+                            </table>
+                        </div>
+                    </div>
+                    <div class="content-block">
+                        <div class="flex justify-between items-start mb-2">
+                            <h4 class="font-bold text-sm text-slate-900">B. 个人 IP 打造 (露脸解说)</h4>
+                            <span class="badge-value val-pro">专业服务</span>
+                        </div>
+                        <p class="text-[11px] text-slate-500">
+                            <strong>打造人设：</strong>业务员必须露脸。进行探厂解说、仓库寻宝、发货现场直播。以“行业老炮”身份建立信任。</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Unified Instagram (Table Layout) -->
+            <div class="card bg-white rounded-xl shadow-sm border border-slate-200">
+                <div
+                    class="p-4 border-b border-slate-100 bg-gradient-to-r from-pink-500 to-purple-500 rounded-t-xl flex justify-between items-center">
+                    <div class="flex items-center gap-2">
+                        <i data-lucide="instagram" class="w-5 h-5 text-white"></i>
+                        <h3 class="font-bold text-white">Instagram: 移动端品牌橱窗</h3>
+                    </div>
+                    <span class="text-[10px] font-bold text-white bg-white/20 px-2 py-1 rounded">周更新</span>
+                </div>
+                <div class="p-5">
+                    <!-- Meta Info -->
+                    <div class="mb-4 text-xs text-slate-600 bg-slate-50 p-3 rounded border border-slate-100">
+                        <ul class="space-y-1 list-disc list-inside">
+                            <li><strong>定位：</strong> 高颜值展示与实时活跃证明。</li>
+                            <li><strong>运营方向：</strong> “双重人格”。Grid 负责貌美如花（静态画册），Stories 负责赚钱养家（动态实况）。</li>
+                        </ul>
+                    </div>
+
+                    <!-- Table -->
+                    <div class="overflow-x-auto">
+                        <table class="strategy-table">
+                            <thead>
+                                <tr>
+                                    <th class="w-1/4">内容类型</th>
+                                    <th class="w-1/12">占比</th>
+                                    <th class="w-5/12">具体内容描述 (结合劣质素材)</th>
+                                    <th class="w-1/4">对应价值观</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td><strong>高颜值定妆照</strong><br>(Grid / Post)</td>
+                                    <td>40%</td>
+                                    <td>
+                                        <strong>精修图：</strong>把钻机当跑车拍。统一色调滤镜，背景干净，作为移动端官网。<br>
+                                        <strong>潜台词：</strong>"我们是大厂，正规、有审美。"
+                                    </td>
+                                    <td><span class="badge-value val-one">一站式</span><br><span
+                                            class="text-[10px] text-slate-400">品牌质感</span></td>
+                                </tr>
+                                <tr>
+                                    <td><strong>工厂忙碌实况</strong><br>(Stories)</td>
+                                    <td>40%</td>
+                                    <td>
+                                        <strong>随手拍：</strong>打包发货、叉车装柜、工人加班吃盒饭。必须加 Location 和时间贴纸。<br>
+                                        <strong>潜台词：</strong>"生意火爆，工厂真实存在。"
+                                    </td>
+                                    <td><span class="badge-value val-reliable">可靠性能</span><br><span
+                                            class="text-[10px] text-slate-400">真实活跃</span></td>
+                                </tr>
+                                <tr>
+                                    <td><strong>商务与活动</strong><br>(Reels / Stories)</td>
+                                    <td>20%</td>
+                                    <td>
+                                        <strong>视频：</strong>展会现场、老外客户来访验厂、团建活动。<br>
+                                        <strong>潜台词：</strong>"国际化团队，值得信赖。"
+                                    </td>
+                                    <td><span class="badge-value val-pro">专业服务</span><br><span
+                                            class="text-[10px] text-slate-400">软实力</span></td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Google Ads (Water) - SPLIT & EXPANDED -->
+            <div class="card bg-white rounded-xl shadow-sm border border-slate-200">
+                <div class="p-4 border-b border-slate-100 bg-green-600 rounded-t-xl flex justify-between items-center">
+                    <div class="flex items-center gap-2">
+                        <i data-lucide="mouse-pointer-2" class="w-5 h-5 text-white"></i>
+                        <h3 class="font-bold text-white">Google Ads (水井) - 自投实战</h3>
+                    </div>
+                    <span class="text-[10px] font-bold text-green-100 bg-green-700 px-2 py-1 rounded">高频优化</span>
+                </div>
+                <div class="p-5">
+                    <div class="content-block">
+                        <div class="flex justify-between items-start mb-2">
+                            <h4 class="font-bold text-sm text-slate-900">1. 搜索广告：价格/现货拦截</h4>
+                            <span class="badge-value val-one">一站式</span>
+                        </div>
+                        <div class="bg-slate-50 p-2 rounded text-[11px] text-slate-500 border border-slate-100">
+                            <strong>策略细节：</strong>
+                            <ul class="list-disc list-inside mt-1">
+                                <li><strong>关键词：</strong>使用 Exact Match (精准匹配) 投放 "Drilling Rig Price", "For Sale USA"。
+                                </li>
+                                <li><strong>文案粗暴：</strong>标题直接透出 "In Stock" 和 "Starting from $XX,XXX"，过滤掉只以此为乐的无效点击。
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
+                    <div class="content-block">
+                        <div class="flex justify-between items-start mb-2">
+                            <h4 class="font-bold text-sm text-slate-900">2. 否定词清洗 (Negative KW)</h4>
+                            <span class="badge-value val-pro">专业操作</span>
+                        </div>
+                        <p class="text-[11px] text-slate-500"><strong>动作：</strong>每周检查搜索词报告，坚决剔除 "rental" (租), "used"
+                            (二手), "hiring", "repair" 等词，确保每一分钱都花在买新机的客户上。</p>
+                    </div>
+                    <div class="content-block">
+                        <div class="flex justify-between items-start mb-2">
+                            <h4 class="font-bold text-sm text-slate-900">3. 再营销 (Remarketing)</h4>
+                            <span class="badge-value val-reliable">可靠性能</span>
+                        </div>
+                        <p class="text-[11px] text-slate-500">
+                            <strong>动作：</strong>针对访问过“库存页”但未留资的用户，投放包含“限时折扣”或“成功案例”的图片广告，进行全网追单。</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Google SEO (Water) - SPLIT -->
+            <div class="card bg-white rounded-xl shadow-sm border border-slate-200">
+                <div
+                    class="p-4 border-b border-slate-100 bg-emerald-800 rounded-t-xl flex justify-between items-center">
+                    <div class="flex items-center gap-2">
+                        <i data-lucide="search" class="w-5 h-5 text-white"></i>
+                        <h3 class="font-bold text-white">Google SEO (水井)</h3>
+                    </div>
+                    <span class="text-[10px] font-bold text-emerald-100 bg-emerald-900 px-2 py-1 rounded">代运营监管</span>
+                </div>
+                <div class="p-5">
+                    <div class="content-block">
+                        <div class="flex justify-between items-start mb-2">
+                            <h4 class="font-bold text-sm text-slate-900">监管重心：竞品截流</h4>
+                            <span class="badge-value val-reliable">可靠性能</span>
+                        </div>
+                        <p class="text-[11px] text-slate-500"><strong>要求代运营：</strong>产出 "China Rig vs Atlas Copco"
+                            等对比测评文章。承认品牌差距，但强调 1/3 价格下的极致性价比，以此拦截竞品流量。</p>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+
+        <!-- Column 2: Mining Group -->
+        <div class="flex flex-col gap-6">
+            <div class="group-title group-mining">
+                <i data-lucide="mountain" class="w-6 h-6"></i>
+                <h2>矿山钻机组 (Mining)</h2>
+            </div>
+
+            <!-- Facebook (Table Layout) -->
+            <div class="card bg-white rounded-xl shadow-sm border border-slate-200">
+                <div class="p-4 border-b border-slate-100 bg-red-50 rounded-t-xl flex justify-between items-center">
+                    <div class="flex items-center gap-2">
+                        <i data-lucide="facebook" class="w-5 h-5 text-red-600"></i>
+                        <h3 class="font-bold text-slate-800">Facebook: 技术信任高地</h3>
+                    </div>
+                    <span class="text-[10px] font-bold text-red-600 bg-red-100 px-2 py-1 rounded">周更新</span>
+                </div>
+                <div class="p-5">
+                    <!-- Meta Info -->
+                    <div class="mb-4 text-xs text-slate-600 bg-slate-50 p-3 rounded border border-slate-100">
+                        <ul class="space-y-1 list-disc list-inside">
+                            <li><strong>定位：</strong> B2B 信任建设与专业展示。</li>
+                            <li><strong>运营方向：</strong> “硬核工业风”。不发花哨内容，展示肌肉、工厂实力和技术细节。</li>
+                        </ul>
+                    </div>
+
+                    <!-- Table -->
+                    <div class="overflow-x-auto">
+                        <table class="strategy-table">
+                            <thead>
+                                <tr>
+                                    <th class="w-1/4">内容类型</th>
+                                    <th class="w-1/12">占比</th>
+                                    <th class="w-5/12">具体内容描述 (结合劣质素材)</th>
+                                    <th class="w-1/4">对应价值观</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td><strong>展会全周期</strong><br>(Exhibition Life)</td>
+                                    <td>50%</td>
+                                    <td>
+                                        <strong>展前：</strong>海报/邀约；<strong>展中：</strong>现场接待/实机演示；<strong>展后：</strong>签约战报。<br>
+                                        <strong>文案：</strong>"线下见真章，面对面验证实力。"
+                                    </td>
+                                    <td><span class="badge-value val-pro">专业服务</span><br><span
+                                            class="text-[10px] text-slate-400">线下实力</span></td>
+                                </tr>
+                                <tr>
+                                    <td><strong>硬核拆解</strong><br>(Tech Breakdown)</td>
+                                    <td>30%</td>
+                                    <td>
+                                        <strong>爆炸图/拆机图：</strong>直接展示液压泵、发动机内部结构，甚至展示磨损对比。<br>
+                                        <strong>文案：</strong>"细节决定成败，核心部件采用顶级品牌。"
+                                    </td>
+                                    <td><span class="badge-value val-reliable">可靠性能</span><br><span
+                                            class="text-[10px] text-slate-400">用料扎实</span></td>
+                                </tr>
+                                <tr>
+                                    <td><strong>精密制造</strong><br>(Precision Mfg)</td>
+                                    <td>20%</td>
+                                    <td>
+                                        <strong>照片/视频：</strong>现代化工厂内部实拍，展示自动化生产线与质检流程。<br>
+                                        <strong>文案：</strong>"每一台机器都经过严格的品质控管。"
+                                    </td>
+                                    <td><span class="badge-value val-reliable">可靠性能</span><br><span
+                                            class="text-[10px] text-slate-400">工艺控制</span></td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <!-- Footer Action -->
+                    <div class="mt-3 pt-3 border-t border-slate-100 text-[11px] text-slate-500 font-medium">
+                        • <strong>关键动作：</strong>定向邀请 LinkedIn 上的潜客关注 Facebook 专页查看技术细节。
+                    </div>
+                </div>
+            </div>
+
+            <!-- LinkedIn (Table Layout) -->
+            <div class="card bg-white rounded-xl shadow-sm border border-slate-200">
+                <div class="p-4 border-b border-slate-100 bg-slate-800 rounded-t-xl flex justify-between items-center">
+                    <div class="flex items-center gap-2">
+                        <i data-lucide="linkedin" class="w-5 h-5 text-white"></i>
+                        <h3 class="font-bold text-white">LinkedIn: 猎杀大客户的狙击点</h3>
+                    </div>
+                    <span class="text-[10px] font-bold text-slate-300 bg-slate-700 px-2 py-1 rounded">周更新</span>
+                </div>
+                <div class="p-5">
+                    <!-- Meta Info -->
+                    <div class="mb-4 text-xs text-slate-600 bg-slate-50 p-3 rounded border border-slate-100">
+                        <ul class="space-y-1 list-disc list-inside">
+                            <li><strong>定位：</strong> 打造“行业专家”人设，而不是企业公告栏。</li>
+                            <li><strong>运营方向：</strong> “输出观点”。不要发促销广告，要发技术见解。</li>
+                        </ul>
+                    </div>
+
+                    <!-- Table -->
+                    <div class="overflow-x-auto">
+                        <table class="strategy-table">
+                            <thead>
+                                <tr>
+                                    <th class="w-1/4">内容类型</th>
+                                    <th class="w-1/12">占比</th>
+                                    <th class="w-5/12">具体内容描述 (结合劣质素材)</th>
+                                    <th class="w-1/4">对应价值观</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td><strong>技术白皮书</strong><br>(Case Study)</td>
+                                    <td>40%</td>
+                                    <td>
+                                        <strong>图文/PDF：</strong>针对一张岩心图片进行深度分析。"为什么在 1500米深处取芯率还能达到 95%？"<br>
+                                        <strong>潜台词：</strong>我们是懂技术的专家。
+                                    </td>
+                                    <td><span class="badge-value val-pro">专业服务</span><br><span
+                                            class="text-[10px] text-slate-400">技术权威</span></td>
+                                </tr>
+                                <tr>
+                                    <td><strong>公司里程碑</strong><br>(Company News)</td>
+                                    <td>30%</td>
+                                    <td>
+                                        <strong>展会/大单：</strong>参展照片（要把人拍进去，不要光拍展位）、和客户握手签约的照片。<br>
+                                        <strong>文案：</strong>用数据和事实说话。
+                                    </td>
+                                    <td><span class="badge-value val-reliable">可靠性能</span><br><span
+                                            class="text-[10px] text-slate-400">实力背书</span></td>
+                                </tr>
+                                <tr>
+                                    <td><strong>大客户案例</strong><br>(Project Success)</td>
+                                    <td>30%</td>
+                                    <td>
+                                        <strong>项目实拍：</strong>设备在知名矿区的作业场景。重点展示与当地大企业的合作关系。<br>
+                                        <strong>文案：</strong>"Serving top-tier miners."
+                                    </td>
+                                    <td><span class="badge-value val-pro">专业服务</span><br><span
+                                            class="text-[10px] text-slate-400">高端信赖</span></td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <!-- Footer Action -->
+                    <div class="mt-3 pt-3 border-t border-slate-100 text-[11px] text-slate-500 font-medium">
+                        • <strong>关键动作：</strong>主动关注行业内好友及公司主页，点赞/评论建立弱连接，而非直接推销。
+                    </div>
+                </div>
+            </div>
+
+            <!-- YouTube (Table Layout) -->
+            <div class="card bg-white rounded-xl shadow-sm border border-slate-200">
+                <div class="p-4 border-b border-slate-100 bg-red-600 rounded-t-xl flex justify-between items-center">
+                    <div class="flex items-center gap-2">
+                        <i data-lucide="youtube" class="w-5 h-5 text-white"></i>
+                        <h3 class="font-bold text-white">YouTube: 深度信任视频库</h3>
+                    </div>
+                    <span class="text-[10px] font-bold text-red-100 bg-red-700 px-2 py-1 rounded">周更新</span>
+                </div>
+                <div class="p-5">
+                    <!-- Meta Info -->
+                    <div class="mb-4 text-xs text-slate-600 bg-slate-50 p-3 rounded border border-slate-100">
+                        <ul class="space-y-1 list-disc list-inside">
+                            <li><strong>定位：</strong> 售后外包中心 + 极限测试场。</li>
+                            <li><strong>运营方向：</strong> “解决问题”。一切为了消除客户对“跨国售后”和“机器性能”的恐惧。</li>
+                        </ul>
+                    </div>
+
+                    <!-- Table -->
+                    <div class="overflow-x-auto">
+                        <table class="strategy-table">
+                            <thead>
+                                <tr>
+                                    <th class="w-1/4">内容类型</th>
+                                    <th class="w-1/12">占比</th>
+                                    <th class="w-5/12">具体内容描述 (结合劣质素材)</th>
+                                    <th class="w-1/4">对应价值观</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td><strong>售后自救百科</strong><br>(Troubleshooting)</td>
+                                    <td>40%</td>
+                                    <td>
+                                        <strong>教程：</strong>工程师出镜，手把手教换密封圈、修液压泵。<br>
+                                        <strong>潜台词：</strong>"即使出了问题，也能看着视频自己修好。"
+                                    </td>
+                                    <td><span class="badge-value val-pro">专业服务</span><br><span
+                                            class="text-[10px] text-slate-400">消除焦虑</span></td>
+                                </tr>
+                                <tr>
+                                    <td><strong>实战无剪辑</strong><br>(ASMR / Uncut)</td>
+                                    <td>30%</td>
+                                    <td>
+                                        <strong>长视频：</strong>30分钟以上的连续作业原声视频，无BGM，无剪辑。<br>
+                                        <strong>潜台词：</strong>"敢发无剪辑，说明机器不发热、不趴窝。"
+                                    </td>
+                                    <td><span class="badge-value val-reliable">可靠性能</span><br><span
+                                            class="text-[10px] text-slate-400">硬核证明</span></td>
+                                </tr>
+                                <tr>
+                                    <td><strong>Shorts 流量</strong><br>(Quick Clips)</td>
+                                    <td>30%</td>
+                                    <td>
+                                        <strong>短视频：</strong>同步 TikTok 的发货/出水瞬间，竖屏。<br>
+                                        <strong>潜台词：</strong>保持频道活跃，拦截移动端流量。
+                                    </td>
+                                    <td><span class="badge-value val-one">一站式</span><br><span
+                                            class="text-[10px] text-slate-400">高频触达</span></td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Google Ads (Mining) - SPLIT & EXPANDED -->
+            <div class="card bg-white rounded-xl shadow-sm border border-slate-200">
+                <div class="p-4 border-b border-slate-100 bg-green-600 rounded-t-xl flex justify-between items-center">
+                    <div class="flex items-center gap-2">
+                        <i data-lucide="mouse-pointer-2" class="w-5 h-5 text-white"></i>
+                        <h3 class="font-bold text-white">Google Ads (矿山) - 自投实战</h3>
+                    </div>
+                    <span class="text-[10px] font-bold text-green-100 bg-green-700 px-2 py-1 rounded">技术获客</span>
+                </div>
+                <div class="p-5">
+                    <div class="content-block">
+                        <div class="flex justify-between items-start mb-2">
+                            <h4 class="font-bold text-sm text-slate-900">1. 技术词精准投</h4>
+                            <span class="badge-value val-pro">专业服务</span>
+                        </div>
+                        <div class="bg-slate-50 p-2 rounded text-[11px] text-slate-500 border border-slate-100">
+                            <strong>策略细节：</strong>
+                            <ul class="list-disc list-inside mt-1">
+                                <li><strong>关键词：</strong>针对 "RC Drilling Specs", "Core Sampling Rig" 等技术长尾词进行投放。</li>
+                                <li><strong>意图匹配：</strong>搜索这些词的人通常是工程师或项目经理，而非普通采购。</li>
+                            </ul>
+                        </div>
+                    </div>
+                    <div class="content-block">
+                        <div class="flex justify-between items-start mb-2">
+                            <h4 class="font-bold text-sm text-slate-900">2. 留资钩子 (Lead Magnet)</h4>
+                            <span class="badge-value val-pro">专业服务</span>
+                        </div>
+                        <p class="text-[11px] text-slate-500">
+                            <strong>落地页策略：</strong>不要只放“联系我们”。必须提供《2026新款技术参数表》或《矿山开采效率分析报告》PDF下载，强制要求填写企业邮箱换取。</p>
+                    </div>
+                    <div class="content-block">
+                        <div class="flex justify-between items-start mb-2">
+                            <h4 class="font-bold text-sm text-slate-900">3. 地域定向 (Geo-Targeting)</h4>
+                            <span class="badge-value val-one">一站式</span>
+                        </div>
+                        <p class="text-[11px] text-slate-500">
+                            <strong>动作：</strong>仅在智利、秘鲁、沙特等核心矿区国家投放，并设置“仅针对该地区的人”，排除点击农场的干扰。</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Google SEO (Mining) - SPLIT -->
+            <div class="card bg-white rounded-xl shadow-sm border border-slate-200">
+                <div
+                    class="p-4 border-b border-slate-100 bg-emerald-800 rounded-t-xl flex justify-between items-center">
+                    <div class="flex items-center gap-2">
+                        <i data-lucide="search" class="w-5 h-5 text-white"></i>
+                        <h3 class="font-bold text-white">Google SEO (矿山)</h3>
+                    </div>
+                    <span class="text-[10px] font-bold text-emerald-100 bg-emerald-900 px-2 py-1 rounded">代运营监管</span>
+                </div>
+                <div class="p-5">
+                    <div class="content-block">
+                        <div class="flex justify-between items-start mb-2">
+                            <h4 class="font-bold text-sm text-slate-900">监管重心：技术壁垒</h4>
+                            <span class="badge-value val-pro">专业服务</span>
+                        </div>
+                        <p class="text-[11px] text-slate-500"><strong>要求代运营：</strong>产出深度技术解析文章（如 RC钻探 vs 岩心钻探）。解决 B
+                            端客户在选型阶段的技术困惑，建立专业壁垒，提升网站的行业权重。</p>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+
+    </main>
+
+    <!-- Execution SOP -->
+    <section class="max-w-7xl mx-auto">
+        <div class="bg-gradient-to-r from-slate-900 to-slate-800 rounded-xl shadow-lg p-6 md:p-8 text-white">
+            <div
+                class="flex flex-col md:flex-row items-start md:items-center gap-4 mb-6 border-b border-slate-700 pb-4">
+                <div class="flex items-center gap-3">
+                    <i data-lucide="git-merge" class="w-6 h-6 text-indigo-400"></i>
+                    <h3 class="font-bold text-lg">“母素材”价值验证流程 (S.O.P)</h3>
+                </div>
+                <span class="text-xs bg-slate-700 px-3 py-1 rounded-full text-slate-300">Execution Model</span>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-12 gap-6 text-xs">
+
+                <!-- Source -->
+                <div
+                    class="md:col-span-3 border border-slate-600 rounded-lg p-4 bg-slate-800/50 flex flex-col justify-center text-center">
+                    <span class="text-slate-400 uppercase font-bold tracking-widest text-[10px] mb-2">Raw
+                        Material</span>
+                    <strong class="text-white block mb-1">业务回传视频</strong>
+                    <p class="text-slate-500">场景：真实场景。</p>
+                </div>
+
+                <!-- Processing Arrows -->
+                <div class="md:col-span-1 flex items-center justify-center">
+                    <i data-lucide="arrow-right" class="w-6 h-6 text-slate-600 hidden md:block"></i>
+                    <i data-lucide="arrow-down" class="w-6 h-6 text-slate-600 md:hidden"></i>
+                </div>
+
+                <!-- Outputs -->
+                <div class="md:col-span-8 grid grid-cols-1 md:grid-cols-3 gap-4">
+
+                    <!-- Output 1 -->
+                    <div class="bg-red-900/20 border border-red-500/30 rounded-lg p-4 relative">
+                        <div class="absolute -top-3 left-3">
+                            <span class="badge-value val-reliable border-none ring-2 ring-slate-800">可靠性能</span>
+                        </div>
+                        <strong class="block text-red-200 mt-2 mb-1 text-sm">给 TikTok (水井)</strong>
+                        <p class="text-slate-400">AI 合成地域背景。<br>潜台词：“机器到了你们国家也能干。”</p>
+                    </div>
+
+                    <!-- Output 2 -->
+                    <div class="bg-purple-900/20 border border-purple-500/30 rounded-lg p-4 relative">
+                        <div class="absolute -top-3 left-3">
+                            <span class="badge-value val-pro border-none ring-2 ring-slate-800">专业服务</span>
+                        </div>
+                        <strong class="block text-purple-200 mt-2 mb-1 text-sm">给 Facebook (矿山)</strong>
+                        <p class="text-slate-400">截图加参数。<br>潜台词：“针对此地质调整了配置。”</p>
+                    </div>
+
+                    <!-- Output 3 -->
+                    <div class="bg-blue-900/20 border border-blue-500/30 rounded-lg p-4 relative">
+                        <div class="absolute -top-3 left-3">
+                            <span class="badge-value val-one border-none ring-2 ring-slate-800">一站式方案</span>
+                        </div>
+                        <strong class="block text-blue-200 mt-2 mb-1 text-sm">给 Ads LP</strong>
+                        <p class="text-slate-400">作为成功案例。<br>潜台词：“这台机器帮客户赚到了钱。”</p>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Dynamic Adjustment Note -->
+    <div class="max-w-7xl mx-auto mt-8">
+        <div class="bg-amber-50 border-l-4 border-amber-400 p-4 rounded-r-lg">
+            <div class="flex items-center">
+                <i data-lucide="alert-circle" class="w-5 h-5 text-amber-600 mr-3"></i>
+                <p class="text-sm text-amber-800 font-medium">
+                    说明：目前是初步计划 (Preliminary Plan)。后续执行中，将建立数据反馈机制，根据实际转化效果（ROI/CTR）动态调整各板块的内容占比与类型，保持策略迭代。
+                </p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer class="max-w-7xl mx-auto mt-8 text-center text-slate-400 text-xs py-4 border-t border-slate-200">
+        <p>INTERNAL STRATEGY DOCUMENT // TDS2026 EXECUTION PLAN V22</p>
+    </footer>
+
+    <script>
+        lucide.createIcons();
+    </script>
+</body>
+
+</html>

@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Gemini API 诊断工具 (No-CDN Version)</title>
+    <style>
+        body {
+            font-family: sans-serif;
+            background-color: #1a1a1a;
+            color: #fff;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .container {
+            max-width: 600px;
+            width: 100%;
+            border: 1px solid #444;
+            padding: 20px;
+            border-radius: 8px;
+            background-color: #2d2d2d;
+        }
+
+        h1 {
+            margin-top: 0;
+            color: #60a5fa;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 5px;
+            color: #aaa;
+            font-size: 14px;
+        }
+
+        input[type="text"] {
+            width: 100%;
+            padding: 10px;
+            margin-bottom: 10px;
+            border: 1px solid #555;
+            background: #000;
+            color: #0f0;
+            font-family: monospace;
+            border-radius: 4px;
+            box-sizing: border-box;
+        }
+
+        button {
+            width: 100%;
+            padding: 15px;
+            background-color: #2563eb;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            font-size: 16px;
+            cursor: pointer;
+            font-weight: bold;
+            margin-bottom: 15px;
+        }
+
+        button:hover {
+            background-color: #1d4ed8;
+        }
+
+        #log {
+            width: 100%;
+            height: 200px;
+            background: #000;
+            border: 1px solid #555;
+            padding: 10px;
+            font-family: monospace;
+            color: #0f0;
+            white-space: pre-wrap;
+            overflow-y: auto;
+            box-sizing: border-box;
+            border-radius: 4px;
+        }
+
+        .status-ok {
+            color: #4ade80;
+        }
+
+        .status-err {
+            color: #f87171;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <h1>🛠️ Gemini API 连接测试</h1>
+
+        <div>
+            <label>API Key (自动读取，如为空请手动粘贴):</label>
+            <input type="text" id="api-key-input" placeholder="Paste your API Key here if empty...">
+        </div>
+
+        <button onclick="startTest()">👉 点击开始测试 (Run Test)</button>
+
+        <label>测试日志:</label>
+        <div id="log">等待操作...</div>
+    </div>
+
+    <script>
+        // Auto-load key
+        const savedKey = localStorage.getItem('tds_gemini_api_key');
+        const inputEl = document.getElementById('api-key-input');
+        const logEl = document.getElementById('log');
+
+        if (savedKey) {
+            inputEl.value = savedKey;
+            log('已从本地缓存读取 API Key。');
+        } else {
+            log('未找到本地 Key，请手动粘贴。');
+        }
+
+        function log(msg) {
+            logEl.innerText += '\n' + msg;
+            logEl.scrollTop = logEl.scrollHeight;
+        }
+
+        async function startTest() {
+            const key = inputEl.value.trim();
+            if (!key) return log('❌ 错误: API Key 为空！');
+
+            log('-----------------------------------');
+            log('开始测试 Gemini 1.5 Flash...');
+
+            // Explicit 1.5 Flash URL
+            const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${key}`;
+            log(`请求地址: ...${url.split('key=')[0]}...`);
+
+            try {
+                const response = await fetch(url, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        contents: [{ parts: [{ text: "Respond with 'OK'." }] }]
+                    })
+                });
+
+                log(`HTTP 状态码: ${response.status}`);
+
+                if (response.ok) {
+                    const data = await response.json();
+                    const reply = data.candidates?.[0]?.content?.parts?.[0]?.text;
+                    log(`✅ 测试成功! API 返回: "${reply?.trim()}"`);
+                    log(`结论: 您的网络和 Key 均正常。问题在于浏览器缓存，请强制刷新主页面 (Ctrl+F5)。`);
+                } else {
+                    const err = await response.json();
+                    log(`❌ API 报错: ${JSON.stringify(err, null, 2)}`);
+                    if (response.status === 404) log('分析: 404 表示模型名称错误或 API 路由不通。');
+                    if (response.status === 429) log('分析: 429 表示 Key 限流。');
+                    if (response.status === 403) log('分析: 403 表示 Key 无效或权限不足。');
+                }
+
+            } catch (e) {
+                log(`❌ 网络请求异常: ${e.message}`);
+                log('可能有网络防火墙拦截 googleapis.com。');
+            }
+        }
+    </script>
+</body>
+
+</html>

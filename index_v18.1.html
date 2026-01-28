@@ -1,0 +1,807 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TDS 营销操作系统 v18.1</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        slate: { 850: '#1e293b', 900: '#0f172a', 950: '#020617' }
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        :root {
+            --bg-primary: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+            --bg-secondary: #1e293b;
+            --bg-panel: rgba(30, 41, 59, 0.7);
+            --text-primary: #e2e8f0;
+            --text-secondary: #cbd5e1;
+            --border-primary: #334155;
+        }
+
+        .light-mode {
+            --bg-primary: linear-gradient(135deg, #f1f5f9 0%, #e2e8f0 100%);
+            --bg-secondary: #ffffff;
+            --bg-panel: rgba(255, 255, 255, 0.9);
+            --text-primary: #0f172a;
+            --text-secondary: #1e293b;
+            --border-primary: #e2e8f0;
+        }
+
+        body {
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            transition: all 0.3s;
+        }
+
+        .panel {
+            background: var(--bg-panel);
+            border: 1px solid var(--border-primary);
+            border-radius: 12px;
+            padding: 24px;
+            transition: all 0.3s;
+        }
+
+        .nav-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 10px 12px;
+            margin: 0 8px 4px;
+            border-radius: 8px;
+            color: var(--text-secondary);
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .nav-item:hover {
+            background: #334155;
+            color: #f1f5f9;
+        }
+
+        .nav-item.active {
+            background: linear-gradient(135deg, #3b82f6, #2563eb);
+            color: white;
+            font-weight: 600;
+        }
+
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        .input-box {
+            width: 100%;
+            padding: 10px;
+            background: var(--bg-secondary);
+            border: 1px solid var(--border-primary);
+            border-radius: 8px;
+            color: var(--text-primary);
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #3b82f6, #2563eb);
+            color: white;
+            padding: 12px 20px;
+            border-radius: 8px;
+            font-weight: 700;
+            cursor: pointer;
+            border: none;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+        }
+    </style>
+</head>
+
+<body class="h-screen flex overflow-hidden">
+    <!-- Sidebar -->
+    <aside class="w-72 flex flex-col h-full"
+        style="background: var(--bg-secondary); border-right: 1px solid var(--border-primary);">
+        <div class="p-6 border-b" style="border-color: var(--border-primary);">
+            <div class="flex items-center justify-between">
+                <h1 class="text-2xl font-black" style="color: var(--text-primary);"><span class="text-blue-500">●</span>
+                    TDS.OS</h1>
+                <button onclick="toggleTheme()" class="p-2 rounded-lg hover:bg-gray-700 transition">
+                    <span id="theme-icon">🌙</span>
+                </button>
+            </div>
+            <p class="text-xs ml-7 mt-2" style="color: var(--text-secondary);">v18.1 智能知识库版</p>
+        </div>
+        <nav class="flex-1 p-3 overflow-y-auto">
+            <div class="px-4 mb-2 mt-2 text-xs font-bold text-blue-400 uppercase">核心</div>
+            <button onclick="switchTab('dashboard')" class="nav-item active"
+                id="nav-dashboard"><span>🏠</span><span>指挥舱</span></button>
+            <div class="px-4 mb-2 mt-4 text-xs font-bold text-blue-400 uppercase">知识库</div>
+            <button onclick="switchTab('product-db')" class="nav-item"
+                id="nav-product-db"><span>🗂️</span><span>产品资料</span></button>
+            <button onclick="switchTab('keyword-vault')" class="nav-item"
+                id="nav-keyword-vault"><span>🔑</span><span>SEO词库</span></button>
+            <div class="px-4 mb-2 mt-4 text-xs font-bold text-blue-400 uppercase">策划</div>
+            <button onclick="switchTab('weekly-plan')" class="nav-item"
+                id="nav-weekly-plan"><span>📅</span><span>内容日历</span></button>
+            <button onclick="switchTab('exhibition')" class="nav-item"
+                id="nav-exhibition"><span>🎪</span><span>展会作战</span></button>
+            <div class="px-4 mb-2 mt-4 text-xs font-bold text-blue-400 uppercase">执行</div>
+            <button onclick="switchTab('ad-doctor')" class="nav-item"
+                id="nav-ad-doctor"><span>🩺</span><span>广告诊断</span></button>
+            <button onclick="switchTab('budget')" class="nav-item"
+                id="nav-budget"><span>📊</span><span>资金看板</span></button>
+        </nav>
+        <div class="p-4 border-t text-center text-xs" style="border-color: var(--border-primary);">
+            <button onclick="exportData()" class="hover:text-blue-400" style="color: var(--text-secondary);">☁️
+                备份</button>
+            <span style="color: var(--text-secondary);"> | </span>
+            <button onclick="document.getElementById('import-file').click()" class="hover:text-blue-400"
+                style="color: var(--text-secondary);">📥 恢复</button>
+            <input type="file" id="import-file" class="hidden" onchange="importData(this)">
+        </div>
+    </aside>
+
+    <!-- Main -->
+    <main class="flex-1 overflow-y-auto p-8">
+        <div class="max-w-7xl mx-auto">
+            <!-- Dashboard -->
+            <div id="dashboard" class="tab-content active">
+                <h2 class="text-4xl font-black mb-2" style="color: var(--text-primary);">战略指挥舱</h2>
+                <p class="text-sm mb-8" style="color: var(--text-secondary);">Overview · 一键直达作战前线</p>
+                <div class="grid grid-cols-3 gap-6">
+                    <div class="panel border-l-4 border-blue-500 cursor-pointer hover:scale-105 transition-transform"
+                        onclick="switchTab('budget')">
+                        <div class="flex justify-between items-start mb-2">
+                            <p class="text-xs font-bold text-blue-400 uppercase">可用预算</p>
+                            <span class="text-xs opacity-50">💰</span>
+                        </div>
+                        <div class="text-4xl font-black mt-2" style="color: var(--text-primary);" id="dash-budget">---
+                        </div>
+                        <p class="text-xs mt-2" style="color: var(--text-secondary);" id="dash-budget-detail">加载中...</p>
+                    </div>
+                    <div class="panel border-l-4 border-red-500 cursor-pointer hover:scale-105 transition-transform"
+                        onclick="switchTab('exhibition')">
+                        <div class="flex justify-between items-start mb-2">
+                            <p class="text-xs font-bold text-blue-400 uppercase">下一场展会</p>
+                            <span class="text-xs opacity-50">🎪</span>
+                        </div>
+                        <div class="text-3xl font-black mt-2" style="color: var(--text-primary);" id="dash-expo-name">No
+                            Plan</div>
+                        <div class="text-sm font-bold text-red-400 mt-1">T-<span id="dash-expo-days">0</span> Days</div>
+                    </div>
+                    <div class="panel border-l-4 border-green-500 cursor-pointer hover:scale-105 transition-transform"
+                        onclick="switchTab('ad-doctor')">
+                        <div class="flex justify-between items-start mb-2">
+                            <p class="text-xs font-bold text-blue-400 uppercase">CPL 健康度</p>
+                            <span class="text-xs opacity-50">🩺</span>
+                        </div>
+                        <div class="text-4xl font-black mt-2" id="dash-cpl">---</div>
+                        <p class="text-xs mt-2" id="dash-cpl-status">等待数据...</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Product DB - Smart Knowledge Base -->
+            <div id="product-db" class="tab-content">
+                <h2 class="text-3xl font-black mb-2" style="color: var(--text-primary);">产品知识库 🧠</h2>
+                <p class="text-sm mb-6" style="color: var(--text-secondary);">智能文档系统 · 上传学习检索</p>
+
+                <!-- 主功能区 -->
+                <div class="grid grid-cols-12 gap-6 mb-6">
+                    <!-- 文件上传 -->
+                    <div class="col-span-4">
+                        <div class="panel">
+                            <h3 class="text-lg font-bold mb-4" style="color: var(--text-primary);">📎 上传文档</h3>
+                            <div id="drop-zone"
+                                class="border-2 border-dashed rounded-lg p-8 text-center cursor-pointer transition-all hover:border-blue-500 hover:bg-blue-500 hover:bg-opacity-5"
+                                style="border-color: var(--border-primary);"
+                                onclick="document.getElementById('file-upload').click()">
+                                <div class="text-5xl mb-3">📂</div>
+                                <p class="font-bold mb-2" style="color: var(--text-primary);">拖拽或点击上传</p>
+                                <p class="text-xs" style="color: var(--text-secondary);">支持: TXT, MD, JSON</p>
+                            </div>
+                            <input type="file" id="file-upload" class="hidden" accept=".txt,.md,.json"
+                                onchange="handleKnowledgeFileUpload(event)" multiple>
+
+                            <!-- 统计 -->
+                            <div class="mt-4 p-4 rounded"
+                                style="background: var(--bg-secondary); border: 1px solid var(--border-primary);">
+                                <div class="text-xs font-bold mb-3 text-blue-400 uppercase">知识库统计</div>
+                                <div class="grid grid-cols-2 gap-3 text-sm">
+                                    <div class="text-center p-2 rounded" style="background: var(--bg-panel);">
+                                        <div class="text-2xl font-black text-blue-400" id="doc-count">0</div>
+                                        <div class="text-xs mt-1" style="color: var(--text-secondary);">文档</div>
+                                    </div>
+                                    <div class="text-center p-2 rounded" style="background: var(--bg-panel);">
+                                        <div class="text-2xl font-black text-green-400" id="total-chars">0</div>
+                                        <div class="text-xs mt-1" style="color: var(--text-secondary);">字符</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 智能检索 -->
+                    <div class="col-span-4">
+                        <div class="panel">
+                            <h3 class="text-lg font-bold mb-4" style="color: var(--text-primary);">🔍 智能检索</h3>
+                            <input type="text" id="search-input" placeholder="搜索关键词..." class="input-box mb-4"
+                                oninput="searchKnowledge(this.value)">
+                            <div id="search-results" style="max-height: 350px; overflow-y: auto;">
+                                <div class="text-center py-16 text-sm" style="color: var(--text-secondary);">
+                                    <div class="text-4xl mb-2">🔎</div>
+                                    输入关键词开始搜索
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 文档库 -->
+                    <div class="col-span-4">
+                        <div class="panel">
+                            <h3 class="text-lg font-bold mb-4" style="color: var(--text-primary);">📚 文档库</h3>
+                            <div id="knowledge-docs" style="max-height: 350px; overflow-y: auto;">
+                                <div class="text-center py-16 text-sm" style="color: var(--text-secondary);">
+                                    <div class="text-4xl mb-2">📄</div>
+                                    暂无文档
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 快速录入产品（保留原功能） -->
+                <div class="panel">
+                    <div class="flex justify-between items-center mb-4">
+                        <h3 class="text-lg font-bold" style="color: var(--text-primary);">📋 快速录入产品</h3>
+                        <button onclick="toggleProductForm()"
+                            class="text-sm px-3 py-1 rounded hover:bg-blue-500 hover:bg-opacity-20 transition"
+                            style="color: var(--text-secondary);">
+                            <span id="form-toggle-icon">▼</span> 展开/折叠
+                        </button>
+                    </div>
+                    <div id="product-form-container" class="hidden">
+                        <div class="grid grid-cols-12 gap-4 mb-4">
+                            <input type="text" id="db-name" placeholder="产品型号" class="input-box col-span-3">
+                            <input type="text" id="db-pain" placeholder="核心痛点" class="input-box col-span-3">
+                            <input type="text" id="db-feat" placeholder="详细参数" class="input-box col-span-4">
+                            <button onclick="saveProduct()" class="btn-primary col-span-2">💾 存入</button>
+                        </div>
+                    </div>
+                    <div id="product-list" class="grid grid-cols-3 gap-4 min-h-[100px]">
+                        <div class="col-span-3 text-center py-10 text-sm" style="color: var(--text-secondary);">暂无产品数据
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Weekly Plan -->
+            <div id="weekly-plan" class="tab-content">
+                <h2 class="text-3xl font-black mb-8" style="color: var(--text-primary);">内容日历</h2>
+                <div class="grid grid-cols-12 gap-6">
+                    <div class="col-span-3 panel">
+                        <select id="plan-prod" class="input-box mb-4" onchange="loadProdToPlan()">
+                            <option value="">-- 选择产品 --</option>
+                        </select>
+                        <button onclick="generateWeeklyPlan()" class="btn-primary w-full">📅 生成</button>
+                    </div>
+                    <div class="col-span-9 space-y-4">
+                        <div class="panel border-l-4 border-blue-500">
+                            <h3 class="font-bold mb-2" style="color: var(--text-primary);">周一：直击痛点</h3>
+                            <div id="day1" class="p-4 rounded"
+                                style="background: var(--bg-secondary); color: var(--text-secondary);">等待生成...</div>
+                        </div>
+                        <div class="panel border-l-4 border-yellow-500">
+                            <h3 class="font-bold mb-2" style="color: var(--text-primary);">周三：硬核展示</h3>
+                            <div id="day3" class="p-4 rounded"
+                                style="background: var(--bg-secondary); color: var(--text-secondary);">等待生成...</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Keyword Vault -->
+            <div id="keyword-vault" class="tab-content">
+                <h2 class="text-3xl font-black mb-8" style="color: var(--text-primary);">SEO 关键词金库</h2>
+                <div class="grid grid-cols-2 gap-6">
+                    <div class="panel">
+                        <textarea id="vault-input" class="input-box font-mono text-xs" rows="15"
+                            placeholder="每行一个关键词..."></textarea>
+                        <button onclick="saveKeywords()" class="btn-primary w-full mt-4">💾 存入</button>
+                    </div>
+                    <div class="panel">
+                        <h3 class="font-bold mb-4" style="color: var(--text-primary);">已存 <span id="kw-count">0</span> 词
+                        </h3>
+                        <div id="vault-display" class="p-4 rounded h-64 overflow-auto mb-4 font-mono text-xs"
+                            style="background: var(--bg-secondary); color: var(--text-secondary);">暂无数据</div>
+                        <div class="grid grid-cols-2 gap-4">
+                            <button onclick="formatKeywords('exact')" class="btn-primary">[精准]</button>
+                            <button onclick="formatKeywords('phrase')" class="btn-primary">"词组"</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Exhibition -->
+            <div id="exhibition" class="tab-content">
+                <h2 class="text-3xl font-black mb-8" style="color: var(--text-primary);">展会作战室</h2>
+                <div class="grid grid-cols-3 gap-6">
+                    <div class="panel">
+                        <h3 class="font-bold mb-4" style="color: var(--text-primary);">添加计划</h3>
+                        <input type="text" id="expo-name" placeholder="展会名称" class="input-box mb-3">
+                        <input type="date" id="expo-date" class="input-box mb-4">
+                        <button onclick="addExpo()" class="btn-primary w-full">加入作战图</button>
+                    </div>
+                    <div class="col-span-2">
+                        <div id="expo-list-container" class="space-y-2">
+                            <div class="text-center py-10" style="color: var(--text-secondary);">暂无计划</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Ad Doctor -->
+            <div id="ad-doctor" class="tab-content">
+                <h2 class="text-3xl font-black mb-8" style="color: var(--text-primary);">广告诊断</h2>
+                <div class="grid grid-cols-12 gap-6">
+                    <div class="col-span-4 panel">
+                        <select id="platform-select" class="input-box mb-4">
+                            <option value="tiktok">TikTok</option>
+                            <option value="google">Google Ads</option>
+                        </select>
+                        <div class="grid grid-cols-2 gap-4 mb-4">
+                            <input type="number" id="ad-spend" placeholder="花费 $" class="input-box">
+                            <input type="number" id="leads-count" placeholder="线索数" class="input-box">
+                        </div>
+                        <button onclick="calcDoctor()" class="btn-primary w-full">🩺 诊断</button>
+                    </div>
+                    <div class="col-span-8 panel text-center">
+                        <p class="text-xs font-bold text-blue-400 uppercase mb-4">CPL 成本</p>
+                        <div id="val-cpl" class="text-6xl font-black my-6" style="color: var(--text-primary);">---</div>
+                        <div id="doctor-advice" style="color: var(--text-secondary);">等待输入...</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Budget -->
+            <div id="budget" class="tab-content">
+                <h2 class="text-3xl font-black mb-2" style="color: var(--text-primary);">资金看板</h2>
+                <p class="text-sm mb-8" style="color: var(--text-secondary);">预算监控</p>
+                <div class="grid grid-cols-3 gap-6">
+                    <div class="panel">
+                        <p class="text-xs font-bold text-blue-400 uppercase mb-2">总预算</p>
+                        <input type="number" id="total-budget"
+                            class="text-4xl font-black bg-transparent border-none w-full"
+                            style="color: var(--text-primary);" value="266664" onchange="updateBudget()">
+                    </div>
+                    <div class="panel">
+                        <p class="text-xs font-bold text-blue-400 uppercase mb-2">已消耗</p>
+                        <input type="number" id="spent-amount"
+                            class="text-4xl font-black bg-transparent border-none text-red-500 w-full" value="79600"
+                            onchange="updateBudget()">
+                    </div>
+                    <div class="panel">
+                        <p class="text-xs font-bold text-blue-400 uppercase mb-2">剩余</p>
+                        <div class="text-4xl font-black text-green-500 mt-2" id="remaining-amount">---</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <script>
+        function switchTab(tabId) {
+            document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
+            document.getElementById(tabId).classList.add('active');
+            document.querySelectorAll('.nav-item').forEach(btn => btn.classList.remove('active'));
+            document.getElementById('nav-' + tabId).classList.add('active');
+        }
+
+        let productDB = JSON.parse(localStorage.getItem('tds_product_db') || '[]');
+        let expos = JSON.parse(localStorage.getItem('tds_expos') || '[]');
+        let knowledgeBase = JSON.parse(localStorage.getItem('tds_knowledge_base') || '[]');
+
+        function saveProduct() {
+            const name = document.getElementById('db-name').value;
+            const pain = document.getElementById('db-pain').value;
+            const feat = document.getElementById('db-feat').value;
+            if (!name) return alert('请输入产品型号');
+            productDB.push({ name, pain, feat });
+            localStorage.setItem('tds_product_db', JSON.stringify(productDB));
+            renderDB();
+            document.getElementById('db-name').value = '';
+            document.getElementById('db-pain').value = '';
+            document.getElementById('db-feat').value = '';
+            alert('已存入');
+        }
+
+        function renderDB() {
+            const list = document.getElementById('product-list');
+            updateDropdowns();
+            if (productDB.length === 0) {
+                list.innerHTML = '<div class="col-span-3 text-center py-10 text-sm" style="color: var(--text-secondary);">暂无产品数据</div>';
+                return;
+            }
+            list.innerHTML = productDB.map((p, i) => `
+                <div class="p-4 rounded border" style="background: var(--bg-secondary); border-color: var(--border-primary);">
+                    <div class="flex justify-between mb-2">
+                        <h4 class="font-bold" style="color: var(--text-primary);">${p.name}</h4>
+                        <button onclick="delProd(${i})" class="text-red-500 hover:text-red-400">×</button>
+                    </div>
+                    <p class="text-xs" style="color: var(--text-secondary);">${p.pain}</p>
+                </div>
+            `).join('');
+        }
+
+        function updateDropdowns() {
+            const opts = '<option value="">-- 选择 --</option>' + productDB.map((p, i) => `<option value="${i}">${p.name}</option>`).join('');
+            document.getElementById('plan-prod').innerHTML = opts;
+        }
+
+        function delProd(i) {
+            if (confirm('确定删除?')) {
+                productDB.splice(i, 1);
+                localStorage.setItem('tds_product_db', JSON.stringify(productDB));
+                renderDB();
+            }
+        }
+
+        function loadProdToPlan() {
+            const idx = document.getElementById('plan-prod').value;
+            if (idx === "") return;
+            const p = productDB[idx];
+            // 存储当前选择的产品
+            localStorage.setItem('current_plan_product', JSON.stringify(p));
+        }
+
+        function generateWeeklyPlan() {
+            const idx = document.getElementById('plan-prod').value;
+            if (idx === "") return alert("请先选择产品");
+            const p = productDB[idx];
+            document.getElementById('day1').innerText = `👔 Monday (LinkedIn/FB):\n\n"Struggling with ${p.pain}?"\n\nThe ${p.name} fixes this.`;
+            document.getElementById('day3').innerText = `🎵 Wednesday (TikTok):\n\n(Video: ${p.name} working)\n\nWatch it handle ${p.pain}!`;
+        }
+
+        function saveKeywords() {
+            localStorage.setItem('tds_keywords', document.getElementById('vault-input').value);
+            renderKeywords();
+        }
+
+        function renderKeywords() {
+            const txt = localStorage.getItem('tds_keywords') || "";
+            document.getElementById('vault-input').value = txt;
+            document.getElementById('vault-display').innerText = txt || "暂无数据";
+            document.getElementById('kw-count').innerText = txt.split('\n').filter(l => l.trim()).length;
+        }
+
+        function formatKeywords(t) {
+            const v = document.getElementById('vault-input').value;
+            const res = t === 'exact' ? v.split('\n').map(l => `[${l}]`).join('\n') : v.split('\n').map(l => `"${l}"`).join('\n');
+            navigator.clipboard.writeText(res).then(() => alert('已复制'));
+        }
+
+        function addExpo() {
+            const n = document.getElementById('expo-name').value;
+            const d = document.getElementById('expo-date').value;
+            if (!n) return alert('请输入展会名称');
+            expos.push({ name: n, date: d });
+            localStorage.setItem('tds_expos', JSON.stringify(expos));
+            renderExpos();
+            updateDashboard();
+            document.getElementById('expo-name').value = '';
+            document.getElementById('expo-date').value = '';
+        }
+
+        function renderExpos() {
+            const list = document.getElementById('expo-list-container');
+            if (expos.length === 0) {
+                list.innerHTML = '<div class="text-center py-10" style="color: var(--text-secondary);">暂无计划</div>';
+                return;
+            }
+            list.innerHTML = expos.map((ex, i) => `
+                <div class="panel flex justify-between items-center">
+                    <div>
+                        <div class="font-bold" style="color: var(--text-primary);">${ex.name}</div>
+                        <div class="text-sm" style="color: var(--text-secondary);">${ex.date}</div>
+                    </div>
+                    <button onclick="removeExpo(${i})" class="text-red-500 hover:text-red-400">删除</button>
+                </div>
+            `).join('');
+        }
+
+        function removeExpo(i) {
+            if (confirm('确定删除?')) {
+                expos.splice(i, 1);
+                localStorage.setItem('tds_expos', JSON.stringify(expos));
+                renderExpos();
+                updateDashboard();
+            }
+        }
+
+        function calcDoctor() {
+            const s = parseFloat(document.getElementById('ad-spend').value);
+            const l = parseFloat(document.getElementById('leads-count').value);
+            if (s && l) {
+                const cpl = s / l;
+                document.getElementById('val-cpl').innerText = '$' + cpl.toFixed(1);
+                localStorage.setItem('tds_last_cpl', '$' + cpl.toFixed(1));
+                updateDashboard();
+            }
+        }
+
+        function updateBudget() {
+            const t = parseFloat(document.getElementById('total-budget').value) || 266664;
+            const s = parseFloat(document.getElementById('spent-amount').value) || 79600;
+            document.getElementById('remaining-amount').innerText = '¥' + (t - s).toLocaleString();
+            localStorage.setItem('tds_total', t);
+            localStorage.setItem('tds_spent', s);
+            updateDashboard();
+        }
+
+        // 核心：战略指挥舱数据联动
+        function updateDashboard() {
+            // 1. 资金看板同步
+            const total = parseFloat(localStorage.getItem('tds_total') || 266664);
+            const spent = parseFloat(localStorage.getItem('tds_spent') || 79600);
+            const remaining = total - spent;
+            document.getElementById('dash-budget').innerText = '¥' + remaining.toLocaleString();
+            document.getElementById('dash-budget-detail').innerText = `总:¥${total.toLocaleString()} · 已用:¥${spent.toLocaleString()}`;
+
+            // 2. 展会作战同步  
+            if (expos.length > 0) {
+                const now = new Date();
+                let nearestExpo = null;
+                let minDays = Infinity;
+                expos.forEach(ex => {
+                    const expoDate = new Date(ex.date);
+                    const diffDays = Math.ceil((expoDate - now) / (1000 * 60 * 60 * 24));
+                    if (diffDays >= 0 && diffDays < minDays) {
+                        minDays = diffDays;
+                        nearestExpo = ex;
+                    }
+                });
+                if (nearestExpo) {
+                    document.getElementById('dash-expo-name').innerText = nearestExpo.name;
+                    document.getElementById('dash-expo-days').innerText = minDays;
+                } else {
+                    document.getElementById('dash-expo-name').innerText = '无近期展会';
+                    document.getElementById('dash-expo-days').innerText = '--';
+                }
+            } else {
+                document.getElementById('dash-expo-name').innerText = 'No Plan';
+                document.getElementById('dash-expo-days').innerText = '0';
+            }
+
+            // 3. CPL 健康度同步
+            const lastCPL = localStorage.getItem('tds_last_cpl') || '---';
+            const cplEl = document.getElementById('dash-cpl');
+            const statusEl = document.getElementById('dash-cpl-status');
+            cplEl.innerText = lastCPL;
+
+            if (lastCPL !== '---') {
+                const cplValue = parseFloat(lastCPL.replace('$', '').replace('¥', ''));
+                if (cplValue <= 400) {
+                    cplEl.className = 'text-4xl font-black mt-2 text-green-500';
+                    statusEl.innerText = '✅ 健康 - 继续保持';
+                    statusEl.className = 'text-xs mt-2 text-green-400';
+                } else if (cplValue <= 600) {
+                    cplEl.className = 'text-4xl font-black mt-2 text-yellow-500';
+                    statusEl.innerText = '⚠️ 警告 - 需优化';
+                    statusEl.className = 'text-xs mt-2 text-yellow-400';
+                } else {
+                    cplEl.className = 'text-4xl font-black mt-2 text-red-500';
+                    statusEl.innerText = '🚨 危险 - 立即优化';
+                    statusEl.className = 'text-xs mt-2 text-red-400';
+                }
+            } else {
+                cplEl.className = 'text-4xl font-black mt-2';
+                cplEl.style.color = 'var(--text-secondary)';
+                statusEl.innerText = '等待数据...';
+                statusEl.className = 'text-xs mt-2';
+                statusEl.style.color = 'var(--text-secondary)';
+            }
+        }
+
+        function toggleTheme() {
+            const body = document.body;
+            const isLight = body.classList.contains('light-mode');
+            if (isLight) {
+                body.classList.remove('light-mode');
+                document.getElementById('theme-icon').innerText = '🌙';
+                localStorage.setItem('theme', 'dark');
+            } else {
+                body.classList.add('light-mode');
+                document.getElementById('theme-icon').innerText = '☀️';
+                localStorage.setItem('theme', 'light');
+            }
+        }
+
+        function loadTheme() {
+            if (localStorage.getItem('theme') === 'light') {
+                document.body.classList.add('light-mode');
+                document.getElementById('theme-icon').innerText = '☀️';
+            }
+        }
+
+        function exportData() {
+            const b = new Blob([JSON.stringify(localStorage)], { type: 'application/json' });
+            const a = document.createElement('a');
+            a.href = URL.createObjectURL(b);
+            a.download = 'tds_backup_' + new Date().toISOString().split('T')[0] + '.json';
+            a.click();
+        }
+
+        function importData(input) {
+            const r = new FileReader();
+            r.onload = e => {
+                Object.assign(localStorage, JSON.parse(e.target.result));
+                location.reload();
+            };
+            r.readAsText(input.files[0]);
+        }
+
+        // 知识库功能
+        function handleKnowledgeFileUpload(event) {
+            const files = event.target.files;
+            if (!files || files.length === 0) return;
+
+            Array.from(files).forEach(file => {
+                const reader = new FileReader();
+                reader.onload = (e) => {
+                    const content = e.target.result;
+                    const doc = {
+                        id: Date.now() + Math.random(),
+                        filename: file.name,
+                        type: file.name.split('.').pop().toLowerCase(),
+                        uploadDate: new Date().toISOString().split('T')[0],
+                        content: content,
+                        size: content.length
+                    };
+                    knowledgeBase.push(doc);
+                    localStorage.setItem('tds_knowledge_base', JSON.stringify(knowledgeBase));
+                    renderKnowledgeDocs();
+                    updateKnowledgeStats();
+                };
+                reader.readAsText(file);
+            });
+        }
+
+        function renderKnowledgeDocs() {
+            const container = document.getElementById('knowledge-docs');
+            if (knowledgeBase.length === 0) {
+                container.innerHTML = '<div class="text-center py-16 text-sm" style="color: var(--text-secondary);"><div class="text-4xl mb-2">📄</div>暂无文档</div>';
+                return;
+            }
+
+            container.innerHTML = knowledgeBase.map((doc, i) => `
+                <div class="mb-3 p-3 rounded border hover:border-blue-500 transition" style="background: var(--bg-secondary); border-color: var(--border-primary);">
+                    <div class="flex justify-between items-start mb-2">
+                        <div class="flex-1">
+                            <div class="font-bold text-sm truncate" style="color: var(--text-primary);" title="${doc.filename}">${doc.filename}</div>
+                            <div class="text-xs mt-1" style="color: var(--text-secondary);">${doc.uploadDate} · ${(doc.size / 1024).toFixed(1)}KB</div>
+                        </div>
+                        <button onclick="viewDocument(${i})" class="ml-2 text-blue-400 hover:text-blue-300 text-xs">查看</button>
+                        <button onclick="deleteDocument(${i})" class="ml-2 text-red-400 hover:text-red-300 text-xs">删除</button>
+                    </div>
+                    <div class="text-xs truncate" style="color: var(--text-secondary);">${doc.content.substring(0, 60)}...</div>
+                </div>
+            `).join('');
+        }
+
+        function searchKnowledge(query) {
+            const resultsContainer = document.getElementById('search-results');
+
+            if (!query || query.trim() === '') {
+                resultsContainer.innerHTML = '<div class="text-center py-16 text-sm" style="color: var(--text-secondary);"><div class="text-4xl mb-2">🔎</div>输入关键词开始搜索</div>';
+                return;
+            }
+
+            const results = knowledgeBase.filter(doc => {
+                const searchText = (doc.filename + ' ' + doc.content).toLowerCase();
+                return searchText.includes(query.toLowerCase());
+            });
+
+            if (results.length === 0) {
+                resultsContainer.innerHTML = '<div class="text-center py-10 text-sm" style="color: var(--text-secondary);">未找到相关内容</div>';
+                return;
+            }
+
+            resultsContainer.innerHTML = results.map((doc) => {
+                const snippet = extractSnippet(doc.content, query);
+                const index = knowledgeBase.findIndex(d => d.id === doc.id);
+                return `
+                    <div class="mb-3 p-3 rounded border hover:border-blue-500 transition cursor-pointer" 
+                         style="background: var(--bg-secondary); border-color: var(--border-primary);"
+                         onclick="viewDocument(${index})">
+                        <div class="font-bold text-sm mb-1" style="color: var(--text-primary);">📄 ${doc.filename}</div>
+                        <div class="text-xs" style="color: var(--text-secondary);">${highlightText(snippet, query)}</div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        function extractSnippet(content, query) {
+            const index = content.toLowerCase().indexOf(query.toLowerCase());
+            if (index === -1) return content.substring(0, 100) + '...';
+
+            const start = Math.max(0, index - 40);
+            const end = Math.min(content.length, index + query.length + 60);
+            let snippet = content.substring(start, end);
+
+            if (start > 0) snippet = '...' + snippet;
+            if (end < content.length) snippet = snippet + '...';
+
+            return snippet;
+        }
+
+        function highlightText(text, query) {
+            const regex = new RegExp(`(${query})`, 'gi');
+            return text.replace(regex, '<span class="bg-yellow-400 text-black px-1 rounded">$1</span>');
+        }
+
+        function viewDocument(index) {
+            const doc = knowledgeBase[index];
+            const modal = `
+                <div class="fixed inset-0 z-50 flex items-center justify-center" style="background: rgba(0,0,0,0.7);" onclick="this.remove()">
+                    <div class="panel max-w-4xl w-full m-8 max-h-[80vh] overflow-auto" onclick="event.stopPropagation()">
+                        <div class="flex justify-between items-start mb-4">
+                            <div>
+                                <h3 class="text-xl font-bold" style="color: var(--text-primary);">${doc.filename}</h3>
+                                <p class="text-xs mt-1" style="color: var(--text-secondary);">${doc.uploadDate} · ${(doc.size / 1024).toFixed(1)}KB</p>
+                            </div>
+                            <button onclick="this.closest('.fixed').remove()" class="text-2xl hover:text-red-400" style="color: var(--text-secondary);">×</button>
+                        </div>
+                        <div class="p-4 rounded font-mono text-sm whitespace-pre-wrap" style="background: var(--bg-secondary); color: var(--text-secondary); max-height: 60vh; overflow-auto;">${doc.content}</div>
+                    </div>
+                </div>
+            `;
+            document.body.insertAdjacentHTML('beforeend', modal);
+        }
+
+        function deleteDocument(index) {
+            if (confirm('确定删除这个文档吗？')) {
+                knowledgeBase.splice(index, 1);
+                localStorage.setItem('tds_knowledge_base', JSON.stringify(knowledgeBase));
+                renderKnowledgeDocs();
+                updateKnowledgeStats();
+            }
+        }
+
+        function updateKnowledgeStats() {
+            document.getElementById('doc-count').innerText = knowledgeBase.length;
+            const totalChars = knowledgeBase.reduce((sum, doc) => sum + doc.size, 0);
+            document.getElementById('total-chars').innerText = totalChars.toLocaleString();
+        }
+
+        function toggleProductForm() {
+            const form = document.getElementById('product-form-container');
+            form.classList.toggle('hidden');
+        }
+
+        window.onload = function () {
+            loadTheme();
+            renderDB();
+            renderKeywords();
+            renderExpos();
+            renderKnowledgeDocs();
+            updateKnowledgeStats();
+            const total = localStorage.getItem('tds_total') || 266664;
+            const spent = localStorage.getItem('tds_spent') || 79600;
+            document.getElementById('total-budget').value = total;
+            document.getElementById('spent-amount').value = spent;
+            updateDashboard();
+        }
+    </script>
+</body>
+
+</html>
