@@ -4015,10 +4015,12 @@ let userRole = null;
 let allowedModules = [];
 
 // Initialize Auth
-function initAuth() {
+async function initAuth() {
     // Check if Supabase SDK is loaded
     if (typeof window.supabase === 'undefined') {
         console.error('Supabase SDK not loaded');
+        // Fallback: Try to load it dynamically or show error
+        showToast('System Error: Auth SDK failed to load', 'error');
         return;
     }
 
@@ -4027,21 +4029,25 @@ function initAuth() {
         // Show config modal or alert
         console.warn('Supabase credentials not configured');
         // Temporarily bypass for demo/dev if needed, or enforce login
-        // showAuthModal(); 
+        // showAuthModal();
         return;
     }
 
     try {
+        // Initialize Client
         supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
         // Check session
-        supabase.auth.getSession().then(({ data: { session } }) => {
-            if (session) {
-                handleSessionSuccess(session);
-            } else {
-                showAuthModal();
-            }
-        });
+        const { data: { session }, error } = await supabase.auth.getSession();
+
+        if (error) {
+            console.error('Session check error:', error);
+            showAuthModal(); // Default to login on error
+        } else if (session) {
+            await handleSessionSuccess(session);
+        } else {
+            showAuthModal();
+        }
 
         // Listen for auth changes
         supabase.auth.onAuthStateChange((event, session) => {
