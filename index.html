@@ -2449,8 +2449,103 @@ Best regards,
 
 
 
-    <!-- Cache Busting: v18.8 (Forced Fix) -->
-    <script src="app.js?v=18.8" defer></script>
+    <!-- Auth Modal (Added for Phase 18) -->
+    <div id="auth-modal"
+        class="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm hidden">
+        <div class="bg-gray-900 border border-gray-700 p-8 rounded-2xl w-96 shadow-2xl relative">
+            <h2
+                class="text-2xl font-black mb-6 text-center bg-clip-text text-transparent bg-gradient-to-r from-blue-400 to-purple-600">
+                Morgan.OS ID</h2>
+
+            <div class="space-y-4">
+                <div>
+                    <label class="text-xs text-gray-500 uppercase font-bold">Email</label>
+                    <input type="email" id="auth-email"
+                        class="w-full bg-gray-800 border border-gray-700 rounded p-3 mt-1 text-white focus:border-blue-500 outline-none"
+                        placeholder="name@company.com">
+                </div>
+                <div>
+                    <label class="text-xs text-gray-500 uppercase font-bold">Password</label>
+                    <input type="password" id="auth-password"
+                        class="w-full bg-gray-800 border border-gray-700 rounded p-3 mt-1 text-white focus:border-blue-500 outline-none"
+                        placeholder="••••••••">
+                </div>
+
+                <div id="auth-error" class="text-red-500 text-xs text-center hidden"></div>
+
+                <button onclick="handleLogin()"
+                    class="w-full py-3 bg-blue-600 hover:bg-blue-500 text-white font-bold rounded-lg transition shadow-lg shadow-blue-900/50">
+                    Login / 登录
+                </button>
+                <button onclick="handleRegister()"
+                    class="w-full py-3 bg-gray-800 hover:bg-gray-700 text-gray-300 font-bold rounded-lg transition">
+                    Register / 注册
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Inline Auth Logic
+        async function handleLogin() {
+            const email = document.getElementById('auth-email').value;
+            const password = document.getElementById('auth-password').value;
+            const errorEl = document.getElementById('auth-error');
+
+            if (!email || !password) {
+                errorEl.innerText = '请填写邮箱和密码';
+                errorEl.classList.remove('hidden');
+                return;
+            }
+
+            errorEl.classList.add('hidden');
+
+            try {
+                if (window.supabase) {
+                    const { data, error } = await window.supabase.auth.signInWithPassword({
+                        email: email,
+                        password: password
+                    });
+                    if (error) throw error;
+                    // Success is handled by onAuthStateChange in app.js
+                    document.getElementById('auth-modal').classList.add('hidden');
+                } else {
+                    throw new Error('Supabase SDK not ready');
+                }
+            } catch (e) {
+                errorEl.innerText = e.message;
+                errorEl.classList.remove('hidden');
+            }
+        }
+
+        async function handleRegister() {
+            const email = document.getElementById('auth-email').value;
+            const password = document.getElementById('auth-password').value;
+            const errorEl = document.getElementById('auth-error');
+            if (!email || !password) {
+                errorEl.innerText = '请填写邮箱和密码';
+                errorEl.classList.remove('hidden');
+                return;
+            }
+
+            try {
+                if (window.supabase) {
+                    const { data, error } = await window.supabase.auth.signUp({
+                        email: email,
+                        password: password
+                    });
+                    if (error) throw error;
+                    alert('注册成功！请检查邮箱验证或直接登录。');
+                }
+            } catch (e) {
+                errorEl.innerText = e.message;
+                errorEl.classList.remove('hidden');
+            }
+        }
+    </script>
+
+    <!-- Cache Busting: v18.9 (Auth Added) -->
+    <script src="app.js?v=18.9" defer></script>
     <script>
         // Init Workflow Engine when tab is shown
         const originalShowTab = showTab;
