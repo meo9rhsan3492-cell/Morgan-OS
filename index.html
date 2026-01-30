@@ -277,93 +277,83 @@
         </div>
     </div>
 
-    <!-- Sidebar -->
-    <aside id="sidebar"
-        class="w-72 flex flex-col h-full fixed md:relative z-40 transition-transform transform -translate-x-full md:translate-x-0"
-        style="background: var(--bg-secondary); backdrop-filter: blur(20px); border-right: 1px solid var(--border-primary);">
-        <div class="p-6 border-b" style="border-color: var(--border-primary);">
-            <div class="flex items-center justify-between mb-2">
-                <h1 class="text-2xl font-black" style="color: var(--text-primary);"><span class="text-blue-500">●</span>
-                    Morgan.OS</h1>
-                <button onclick="toggleTheme()" class="p-2 rounded-lg hover:bg-gray-700 transition">
-                    <span id="theme-icon">🌙</span>
-                </button>
-            </div>
-            <!-- 🆕 Phase 17: User Info -->
-            <div id="user-info" class="flex items-center gap-2 px-1">
-                <span class="text-xs text-gray-500">未登录</span>
-            </div>
-            <button onclick="toggleSidebar()"
-                class="md:hidden absolute top-4 right-4 p-2 rounded-lg hover:bg-gray-700 transition text-gray-400">
-                class="md:hidden p-2 rounded-lg hover:bg-gray-700 transition text-gray-400">
-                ✕
-            </button>
-        </div>
-        </div>
-        <p class="text-xs ml-7 mt-2 text-green-400 font-bold">v18.13 CODE REPAIRED</p>
-        </div>
-        <nav class="flex-1 p-3 overflow-y-auto">
-            <div class="px-4 mb-2 mt-2 text-xs font-bold text-blue-400 uppercase">核心</div>
-            <button onclick="switchTab('dashboard')" class="nav-item active"
-                id="nav-dashboard"><span>🏠</span><span>指挥舱</span></button>
-            <div class="px-4 mb-2 mt-4 text-xs font-bold text-blue-400 uppercase">知识库</div>
-            <button onclick="switchTab('product-db')" class="nav-item"
-                id="nav-product-db"><span>🗂️</span><span>公司Rag知识库</span></button>
-            <button onclick="switchTab('keyword-vault')" class="nav-item"
-                id="nav-keyword-vault"><span>🔑</span><span>SEO词库</span></button>
-            <div class="px-4 mb-2 mt-4 text-xs font-bold text-blue-400 uppercase">策划</div>
-            <button onclick="switchTab('weekly-plan')" class="nav-item"
-                id="nav-weekly-plan"><span>📅</span><span>内容日历</span></button>
-            <button onclick="switchTab('exhibition')" class="nav-item"
-                id="nav-exhibition"><span>🎪</span><span>展会作战</span></button>
-            <div class="px-4 mb-2 mt-4 text-xs font-bold text-blue-400 uppercase">执行</div>
-            <button onclick="switchTab('ad-doctor')" class="nav-item"
-                id="nav-ad-doctor"><span>🩺</span><span>广告诊断</span></button>
-            <button onclick="switchTab('budget')" class="nav-item"
-                id="nav-budget"><span>📊</span><span>资金看板</span></button>
-            <button onclick="switchTab('social-matrix')" class="nav-item"
-                id="nav-social-matrix"><span>🌍</span><span>社媒矩阵</span></button>
-            <button onclick="switchTab('competitor-watch')" class="nav-item"
-                id="nav-competitor-watch"><span>⚔️</span><span>竞对情报局</span></button>
-            <button onclick="switchTab('price-calculator')" class="nav-item"
-                id="nav-price-calculator"><span>💰</span><span>报价计算器</span></button>
-            <div class="px-4 mb-2 mt-4 text-xs font-bold text-blue-400 uppercase">工具</div>
-            <button onclick="switchTab('customer-deep-dive')" class="nav-item"
-                id="nav-deep-dive"><span>🕵️</span><span>客户背调
-                    (KYC)</span></button>
-            <button onclick="switchTab('rfq-decoder')" class="nav-item" id="nav-rfq"><span>🧩</span><span>询盘解码
-                    (RFQ)</span></button>
-            <button onclick="switchTab('email-templates')" class="nav-item"
-                id="nav-email-templates"><span>📧</span><span>邮件模板库</span></button>
-            <div class="px-4 mb-2 mt-4 text-xs font-bold text-blue-400 uppercase">自动化</div>
-            <button onclick="switchTab('automation')" class="nav-item" id="nav-automation"><span>⚡</span><span>工作流
-                    (n8n)</span></button>
-            <button onclick="switchTab('auto-flow')" class="nav-item" id="nav-auto-flow"><span>🌀</span><span>智能流程
-                    (Auto-Flow)</span></button>
-            <div class="px-4 mb-2 mt-4 text-xs font-bold text-blue-400 uppercase">AI 助手</div>
-            <a href="seo_ai.html" target="_blank" class="nav-item"
-                style="display: flex; align-items: center; gap: 12px; text-decoration: none;">
-                <span>🤖</span><span>SEO AI</span>
-            </a>
-            <a href="ad_oracle.html" target="_blank" class="nav-item"
-                style="display: flex; align-items: center; gap: 12px; text-decoration: none;">
-                <span>🔮</span><span>广告预言家</span>
-            </a>
-        </nav>
-        <div class="p-4 border-t text-center text-xs" style="border-color: var(--border-primary);">
-            <button onclick="exportData()" class="hover:text-blue-400" style="color: var(--text-secondary);">☁️
-                备份</button>
-            <span style="color: var(--text-secondary);"> | </span>
-            <button onclick="document.getElementById('import-file').click()" class="hover:text-blue-400"
-                style="color: var(--text-secondary);">📥 恢复</button>
-            <span style="color: var(--text-secondary);"> | </span>
-            <button onclick="configureSettings()" class="hover:text-blue-400" style="color: var(--text-secondary);">⚙️
-                设置</button>
-            <span style="color: var(--text-secondary);"> | </span>
-            <button onclick="handleLogout()" class="hover:text-red-400" style="color: var(--text-secondary);">🚪
-                退出</button>
-            <input type="file" id="import-file" class="hidden" onchange="importData(this)">
-        </div>
+    <button onclick="toggleTheme()" class="p-2 rounded-lg hover:bg-gray-700 transition">
+        <span id="theme-icon">🌙</span>
+    </button>
+    </div>
+    <!-- 🆕 Phase 17: User Info -->
+    <div id="user-info" class="flex items-center gap-2 px-1">
+        <span class="text-xs text-gray-500">未登录</span>
+    </div>
+    <button onclick="toggleSidebar()"
+        class="md:hidden absolute top-4 right-4 p-2 rounded-lg hover:bg-gray-700 transition text-gray-400">
+        class="md:hidden p-2 rounded-lg hover:bg-gray-700 transition text-gray-400">
+        ✕
+    </button>
+    </div>
+    </div>
+    <p class="text-xs ml-7 mt-2 text-green-400 font-bold">v18.14 STRICT AUTH</p>
+    </div>
+    <nav class="flex-1 p-3 overflow-y-auto">
+        <div class="px-4 mb-2 mt-2 text-xs font-bold text-blue-400 uppercase">核心</div>
+        <button onclick="switchTab('dashboard')" class="nav-item active"
+            id="nav-dashboard"><span>🏠</span><span>指挥舱</span></button>
+        <div class="px-4 mb-2 mt-4 text-xs font-bold text-blue-400 uppercase">知识库</div>
+        <button onclick="switchTab('product-db')" class="nav-item"
+            id="nav-product-db"><span>🗂️</span><span>公司Rag知识库</span></button>
+        <button onclick="switchTab('keyword-vault')" class="nav-item"
+            id="nav-keyword-vault"><span>🔑</span><span>SEO词库</span></button>
+        <div class="px-4 mb-2 mt-4 text-xs font-bold text-blue-400 uppercase">策划</div>
+        <button onclick="switchTab('weekly-plan')" class="nav-item"
+            id="nav-weekly-plan"><span>📅</span><span>内容日历</span></button>
+        <button onclick="switchTab('exhibition')" class="nav-item"
+            id="nav-exhibition"><span>🎪</span><span>展会作战</span></button>
+        <div class="px-4 mb-2 mt-4 text-xs font-bold text-blue-400 uppercase">执行</div>
+        <button onclick="switchTab('ad-doctor')" class="nav-item"
+            id="nav-ad-doctor"><span>🩺</span><span>广告诊断</span></button>
+        <button onclick="switchTab('budget')" class="nav-item" id="nav-budget"><span>📊</span><span>资金看板</span></button>
+        <button onclick="switchTab('social-matrix')" class="nav-item"
+            id="nav-social-matrix"><span>🌍</span><span>社媒矩阵</span></button>
+        <button onclick="switchTab('competitor-watch')" class="nav-item"
+            id="nav-competitor-watch"><span>⚔️</span><span>竞对情报局</span></button>
+        <button onclick="switchTab('price-calculator')" class="nav-item"
+            id="nav-price-calculator"><span>💰</span><span>报价计算器</span></button>
+        <div class="px-4 mb-2 mt-4 text-xs font-bold text-blue-400 uppercase">工具</div>
+        <button onclick="switchTab('customer-deep-dive')" class="nav-item" id="nav-deep-dive"><span>🕵️</span><span>客户背调
+                (KYC)</span></button>
+        <button onclick="switchTab('rfq-decoder')" class="nav-item" id="nav-rfq"><span>🧩</span><span>询盘解码
+                (RFQ)</span></button>
+        <button onclick="switchTab('email-templates')" class="nav-item"
+            id="nav-email-templates"><span>📧</span><span>邮件模板库</span></button>
+        <div class="px-4 mb-2 mt-4 text-xs font-bold text-blue-400 uppercase">自动化</div>
+        <button onclick="switchTab('automation')" class="nav-item" id="nav-automation"><span>⚡</span><span>工作流
+                (n8n)</span></button>
+        <button onclick="switchTab('auto-flow')" class="nav-item" id="nav-auto-flow"><span>🌀</span><span>智能流程
+                (Auto-Flow)</span></button>
+        <div class="px-4 mb-2 mt-4 text-xs font-bold text-blue-400 uppercase">AI 助手</div>
+        <a href="seo_ai.html" target="_blank" class="nav-item"
+            style="display: flex; align-items: center; gap: 12px; text-decoration: none;">
+            <span>🤖</span><span>SEO AI</span>
+        </a>
+        <a href="ad_oracle.html" target="_blank" class="nav-item"
+            style="display: flex; align-items: center; gap: 12px; text-decoration: none;">
+            <span>🔮</span><span>广告预言家</span>
+        </a>
+    </nav>
+    <div class="p-4 border-t text-center text-xs" style="border-color: var(--border-primary);">
+        <button onclick="exportData()" class="hover:text-blue-400" style="color: var(--text-secondary);">☁️
+            备份</button>
+        <span style="color: var(--text-secondary);"> | </span>
+        <button onclick="document.getElementById('import-file').click()" class="hover:text-blue-400"
+            style="color: var(--text-secondary);">📥 恢复</button>
+        <span style="color: var(--text-secondary);"> | </span>
+        <button onclick="configureSettings()" class="hover:text-blue-400" style="color: var(--text-secondary);">⚙️
+            设置</button>
+        <span style="color: var(--text-secondary);"> | </span>
+        <button onclick="handleLogout()" class="hover:text-red-400" style="color: var(--text-secondary);">🚪
+            退出</button>
+        <input type="file" id="import-file" class="hidden" onchange="importData(this)">
+    </div>
     </aside>
 
     <!-- Main -->
@@ -2556,8 +2546,8 @@ Best regards,
         }
     </script>
 
-    <!-- Cache Busting: v18.13 (Code Verified) -->
-    <script src="app.js?v=18.13" defer></script>
+    <!-- Cache Busting: v18.14 (Strict Auth) -->
+    <script src="app.js?v=18.14" defer></script>
     <script>
         // Init Workflow Engine when tab is shown
         const originalShowTab = showTab;

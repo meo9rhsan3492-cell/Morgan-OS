@@ -51,6 +51,10 @@ async function initAuth() {
         supabase.auth.onAuthStateChange((event, session) => {
             if (event === 'SIGNED_OUT') {
                 showAuthModal();
+                // Hide Main App
+                const appMain = document.getElementById('app-main');
+                if(appMain) appMain.classList.add('hidden');
+                
                 currentUser = null;
                 updateUserDisplay(null);
             } else if (event === 'SIGNED_IN' && session) {
@@ -80,6 +84,10 @@ function hideAuthModal() {
 async function handleSessionSuccess(session) {
     currentUser = session.user;
     hideAuthModal();
+    // Reveal Main App
+    const appMain = document.getElementById('app-main');
+    if(appMain) appMain.classList.remove('hidden');
+    
     // Load Profile
     await loadUserProfile(currentUser.id);
     if (typeof showToast === 'function') showToast('欢迎回来, ' + (userRole || 'User'), 'success');
@@ -206,8 +214,16 @@ def rebuild_app():
     print(f"Reading base: {base_file}")
     with open(base_file, 'r', encoding='utf-8') as f:
         base_content = f.read()
+
+    # Read Deep Dive Module
+    try:
+        with open('app_part_deepdive.js', 'r', encoding='utf-8') as f:
+            deep_dive_content = f.read()
+    except:
+        print("Warning: app_part_deepdive.js not found or read error.")
+        deep_dive_content = "// Deep Dive Module Missing"
         
-    final_content = base_content + "\n\n" + AUTH_MODULE + "\n\n" + NAV_MODULE
+    final_content = base_content + "\n\n" + AUTH_MODULE + "\n\n" + NAV_MODULE + "\n\n" + deep_dive_content
     
     print(f"Writing target: {target_file}")
     with open(target_file, 'w', encoding='utf-8') as f:
