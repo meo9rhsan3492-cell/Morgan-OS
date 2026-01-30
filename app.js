@@ -471,57 +471,57 @@ function updateDashboard() {
                     budgetChartIns.data.datasets[0].data = [total, spent];
                     budgetChartIns.update();
                 }
-            }
-// ==========================================
-// 7. Data Backup & Resume (Robust)
-// ==========================================
-function exportData() {
-                    const backup = {};
-                    // Auto-capture all TDS keys
-                    for (let i = 0; i < localStorage.length; i++) {
-                        const key = localStorage.key(i);
-                        if (key.startsWith('tds_')) {
-                            backup[key] = localStorage.getItem(key);
-                        }
+            });
+            // ==========================================
+            // 7. Data Backup & Resume (Robust)
+            // ==========================================
+            function exportData() {
+                const backup = {};
+                // Auto-capture all TDS keys
+                for (let i = 0; i < localStorage.length; i++) {
+                    const key = localStorage.key(i);
+                    if (key.startsWith('tds_')) {
+                        backup[key] = localStorage.getItem(key);
                     }
-                    // Metadata
-                    backup['_meta'] = {
-                        version: '18.2',
-                        date: new Date().toISOString(),
-                        user: 'admin'
-                    };
-                    const b = new Blob([JSON.stringify(backup, null, 2)], { type: 'application/json' });
-                    const a = document.createElement('a');
-                    a.href = URL.createObjectURL(b);
-                    a.download = `tds_backup_${new Date().toISOString().split('T')[0]}.json`;
-                    a.click();
-                    showToast('全站数据备份已下载', 'success');
                 }
-function importData(input) {
-                    const r = new FileReader();
-                    r.onload = e => {
-                        try {
-                            const data = JSON.parse(e.target.result);
-                            let count = 0;
-                            // Restore keys
-                            Object.keys(data).forEach(k => {
-                                if (k.startsWith('tds_')) {
-                                    localStorage.setItem(k, data[k]);
-                                    count++;
-                                }
-                            });
-                            showToast(`成功恢复 ${count} 项数据，系统即将重启`, 'success');
-                            setTimeout(() => location.reload(), 1500);
-                        } catch (err) {
-                            showToast('备份文件损坏或格式无效', 'error');
-                        }
-                    };
-                    r.readAsText(input.files[0]);
-                }
-// ==========================================
-// 8. Knowledge Base Core
-// ==========================================
-let kbViewMode = 'list'; // 'list' or 'qa'
+                // Metadata
+                backup['_meta'] = {
+                    version: '18.2',
+                    date: new Date().toISOString(),
+                    user: 'admin'
+                };
+                const b = new Blob([JSON.stringify(backup, null, 2)], { type: 'application/json' });
+                const a = document.createElement('a');
+                a.href = URL.createObjectURL(b);
+                a.download = `tds_backup_${new Date().toISOString().split('T')[0]}.json`;
+                a.click();
+                showToast('全站数据备份已下载', 'success');
+            }
+            function importData(input) {
+                const r = new FileReader();
+                r.onload = e => {
+                    try {
+                        const data = JSON.parse(e.target.result);
+                        let count = 0;
+                        // Restore keys
+                        Object.keys(data).forEach(k => {
+                            if (k.startsWith('tds_')) {
+                                localStorage.setItem(k, data[k]);
+                                count++;
+                            }
+                        });
+                        showToast(`成功恢复 ${count} 项数据，系统即将重启`, 'success');
+                        setTimeout(() => location.reload(), 1500);
+                    } catch (err) {
+                        showToast('备份文件损坏或格式无效', 'error');
+                    }
+                };
+                r.readAsText(input.files[0]);
+            }
+            // ==========================================
+            // 8. Knowledge Base Core
+            // ==========================================
+            let kbViewMode = 'list'; // 'list' or 'qa'
             function toggleKBView() {
                 kbViewMode = kbViewMode === 'list' ? 'qa' : 'list';
                 document.getElementById('kb-view-btn').innerText = kbViewMode === 'qa' ? '📋 切换到 列表模式' : '📋 切换到 QA话术模式';
