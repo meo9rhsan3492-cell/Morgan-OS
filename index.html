@@ -328,7 +328,7 @@
                     <div class="text-xs text-gray-500">未登录</div>
                 </div>
 
-                <div class="mt-2 text-xs text-green-400 font-bold ml-1">v18.20 SYNTAX FIX</div>
+                <div class="mt-2 text-xs text-blue-400 font-bold ml-1">v18.21 ROBUST AUTH</div>
             </div>
 
             <nav class="flex-1 p-3 overflow-y-auto">
@@ -2534,9 +2534,34 @@ Best regards,
     </div>
 
     <script>
-        // Inline Auth Logic (v18.18 Unified)
+        // Inline Auth Logic (v18.21 FALLBACK FIXED)
         let isRegisterMode = false;
         let isLoading = false;
+
+        // 🛡️ Robust Initialization for Auth Modal
+        // Ensure window.sb exists before app.js even loads
+        (function initFastAuth() {
+            const SUPABASE_URL = 'https://ftcaijvfvypcwjgetkvp.supabase.co';
+            const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZ0Y2FpanZmdnlwY3dqZ2V0a3ZwIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjQ1NzM0MDYsImV4cCI6MjA4MDE0OTQwNn0.TQ-ayMDAVizgCxEly_ahflzZYXnBYhQ1sBjQnZ636gQ';
+
+            if (window.supabase) {
+                try {
+                    window.sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+                    console.log('✅ Fast Auth Client Initialized');
+                } catch (e) { console.error('Fast Init Failed:', e); }
+            } else {
+                // If SDK script hasn't loaded (rare), wait for it
+                let attempts = 0;
+                const timer = setInterval(() => {
+                    if (window.supabase) {
+                        window.sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+                        console.log('✅ Delayed Auth Client Initialized');
+                        clearInterval(timer);
+                    }
+                    if (++attempts > 50) clearInterval(timer); // Stop after 5s
+                }, 100);
+            }
+        })();
 
         function toggleAuthMode() {
             isRegisterMode = !isRegisterMode;
