@@ -328,7 +328,7 @@
                     <div class="text-xs text-gray-500">未登录</div>
                 </div>
 
-                <div class="mt-2 text-xs text-blue-400 font-bold ml-1">v18.18 PREMIUM AUTH</div>
+                <div class="mt-2 text-xs text-blue-400 font-bold ml-1">v18.19 AUTH CLIENT FIX</div>
             </div>
 
             <nav class="flex-1 p-3 overflow-y-auto">
@@ -2576,11 +2576,11 @@ Best regards,
             errorEl.classList.add('hidden');
 
             try {
-                if (!window.supabase) throw new Error('System initializing... please wait 1s');
+                if (!window.sb) throw new Error('System initializing... please wait 1s');
 
                 if (isRegisterMode) {
                     // Register
-                    const { data, error } = await window.supabase.auth.signUp({
+                    const { data, error } = await window.sb.auth.signUp({
                         email: email,
                         password: password
                     });
@@ -2592,7 +2592,7 @@ Best regards,
                     toggleAuthMode(); // Switch back to login
                 } else {
                     // Login
-                    const { data, error } = await window.supabase.auth.signInWithPassword({
+                    const { data, error } = await window.sb.auth.signInWithPassword({
                         email: email,
                         password: password
                     });
@@ -2618,8 +2618,8 @@ Best regards,
 
         async function handleLogout() {
             if (confirm('Ready to sign out?')) {
-                if (window.supabase) {
-                    await window.supabase.auth.signOut();
+                if (window.sb) {
+                    await window.sb.auth.signOut();
                     location.reload();
                 }
             }
