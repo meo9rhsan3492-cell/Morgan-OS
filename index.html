@@ -2544,6 +2544,50 @@ Best regards,
             const SUPABASE_URL = 'https://ftcaijvfvypcwjgetkvp.supabase.co';
             const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZ0Y2FpanZmdnlwY3dqZ2V0a3ZwIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjQ1NzM0MDYsImV4cCI6MjA4MDE0OTQwNn0.TQ-ayMDAVizgCxEly_ahflzZYXnBYhQ1sBjQnZ636gQ';
 
+            // 🚀 GUEST MODE BYPASS
+            if (window.location.search.includes('guest=true')) {
+                console.warn('🔓 GUEST MODE ACTIVATED: Mocking Supabase Client');
+                window.sb = {
+                    auth: {
+                        getSession: async () => ({
+                            data: {
+                                session: {
+                                    user: { id: 'guest-007', email: 'guest@morgan.com', role: 'authenticated' }
+                                }
+                            },
+                            error: null
+                        }),
+                        onAuthStateChange: (cb) => {
+                            // Immediately simulate sign-in
+                            setTimeout(() => cb('SIGNED_IN', {
+                                user: { id: 'guest-007', email: 'guest@morgan.com' }
+                            }), 100);
+                            return { data: { subscription: { unsubscribe: () => { } } } };
+                        },
+                        signOut: async () => { window.location.href = window.location.pathname; }, // Clear query param
+                        signUp: async () => ({ error: { message: "Guest mode cannot register." } }),
+                        signInWithPassword: async () => ({ error: { message: "Already logged in as Guest." } })
+                    },
+                    from: (table) => {
+                        console.log(`[MockDB] Select from ${table}`);
+                        return {
+                            select: () => ({
+                                eq: () => ({
+                                    single: async () => {
+                                        if (table === 'profiles') {
+                                            return { data: { role: 'admin', allowed_modules: ['dashboard', 'deepdive', 'calc', 'tracker', 'radar', 'knowledge'] }, error: null };
+                                        }
+                                        return { data: null, error: null };
+                                    },
+                                    maybeSingle: async () => ({ data: null, error: null })
+                                })
+                            })
+                        };
+                    }
+                };
+                return;
+            }
+
             if (window.supabase) {
                 try {
                     window.sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
