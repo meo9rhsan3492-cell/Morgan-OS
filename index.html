@@ -328,7 +328,7 @@
                     <div class="text-xs text-gray-500">未登录</div>
                 </div>
 
-                <div class="mt-2 text-xs text-purple-400 font-bold ml-1">v18.22 GUEST MODE</div>
+                <div class="mt-2 text-xs text-red-400 font-bold ml-1">v18.25 TIMEOUT GUARD</div>
             </div>
 
             <nav class="flex-1 p-3 overflow-y-auto">
@@ -2505,211 +2505,247 @@ Best regards,
                 class="text-2xl font-black mb-6 text-center bg-clip-text text-transparent bg-gradient-to-r from-blue-400 to-purple-600">
                 Morgan.OS ID</h2>
 
-            <div class="space-y-4">
-                <div>
-                    <label class="text-xs text-gray-500 uppercase font-bold">Email</label>
+            <div id="auth-form" class="space-y-4">
+                <div class="relative group">
+                    <div
+                        class="absolute -inset-0.5 bg-gradient-to-r from-blue-500 to-purple-600 rounded-xl opacity-30 group-hover:opacity-100 transition duration-500 blur">
+                    </div>
                     <input type="email" id="auth-email"
-                        class="w-full bg-gray-800 border border-gray-700 rounded p-3 mt-1 text-white focus:border-blue-500 outline-none"
-                        placeholder="name@company.com">
+                        class="relative block w-full bg-slate-800/80 text-white placeholder-gray-500 border border-white/10 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:bg-slate-800 transition-all font-medium"
+                        placeholder="name@morgan.com">
                 </div>
-                <div>
-                    <label class="text-xs text-gray-500 uppercase font-bold">Password</label>
+
+                <div class="relative group">
+                    <div
+                        class="absolute -inset-0.5 bg-gradient-to-r from-blue-500 to-purple-600 rounded-xl opacity-30 group-hover:opacity-100 transition duration-500 blur">
+                    </div>
                     <input type="password" id="auth-password"
-                        class="w-full bg-gray-800 border border-gray-700 rounded p-3 mt-1 text-white focus:border-blue-500 outline-none"
+                        class="relative block w-full bg-slate-800/80 text-white placeholder-gray-500 border border-white/10 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:bg-slate-800 transition-all font-medium"
                         placeholder="••••••••">
                 </div>
 
-                <div id="auth-error" class="text-red-500 text-xs text-center hidden"></div>
+                <div id="auth-error"
+                    class="hidden p-3 bg-red-500/10 border border-red-500/30 rounded-lg text-red-400 text-xs text-center font-medium animate-shake">
+                </div>
 
-                <button onclick="handleLogin()"
-                    class="w-full py-3 bg-blue-600 hover:bg-blue-500 text-white font-bold rounded-lg transition shadow-lg shadow-blue-900/50">
-                    Login / 登录
+                <button onclick="handleAuthSubmit()" id="auth-submit-btn"
+                    class="w-full py-3.5 bg-gradient-to-r from-blue-600 to-blue-500 hover:from-blue-500 hover:to-blue-400 text-white font-bold rounded-xl shadow-lg shadow-blue-600/30 transition-all duration-300 transform active:scale-95 flex items-center justify-center gap-2 group">
+                    <span>Login</span>
+                    <span class="group-hover:translate-x-1 transition-transform">→</span>
                 </button>
-                <button onclick="handleRegister()"
-                    class="w-full py-3 bg-gray-800 hover:bg-gray-700 text-gray-300 font-bold rounded-lg transition">
-                    Register / 注册
-                </button>
+
+                <div class="flex items-center justify-between text-xs text-gray-400 mt-6 pt-4 border-t border-white/5">
+                    <span id="auth-mode-text">Need an account?</span>
+                    <button onclick="toggleAuthMode()" id="auth-toggle-btn"
+                        class="text-blue-400 hover:text-blue-300 font-bold transition-colors">Create Account</button>
+                </div>
+
+                <!-- 🧪 Sandbox Mode (Hidden by default, shown on error) -->
+                <div id="guest-login-div" class="hidden mt-4 pt-3 border-t border-white/5 text-center animate-fade-in">
+                    <button onclick="handleGuestLogin()"
+                        class="text-xs text-gray-500 hover:text-white transition-colors flex items-center justify-center gap-1 mx-auto group">
+                        <span class="grayscale group-hover:grayscale-0 transition">🧪</span>
+                        <span>Sandbox Mode (Skip Login)</span>
+                    </button>
+                </div>
             </div>
-        </div>
-    </div>
 
-    <script>
-        // Inline Auth Logic (v18.21 FALLBACK FIXED)
-        let isRegisterMode = false;
-        let isLoading = false;
+            <script>
+                // Inline Auth Logic (v18.21 FALLBACK FIXED)
+                let isRegisterMode = false;
+                let isLoading = false;
 
-        // 🛡️ Robust Initialization for Auth Modal
-        // Ensure window.sb exists before app.js even loads
-        (function initFastAuth() {
-            const SUPABASE_URL = 'https://ftcaijvfvypcwjgetkvp.supabase.co';
-            const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZ0Y2FpanZmdnlwY3dqZ2V0a3ZwIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjQ1NzM0MDYsImV4cCI6MjA4MDE0OTQwNn0.TQ-ayMDAVizgCxEly_ahflzZYXnBYhQ1sBjQnZ636gQ';
+                // 🛡️ Robust Initialization for Auth Modal
+                // Ensure window.sb exists before app.js even loads
+                (function initFastAuth() {
+                    const SUPABASE_URL = 'https://ftcaijvfvypcwjgetkvp.supabase.co';
+                    const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZ0Y2FpanZmdnlwY3dqZ2V0a3ZwIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjQ1NzM0MDYsImV4cCI6MjA4MDE0OTQwNn0.TQ-ayMDAVizgCxEly_ahflzZYXnBYhQ1sBjQnZ636gQ';
 
-            // 🚀 GUEST MODE BYPASS
-            if (window.location.search.includes('guest=true')) {
-                console.warn('🔓 GUEST MODE ACTIVATED: Mocking Supabase Client');
-                window.sb = {
-                    auth: {
-                        getSession: async () => ({
-                            data: {
-                                session: {
-                                    user: { id: 'guest-007', email: 'guest@morgan.com', role: 'authenticated' }
-                                }
-                            },
-                            error: null
-                        }),
-                        onAuthStateChange: (cb) => {
-                            // Immediately simulate sign-in
-                            setTimeout(() => cb('SIGNED_IN', {
-                                user: { id: 'guest-007', email: 'guest@morgan.com' }
-                            }), 100);
-                            return { data: { subscription: { unsubscribe: () => { } } } };
-                        },
-                        signOut: async () => { window.location.href = window.location.pathname; }, // Clear query param
-                        signUp: async () => ({ error: { message: "Guest mode cannot register." } }),
-                        signInWithPassword: async () => ({ error: { message: "Already logged in as Guest." } })
-                    },
-                    from: (table) => {
-                        console.log(`[MockDB] Select from ${table}`);
-                        return {
-                            select: () => ({
-                                eq: () => ({
-                                    single: async () => {
-                                        if (table === 'profiles') {
-                                            return { data: { role: 'admin', allowed_modules: ['dashboard', 'deepdive', 'calc', 'tracker', 'radar', 'knowledge'] }, error: null };
+                    // 🚀 GUEST MODE BYPASS
+                    if (window.location.search.includes('guest=true')) {
+                        console.warn('🔓 GUEST MODE ACTIVATED: Mocking Supabase Client');
+                        window.sb = {
+                            auth: {
+                                getSession: async () => ({
+                                    data: {
+                                        session: {
+                                            user: { id: 'guest-007', email: 'guest@morgan.com', role: 'authenticated' }
                                         }
-                                        return { data: null, error: null };
                                     },
-                                    maybeSingle: async () => ({ data: null, error: null })
-                                })
-                            })
+                                    error: null
+                                }),
+                                onAuthStateChange: (cb) => {
+                                    // Immediately simulate sign-in
+                                    setTimeout(() => cb('SIGNED_IN', {
+                                        user: { id: 'guest-007', email: 'guest@morgan.com' }
+                                    }), 100);
+                                    return { data: { subscription: { unsubscribe: () => { } } } };
+                                },
+                                signOut: async () => { window.location.href = window.location.pathname; }, // Clear query param
+                                signUp: async () => ({ error: { message: "Guest mode cannot register." } }),
+                                signInWithPassword: async () => ({ error: { message: "Already logged in as Guest." } })
+                            },
+                            from: (table) => {
+                                console.log(`[MockDB] Select from ${table}`);
+                                return {
+                                    select: () => ({
+                                        eq: () => ({
+                                            single: async () => {
+                                                if (table === 'profiles') {
+                                                    return { data: { role: 'admin', allowed_modules: ['dashboard', 'deepdive', 'calc', 'tracker', 'radar', 'knowledge'] }, error: null };
+                                                }
+                                                return { data: null, error: null };
+                                            },
+                                            maybeSingle: async () => ({ data: null, error: null })
+                                        })
+                                    })
+                                };
+                            }
                         };
+                        return;
                     }
-                };
-                return;
-            }
 
-            if (window.supabase) {
-                try {
-                    window.sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-                    console.log('✅ Fast Auth Client Initialized');
-                } catch (e) { console.error('Fast Init Failed:', e); }
-            } else {
-                // If SDK script hasn't loaded (rare), wait for it
-                let attempts = 0;
-                const timer = setInterval(() => {
                     if (window.supabase) {
-                        window.sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-                        console.log('✅ Delayed Auth Client Initialized');
-                        clearInterval(timer);
+                        try {
+                            window.sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+                            console.log('✅ Fast Auth Client Initialized');
+                        } catch (e) { console.error('Fast Init Failed:', e); }
+                    } else {
+                        // If SDK script hasn't loaded (rare), wait for it
+                        let attempts = 0;
+                        const timer = setInterval(() => {
+                            if (window.supabase) {
+                                window.sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+                                console.log('✅ Delayed Auth Client Initialized');
+                                clearInterval(timer);
+                            }
+                            if (++attempts > 50) clearInterval(timer); // Stop after 5s
+                        }, 100);
                     }
-                    if (++attempts > 50) clearInterval(timer); // Stop after 5s
-                }, 100);
-            }
-        })();
+                })();
 
-        function toggleAuthMode() {
-            isRegisterMode = !isRegisterMode;
-            const title = isRegisterMode ? "Join Morgan OS" : "Morgan OS";
-            const btnText = isRegisterMode ? "Create Account" : "Login";
-            const modeText = isRegisterMode ? "Already have an account?" : "Need an account?";
-            const toggleText = isRegisterMode ? "Login" : "Create Account";
+                function toggleAuthMode() {
+                    isRegisterMode = !isRegisterMode;
+                    const title = isRegisterMode ? "Join Morgan OS" : "Morgan OS";
+                    const btnText = isRegisterMode ? "Create Account" : "Login";
+                    const modeText = isRegisterMode ? "Already have an account?" : "Need an account?";
+                    const toggleText = isRegisterMode ? "Login" : "Create Account";
 
-            document.querySelector('#auth-modal h1').innerText = title;
-            document.querySelector('#auth-submit-btn span').innerText = btnText;
-            document.getElementById('auth-mode-text').innerText = modeText;
-            document.getElementById('auth-toggle-btn').innerText = toggleText;
+                    document.querySelector('#auth-modal h1').innerText = title;
+                    document.querySelector('#auth-submit-btn span').innerText = btnText;
+                    document.getElementById('auth-mode-text').innerText = modeText;
+                    document.getElementById('auth-toggle-btn').innerText = toggleText;
 
-            // Clear errors
-            document.getElementById('auth-error').classList.add('hidden');
-        }
-
-        async function handleAuthSubmit() {
-            if (isLoading) return;
-
-            const email = document.getElementById('auth-email').value;
-            const password = document.getElementById('auth-password').value;
-            const errorEl = document.getElementById('auth-error');
-            const submitBtn = document.getElementById('auth-submit-btn');
-            const btnSpan = submitBtn.querySelector('span');
-
-            if (!email || !password) {
-                showError('Please enter email and password');
-                return;
-            }
-
-            // Start Loading
-            isLoading = true;
-            submitBtn.classList.add('opacity-75', 'cursor-not-allowed');
-            const originalText = btnSpan.innerText;
-            btnSpan.innerText = isRegisterMode ? "Creating..." : "Verifying...";
-            errorEl.classList.add('hidden');
-
-            try {
-                if (!window.sb) throw new Error('System initializing... please wait 1s');
-
-                if (isRegisterMode) {
-                    // Register
-                    const { data, error } = await window.sb.auth.signUp({
-                        email: email,
-                        password: password
-                    });
-                    if (error) throw error;
-                    alert('Registration Successful! Logging you in...');
-                    // Auto-login after register usually happens automatically, or requires email confirm.
-                    // For now, let's assume auto-login or ask to login.
-                    showError('Account created! Please verify email or try logging in.', 'text-green-400');
-                    toggleAuthMode(); // Switch back to login
-                } else {
-                    // Login
-                    const { data, error } = await window.sb.auth.signInWithPassword({
-                        email: email,
-                        password: password
-                    });
-                    if (error) throw error;
-                    // Success handled by global listener
+                    // Clear errors
+                    document.getElementById('auth-error').classList.add('hidden');
                 }
-            } catch (e) {
-                console.error(e);
-                showError(e.message || 'Authentication Failed');
-            } finally {
-                isLoading = false;
-                submitBtn.classList.remove('opacity-75', 'cursor-not-allowed');
-                btnSpan.innerText = originalText;
-            }
-        }
 
-        function showError(msg, colorClass = 'text-red-400') {
-            const el = document.getElementById('auth-error');
-            el.innerText = msg;
-            el.className = `p-3 bg-red-500/10 border border-red-500/30 rounded-lg text-xs text-center font-medium ${colorClass}`;
-            el.classList.remove('hidden');
-        }
+                async function handleAuthSubmit() {
+                    if (isLoading) return;
 
-        async function handleLogout() {
-            if (confirm('Ready to sign out?')) {
-                if (window.sb) {
-                    await window.sb.auth.signOut();
-                    location.reload();
+                    const email = document.getElementById('auth-email').value;
+                    const password = document.getElementById('auth-password').value;
+                    const errorEl = document.getElementById('auth-error');
+                    const submitBtn = document.getElementById('auth-submit-btn');
+                    const btnSpan = submitBtn.querySelector('span');
+
+                    if (!email || !password) {
+                        showError('Please enter email and password');
+                        return;
+                    }
+
+                    // Start Loading
+                    isLoading = true;
+                    submitBtn.classList.add('opacity-75', 'cursor-not-allowed');
+                    const originalText = btnSpan.innerText;
+                    btnSpan.innerText = isRegisterMode ? "Creating..." : "Verifying...";
+                    errorEl.classList.add('hidden');
+
+                    // ⏳ Timeout Guard (8s)
+                    const timeoutPromise = new Promise((_, reject) =>
+                        setTimeout(() => reject(new Error('Network Timeout (Firewall?). Click Sandbox Mode below 👇')), 8000)
+                    );
+
+                    try {
+                        if (!window.sb) throw new Error('System initializing... please wait 1s');
+
+                        let result;
+                        if (isRegisterMode) {
+                            // Register with Timeout
+                            const authCall = window.sb.auth.signUp({ email, password });
+                            result = await Promise.race([authCall, timeoutPromise]);
+
+                            if (result.error) throw result.error;
+
+                            if (result.data.user && !result.data.session) {
+                                showError('✅ Reg Success! Please CHECK EMAIL to confirm.', 'text-green-400');
+                                isLoading = false;
+                                submitBtn.classList.remove('opacity-75', 'cursor-not-allowed');
+                                btnSpan.innerText = originalText;
+                                return;
+                            }
+                            toggleAuthMode();
+                        } else {
+                            // Login with Timeout
+                            const authCall = window.sb.auth.signInWithPassword({ email, password });
+                            result = await Promise.race([authCall, timeoutPromise]);
+
+                            if (result.error) throw result.error;
+                            // Success handled by global listener
+                        }
+                    } catch (e) {
+                        console.error("Auth Error:", e);
+                        showError(e.message || 'Authentication Failed');
+
+                        // Always show Sandbox Mode on ANY error/timeout to ensure user isn't stuck
+                        const guestDiv = document.getElementById('guest-login-div');
+                        if (guestDiv) guestDiv.classList.remove('hidden');
+
+                    } finally {
+                        isLoading = false;
+                        submitBtn.classList.remove('opacity-75', 'cursor-not-allowed');
+                        btnSpan.innerText = originalText;
+                    }
                 }
-            }
-        }
-    </script>
 
-    <!-- Cache Busting: v18.14 (Strict Auth) -->
-    <script src="app.js?v=18.14" defer></script>
-    <script>
-        // Init Workflow Engine when tab is shown
-        const originalShowTab = showTab;
-        showTab = function (tabId) {
-            originalShowTab(tabId);
-            if (tabId === 'auto-flow') {
-                if (!window.FlowEngineInitialized) {
-                    FlowEngine.init();
-                    window.FlowEngineInitialized = true;
+                function handleGuestLogin() {
+                    if (confirm('🔒 Enter Sandbox Mode?\n\nThis bypasses authentication for testing UI. Data is local-only.')) {
+                        window.location.href = window.location.pathname + '?guest=true';
+                    }
                 }
-            }
-        }
-    </script>
+
+                function showError(msg, colorClass = 'text-red-400') {
+                    const el = document.getElementById('auth-error');
+                    el.innerText = msg;
+                    el.className = `p-3 bg-red-500/10 border border-red-500/30 rounded-lg text-xs text-center font-medium ${colorClass}`;
+                    el.classList.remove('hidden');
+                }
+
+                async function handleLogout() {
+                    if (confirm('Ready to sign out?')) {
+                        if (window.sb) {
+                            await window.sb.auth.signOut();
+                            location.reload();
+                        }
+                    }
+                }
+            </script>
+
+            <!-- Cache Busting: v18.14 (Strict Auth) -->
+            <script src="app.js?v=18.14" defer></script>
+            <script>
+                // Init Workflow Engine when tab is shown
+                const originalShowTab = showTab;
+                showTab = function (tabId) {
+                    originalShowTab(tabId);
+                    if (tabId === 'auto-flow') {
+                        if (!window.FlowEngineInitialized) {
+                            FlowEngine.init();
+                            window.FlowEngineInitialized = true;
+                        }
+                    }
+                }
+            </script>
 </body>
 
 </html>
