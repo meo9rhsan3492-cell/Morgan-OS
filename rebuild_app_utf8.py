@@ -23,43 +23,71 @@ let allowedModules = [];
 
 // Initialize Auth
 async function initAuth() {
-    // Check if Supabase SDK is loaded
+    // 🚀 GUEST MODE CHECK: If window.sb already exists (set by Guest mode in index.html), use it!
+    if (window.sb) {
+        console.log('✅ Using existing auth client (Guest Mode or pre-initialized)');
+        supabase = window.sb;
+        
+        // Guest mode: Check if we're in guest mode by URL param
+        if (window.location.search.includes('guest=true')) {
+            console.log('🔓 Guest Mode Active - Hiding auth modal and entering app');
+            hideAuthModal();
+            const appMain = document.getElementById('app-main');
+            if(appMain) appMain.classList.remove('hidden');
+            
+            // Set mock user data
+            currentUser = { id: 'guest-007', email: 'guest@morgan.com' };
+            userRole = 'admin'; // Give full access in guest mode
+            updateUserDisplay({ display_name: 'Guest (Demo)', role: 'admin' });
+            if (typeof showToast === 'function') showToast('🧪 Guest Mode Active', 'success');
+            return;
+        }
+        
+        // Not guest mode but sb exists - proceed with normal session check
+        try {
+            const { data: { session }, error } = await supabase.auth.getSession();
+            if (session) {
+                await handleSessionSuccess(session);
+            } else {
+                showAuthModal();
+            }
+        } catch(e) {
+            console.error('Session check error:', e);
+            showAuthModal();
+        }
+        return;
+    }
+
+    // Normal flow: Create new Supabase client if window.sb doesn't exist
     if (typeof window.supabase === 'undefined') {
         console.error('Supabase SDK not loaded');
-        // Fallback: Try to load it dynamically or show error
         if (typeof showToast === 'function') showToast('System Error: Auth SDK failed to load', 'error');
         return;
     }
 
     try {
-        // Initialize Client
         supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-        window.sb = supabase; // Expose for inline scripts
+        window.sb = supabase;
         
-        // Check session
         const { data: { session }, error } = await supabase.auth.getSession();
         
         if (error) {
             console.error('Session check error:', error);
-            showAuthModal(); // Default to login on error
+            showAuthModal();
         } else if (session) {
             await handleSessionSuccess(session);
         } else {
             showAuthModal();
         }
 
-        // Listen for auth changes
         supabase.auth.onAuthStateChange((event, session) => {
             if (event === 'SIGNED_OUT') {
                 showAuthModal();
-                // Hide Main App
                 const appMain = document.getElementById('app-main');
                 if(appMain) appMain.classList.add('hidden');
-                
                 currentUser = null;
                 updateUserDisplay(null);
             } else if (event === 'SIGNED_IN' && session) {
-                // Avoid double-handling if already handled by getSession
                 if (!currentUser || currentUser.id !== session.user.id) {
                     handleSessionSuccess(session);
                 }
@@ -68,7 +96,7 @@ async function initAuth() {
 
     } catch (e) {
         console.error('Supabase init critical error:', e);
-        showAuthModal(); // Fallback to show modal so app isn't dead
+        showAuthModal();
     }
 }
 
