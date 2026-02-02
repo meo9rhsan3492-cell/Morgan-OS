@@ -19,6 +19,33 @@
         // Set worker src for PDF.js
         pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
     </script>
+
+    <!-- 🛡️ GLOBAL UTILITIES - Must be defined BEFORE any other scripts -->
+    <script>
+        // Toast Notification System (Global Definition)
+        function showToast(message, type = 'info') {
+            document.querySelectorAll('.toast-notification').forEach(t => t.remove());
+            const colors = {
+                'info': 'border-blue-500 text-blue-400',
+                'success': 'border-green-500 text-green-400',
+                'warning': 'border-yellow-500 text-yellow-400',
+                'error': 'border-red-500 text-red-400'
+            };
+            const icons = { 'success': '✅', 'error': '❌', 'warning': '⚠️', 'info': 'ℹ️' };
+            const toast = document.createElement('div');
+            toast.className = `toast-notification fixed top-4 right-4 z-[9999] p-4 rounded bg-slate-800 border ${colors[type] || colors.info} shadow-lg transition-all transform translate-y-[-20px] opacity-0 flex items-center gap-3`;
+            toast.innerHTML = `<span class="text-xl">${icons[type] || icons.info}</span><span class="font-bold text-sm">${message}</span>`;
+            document.body.appendChild(toast);
+            setTimeout(() => toast.classList.remove('translate-y-[-20px]', 'opacity-0'), 10);
+            setTimeout(() => {
+                toast.classList.add('translate-y-[-20px]', 'opacity-0');
+                setTimeout(() => toast.remove(), 300);
+            }, 3000);
+        }
+        window.showToast = showToast; // Expose globally
+        console.log('✅ showToast defined globally');
+    </script>
+
     <script>
         tailwind.config = {
             darkMode: 'class',
@@ -328,7 +355,7 @@
                     <div class="text-xs text-gray-500">未登录</div>
                 </div>
 
-                <div class="mt-2 text-xs text-green-400 font-bold ml-1">v18.36 TOAST FIX</div>
+                <div class="mt-2 text-xs text-green-400 font-bold ml-1">v18.37 GLOBAL TOAST</div>
             </div>
 
             <nav class="flex-1 p-3 overflow-y-auto">
