@@ -2,6 +2,13 @@
 // Morgan AI: Customer Deep Dive (Intelligence Center)
 // ==========================================
 
+// 🛡️ Fallback: Ensure showToast exists (in case this file is loaded before app.js)
+if (typeof showToast === 'undefined') {
+    window.showToast = function (message, type = 'info') {
+        console.log(`[Toast ${type}]: ${message}`);
+    };
+}
+
 async function startDeepDive() {
     const urlInput = document.getElementById('dive-url');
     const resultPanel = document.getElementById('dive-result-panel');
