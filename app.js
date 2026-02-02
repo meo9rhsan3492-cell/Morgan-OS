@@ -1765,6 +1765,12 @@ let allowedModules = [];
 
 // Initialize Auth
 async function initAuth() {
+    // 🎯 GUEST MODE: If global flag is set, skip all auth logic
+    if (window.isGuestMode === true) {
+        console.log('🧪 initAuth: Guest Mode detected, skipping auth initialization');
+        return;
+    }
+    
     // 🚀 GUEST MODE CHECK: If window.sb already exists (set by Guest mode in index.html), use it!
     if (window.sb) {
         console.log('✅ Using existing auth client (Guest Mode or pre-initialized)');

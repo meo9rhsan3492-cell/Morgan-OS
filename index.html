@@ -328,7 +328,7 @@
                     <div class="text-xs text-gray-500">未登录</div>
                 </div>
 
-                <div class="mt-2 text-xs text-green-400 font-bold ml-1">v18.30 GUEST FIX</div>
+                <div class="mt-2 text-xs text-green-400 font-bold ml-1">v18.35 GUEST FIXED</div>
             </div>
 
             <nav class="flex-1 p-3 overflow-y-auto">
@@ -2563,7 +2563,11 @@ Best regards,
 
                     // 🚀 GUEST MODE BYPASS
                     if (window.location.search.includes('guest=true')) {
-                        console.warn('🔓 GUEST MODE ACTIVATED: Mocking Supabase Client');
+                        console.warn('🔓 GUEST MODE ACTIVATED: Setting global flag');
+
+                        // 🎯 CRITICAL: Set global flag FIRST - this tells initAuth() to skip everything
+                        window.isGuestMode = true;
+
                         window.sb = {
                             auth: {
                                 getSession: async () => ({
@@ -2603,18 +2607,25 @@ Best regards,
                             }
                         };
 
-                        // 🎯 Guest Mode: Hide auth modal and show main app
-                        setTimeout(() => {
+                        // 🎯 Guest Mode: Hide auth modal and show main app IMMEDIATELY
+                        document.addEventListener('DOMContentLoaded', () => {
                             const authModal = document.getElementById('auth-modal');
-                            if (authModal) {
-                                authModal.classList.add('hidden');
-                                console.log('🏠 Guest Mode: Auth modal hidden, entering app...');
+                            if (authModal) authModal.classList.add('hidden');
+
+                            const appMain = document.getElementById('app-main');
+                            if (appMain) appMain.classList.remove('hidden');
+
+                            // Update user display
+                            const userInfo = document.getElementById('user-info-display');
+                            if (userInfo) {
+                                userInfo.innerHTML = `
+                                    <div class="text-xs text-gray-400">Demo Mode</div>
+                                    <div class="font-bold text-green-400">🧪 Guest</div>
+                                    <div class="text-[10px] text-gray-500">ADMIN</div>
+                                `;
                             }
-                            // Trigger any init functions that depend on auth
-                            if (typeof initAuth === 'function') {
-                                initAuth().catch(e => console.warn('initAuth skipped:', e));
-                            }
-                        }, 200);
+                            console.log('🏠 Guest Mode: App entrance complete!');
+                        });
 
                         return;
                     }
@@ -2745,8 +2756,8 @@ Best regards,
                 }
             </script>
 
-            <!-- Cache Busting: v18.30 (Guest Mode Fixed) -->
-            <script src="app.js?v=18.30" defer></script>
+            <!-- Cache Busting: v18.35 (Guest Mode Fixed) -->
+            <script src="app.js?v=18.35" defer></script>
             <script>
                 // Init Workflow Engine when tab is shown
                 const originalShowTab = showTab;
