@@ -328,7 +328,7 @@
                     <div class="text-xs text-gray-500">未登录</div>
                 </div>
 
-                <div class="mt-2 text-xs text-green-400 font-bold ml-1">v18.27 CACHE FIX</div>
+                <div class="mt-2 text-xs text-blue-400 font-bold ml-1">v18.28 GUEST FIXED</div>
             </div>
 
             <nav class="flex-1 p-3 overflow-y-auto">
@@ -2602,6 +2602,20 @@ Best regards,
                                 };
                             }
                         };
+
+                        // 🎯 Guest Mode: Hide auth modal and show main app
+                        setTimeout(() => {
+                            const authModal = document.getElementById('auth-modal');
+                            if (authModal) {
+                                authModal.classList.add('hidden');
+                                console.log('🏠 Guest Mode: Auth modal hidden, entering app...');
+                            }
+                            // Trigger any init functions that depend on auth
+                            if (typeof initAuth === 'function') {
+                                initAuth().catch(e => console.warn('initAuth skipped:', e));
+                            }
+                        }, 200);
+
                         return;
                     }
 
