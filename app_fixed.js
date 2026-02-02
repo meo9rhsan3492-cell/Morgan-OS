@@ -1018,215 +1018,192 @@ function updateDashboard() {
                 } else {
                     vaultInput.value = keywords;
                 }
-            }
-            // ----------------------------------------
-            // AI: Daily Briefing
-            // ----------------------------------------
-            async function generateDailyBriefing() {
-                const btn = document.querySelector('#briefing-title').parentNode.nextElementSibling; // Finding the button relative to title
-                const contentDiv = document.getElementById('briefing-content');
-                // UI
-                contentDiv.innerHTML = '<div class="animate-pulse text-purple-400">🛰️ 正在从各模块聚合情报...</div>';
-                // Data
-                const budgetLeft = (parseFloat(localStorage.getItem('tds_total') || 266664) - parseFloat(localStorage.getItem('tds_spent') || 79600));
-                const nextExpo = expos.length > 0 ? expos[0].name : "无";
-                const cpl = localStorage.getItem('tds_last_cpl') || 'N/A';
-                const persona = localStorage.getItem('tds_target_audience') || 'General';
-                const prompt = `Role: CMO. Context: Budget Left ¥${budgetLeft}, Next Expo ${nextExpo}, CPL ${cpl}, Audience ${persona}.\nTask: Write a 3-bullet morning briefing (Alert, Insight, Action). Professional tone. Under 100 words.`;
-                const result = await callGeminiAPI(prompt);
-                if (result) {
-                    contentDiv.innerHTML = `<div class="prose prose-invert max-w-none text-sm leading-6">${marked(result)}</div>`;
-                    localStorage.setItem('tds_last_briefing', result);
-                } else {
-                    contentDiv.innerText = '暂时无法连接战略中心';
-                }
-            }
-            // ----------------------------------------
-            // AI: Social Matrix
-            // ----------------------------------------
-            async function generateSocialMatrix() {
-                const topic = document.getElementById('matrix-topic').value;
-                const lang = document.getElementById('matrix-lang').value || 'English';
-                if (!topic) return showToast('请输入核心主题', 'warning');
-                const container = document.getElementById('matrix-container');
-                const loading = document.getElementById('matrix-loading');
-                container.classList.add('hidden');
-                loading.classList.remove('hidden');
-                const persona = localStorage.getItem('tds_target_audience') || 'General';
-                const prompt = `Topic: ${topic}. Audience: ${persona}. Target Language: ${lang}.\nGenerate social posts for 5 platforms in Valid JSON:\n{"fb":"...","ins":"...","li":"...","tk":"Script...","yt":"Desc..."}\nEnsure the content is written in ${lang}.`;
-                try {
-                    const result = await callGeminiAPI(prompt + "\n\nEnsure valid JSON.");
-                    if (result) {
-                        const jsonStr = result.replace(/```json/g, '').replace(/```/g, '').trim();
-                        const data = JSON.parse(jsonStr);
-                        ['fb', 'ins', 'li', 'tk', 'yt'].forEach(p => {
-                            const el = document.getElementById(`matrix-${p}`);
-                            if (el && data[p]) el.innerText = data[p];
-                        });
+                // ----------------------------------------
+                // AI: Social Matrix
+                // ----------------------------------------
+                async function generateSocialMatrix() {
+                    const topic = document.getElementById('matrix-topic').value;
+                    const lang = document.getElementById('matrix-lang').value || 'English';
+                    if (!topic) return showToast('请输入核心主题', 'warning');
+                    const container = document.getElementById('matrix-container');
+                    const loading = document.getElementById('matrix-loading');
+                    container.classList.add('hidden');
+                    loading.classList.remove('hidden');
+                    const persona = localStorage.getItem('tds_target_audience') || 'General';
+                    const prompt = `Topic: ${topic}. Audience: ${persona}. Target Language: ${lang}.\nGenerate social posts for 5 platforms in Valid JSON:\n{"fb":"...","ins":"...","li":"...","tk":"Script...","yt":"Desc..."}\nEnsure the content is written in ${lang}.`;
+                    try {
+                        const result = await callGeminiAPI(prompt + "\n\nEnsure valid JSON.");
+                        if (result) {
+                            const jsonStr = result.replace(/```json/g, '').replace(/```/g, '').trim();
+                            const data = JSON.parse(jsonStr);
+                            ['fb', 'ins', 'li', 'tk', 'yt'].forEach(p => {
+                                const el = document.getElementById(`matrix-${p}`);
+                                if (el && data[p]) el.innerText = data[p];
+                            });
+                            loading.classList.add('hidden');
+                            container.classList.remove('hidden');
+                        } else {
+                            throw new Error('API Empty');
+                        }
+                    } catch (e) {
+                        showToast('矩阵生成失败', 'error');
                         loading.classList.add('hidden');
-                        container.classList.remove('hidden');
-                    } else {
-                        throw new Error('API Empty');
                     }
-                } catch (e) {
-                    showToast('矩阵生成失败', 'error');
-                    loading.classList.add('hidden');
                 }
-            }
-            function copyAndGo(platform, elementId) {
-                const text = document.getElementById(elementId).innerText;
-                if (!text) return;
-                navigator.clipboard.writeText(text).then(() => {
-                    showToast('文案已复制，正在跳转...', 'success');
-                    const urls = {
-                        'fb': 'https://www.facebook.com/composer/message/',
-                        'ins': 'https://www.instagram.com/',
-                        'li': 'https://www.linkedin.com/feed/',
-                        'tk': 'https://www.tiktok.com/upload',
-                        'yt': 'https://studio.youtube.com/'
-                    };
-                    setTimeout(() => window.open(urls[platform], '_blank'), 1000);
-                });
-            }
-            // ----------------------------------------
-            // 10. Automation & Workflows (Morgan Edition)
-            // ----------------------------------------
-            function loadAutomation() {
-                const url = localStorage.getItem('morgan_n8n_webhook') || '';
-                const input = document.getElementById('n8n-webhook-url');
-                if (input) input.value = url;
-            }
-            function saveN8nConfig() {
-                const url = document.getElementById('n8n-webhook-url').value;
-                localStorage.setItem('morgan_n8n_webhook', url);
-                showToast('n8n Webhook 配置已保存', 'success');
-            }
-            async function testN8nConnection() {
-                const url = localStorage.getItem('morgan_n8n_webhook');
-                if (!url) return showToast('请先输入 Webhook URL', 'warning');
-                logAutomation(`正在连接: ${url}...`);
-                try {
-                    const start = Date.now();
-                    const res = await fetch(url, {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({
-                            event: 'ping',
-                            timestamp: new Date().toISOString(),
-                            source: 'Morgan.OS'
-                        })
+                function copyAndGo(platform, elementId) {
+                    const text = document.getElementById(elementId).innerText;
+                    if (!text) return;
+                    navigator.clipboard.writeText(text).then(() => {
+                        showToast('文案已复制，正在跳转...', 'success');
+                        const urls = {
+                            'fb': 'https://www.facebook.com/composer/message/',
+                            'ins': 'https://www.instagram.com/',
+                            'li': 'https://www.linkedin.com/feed/',
+                            'tk': 'https://www.tiktok.com/upload',
+                            'yt': 'https://studio.youtube.com/'
+                        };
+                        setTimeout(() => window.open(urls[platform], '_blank'), 1000);
                     });
-                    const duration = Date.now() - start;
-                    if (res.ok) {
-                        logAutomation(`✅ 连接成功 (${duration}ms) - Status: ${res.status}`);
-                        showToast('连接成功！', 'success');
-                    } else {
-                        throw new Error(`HTTP ${res.status}`);
-                    }
-                } catch (e) {
-                    logAutomation(`❌ 连接失败: ${e.message}`);
-                    showToast('连接失败，请检查 URL 和 CORS 设置', 'error');
                 }
-            }
-            async function triggerWorkflow(type) {
-                const url = localStorage.getItem('morgan_n8n_webhook');
-                if (!url) return showToast('未配置 Webhook URL，无法触发', 'error');
-                let payload = {};
-                let desc = '';
-                // Simulate meaningful data based on workflow type
-                switch (type) {
-                    case 'lead_capture':
-                        desc = '模拟线索捕获';
-                        payload = {
-                            event: 'new_lead',
-                            data: {
-                                name: 'John Doe',
-                                email: `john.doe.${Date.now()}@example.com`,
-                                interest: productDB[0]?.name || 'Unknown Product',
-                                source: 'Landing Page A'
-                            }
-                        };
-                        break;
-                    case 'weekly_report':
-                        desc = '周报生成';
-                        const total = localStorage.getItem('tds_total') || 0;
-                        const spent = localStorage.getItem('tds_spent') || 0;
-                        payload = {
-                            event: 'report_generation',
-                            data: {
-                                period: 'Week 42',
-                                budget_total: total,
-                                budget_spent: spent,
-                                remaining: total - spent,
-                                cpl_health: localStorage.getItem('tds_last_cpl') || 'N/A'
-                            }
-                        };
-                        break;
-                    case 'social_sync':
-                        desc = '社媒同步';
-                        // Get last generated matrix if available
-                        const fbContent = document.getElementById('matrix-fb')?.innerText || 'Sample Content...';
-                        payload = {
-                            event: 'social_publish',
-                            data: {
-                                platform: ['facebook', 'linkedin'],
-                                content_snippet: fbContent.substring(0, 100),
-                                scheduled_time: new Date().toISOString()
-                            }
-                        };
-                        break;
-                    default:
-                        return;
+                // ----------------------------------------
+                // 10. Automation & Workflows (Morgan Edition)
+                // ----------------------------------------
+                function loadAutomation() {
+                    const url = localStorage.getItem('morgan_n8n_webhook') || '';
+                    const input = document.getElementById('n8n-webhook-url');
+                    if (input) input.value = url;
                 }
-                logAutomation(`🚀 触发工作流: ${desc}...`);
-                try {
-                    const res = await fetch(url, {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify(payload)
-                        // No-cors mode might be needed if n8n doesn't return CORS headers, 
-                        // but for now standard POST is better for debugging.
-                    });
-                    if (res.ok) {
-                        logAutomation(`✅ [${type}] 发送成功!`);
-                        showToast('请求已发送至 n8n', 'success');
-                    } else {
-                        logAutomation(`⚠️ [${type}] 发送异常: ${res.status}`);
-                    }
-                } catch (e) {
-                    logAutomation(`❌ [${type}] 发送失败: ${e.message}`);
-                    // Often CORS error in browser simulation
-                    if (e.message.includes('Failed to fetch')) {
-                        logAutomation(`⚠️ 可能因 CORS 失败，但也可能已发送。检查 n8n。`);
+                function saveN8nConfig() {
+                    const url = document.getElementById('n8n-webhook-url').value;
+                    localStorage.setItem('morgan_n8n_webhook', url);
+                    showToast('n8n Webhook 配置已保存', 'success');
+                }
+                async function testN8nConnection() {
+                    const url = localStorage.getItem('morgan_n8n_webhook');
+                    if (!url) return showToast('请先输入 Webhook URL', 'warning');
+                    logAutomation(`正在连接: ${url}...`);
+                    try {
+                        const start = Date.now();
+                        const res = await fetch(url, {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({
+                                event: 'ping',
+                                timestamp: new Date().toISOString(),
+                                source: 'Morgan.OS'
+                            })
+                        });
+                        const duration = Date.now() - start;
+                        if (res.ok) {
+                            logAutomation(`✅ 连接成功 (${duration}ms) - Status: ${res.status}`);
+                            showToast('连接成功！', 'success');
+                        } else {
+                            throw new Error(`HTTP ${res.status}`);
+                        }
+                    } catch (e) {
+                        logAutomation(`❌ 连接失败: ${e.message}`);
+                        showToast('连接失败，请检查 URL 和 CORS 设置', 'error');
                     }
                 }
-            }
-            function logAutomation(msg) {
-                const log = document.getElementById('automation-log');
-                if (!log) return;
-                const time = new Date().toLocaleTimeString();
-                log.innerHTML = `<div class="mb-1"><span class="opacity-50">[${time}]</span> ${msg}</div>` + log.innerHTML;
-            }
-            // Add to init
-            (function initAutomation() {
-                // Wait for DOM
-                setTimeout(loadAutomation, 500);
-            })();
-            // ----------------------------------------
-            // 11. RFQ Decoder (First Principles)
-            // ----------------------------------------
-            async function analyzeRFQ() {
-                const input = document.getElementById('rfq-input').value;
-                const context = document.getElementById('rfq-context').value;
-                if (!input || input.length < 10) return showToast('请输入有效的邮件内容', 'warning');
-                const resultPanel = document.getElementById('rfq-content');
-                const placeholder = document.getElementById('rfq-placeholder');
-                const loading = document.getElementById('rfq-loading');
-                // Reset UI
-                placeholder.classList.add('hidden');
-                resultPanel.classList.add('hidden');
-                loading.classList.remove('hidden');
-                const prompt = `
+                async function triggerWorkflow(type) {
+                    const url = localStorage.getItem('morgan_n8n_webhook');
+                    if (!url) return showToast('未配置 Webhook URL，无法触发', 'error');
+                    let payload = {};
+                    let desc = '';
+                    // Simulate meaningful data based on workflow type
+                    switch (type) {
+                        case 'lead_capture':
+                            desc = '模拟线索捕获';
+                            payload = {
+                                event: 'new_lead',
+                                data: {
+                                    name: 'John Doe',
+                                    email: `john.doe.${Date.now()}@example.com`,
+                                    interest: productDB[0]?.name || 'Unknown Product',
+                                    source: 'Landing Page A'
+                                }
+                            };
+                            break;
+                        case 'weekly_report':
+                            desc = '周报生成';
+                            const total = localStorage.getItem('tds_total') || 0;
+                            const spent = localStorage.getItem('tds_spent') || 0;
+                            payload = {
+                                event: 'report_generation',
+                                data: {
+                                    period: 'Week 42',
+                                    budget_total: total,
+                                    budget_spent: spent,
+                                    remaining: total - spent,
+                                    cpl_health: localStorage.getItem('tds_last_cpl') || 'N/A'
+                                }
+                            };
+                            break;
+                        case 'social_sync':
+                            desc = '社媒同步';
+                            // Get last generated matrix if available
+                            const fbContent = document.getElementById('matrix-fb')?.innerText || 'Sample Content...';
+                            payload = {
+                                event: 'social_publish',
+                                data: {
+                                    platform: ['facebook', 'linkedin'],
+                                    content_snippet: fbContent.substring(0, 100),
+                                    scheduled_time: new Date().toISOString()
+                                }
+                            };
+                            break;
+                        default:
+                            return;
+                    }
+                    logAutomation(`🚀 触发工作流: ${desc}...`);
+                    try {
+                        const res = await fetch(url, {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify(payload)
+                            // No-cors mode might be needed if n8n doesn't return CORS headers, 
+                            // but for now standard POST is better for debugging.
+                        });
+                        if (res.ok) {
+                            logAutomation(`✅ [${type}] 发送成功!`);
+                            showToast('请求已发送至 n8n', 'success');
+                        } else {
+                            logAutomation(`⚠️ [${type}] 发送异常: ${res.status}`);
+                        }
+                    } catch (e) {
+                        logAutomation(`❌ [${type}] 发送失败: ${e.message}`);
+                        // Often CORS error in browser simulation
+                        if (e.message.includes('Failed to fetch')) {
+                            logAutomation(`⚠️ 可能因 CORS 失败，但也可能已发送。检查 n8n。`);
+                        }
+                    }
+                }
+                function logAutomation(msg) {
+                    const log = document.getElementById('automation-log');
+                    if (!log) return;
+                    const time = new Date().toLocaleTimeString();
+                    log.innerHTML = `<div class="mb-1"><span class="opacity-50">[${time}]</span> ${msg}</div>` + log.innerHTML;
+                }
+                // Add to init
+                (function initAutomation() {
+                    // Wait for DOM
+                    setTimeout(loadAutomation, 500);
+                })();
+                // ----------------------------------------
+                // 11. RFQ Decoder (First Principles)
+                // ----------------------------------------
+                async function analyzeRFQ() {
+                    const input = document.getElementById('rfq-input').value;
+                    const context = document.getElementById('rfq-context').value;
+                    if (!input || input.length < 10) return showToast('请输入有效的邮件内容', 'warning');
+                    const resultPanel = document.getElementById('rfq-content');
+                    const placeholder = document.getElementById('rfq-placeholder');
+                    const loading = document.getElementById('rfq-loading');
+                    // Reset UI
+                    placeholder.classList.add('hidden');
+                    resultPanel.classList.add('hidden');
+                    loading.classList.remove('hidden');
+                    const prompt = `
     Role: Senior B2B Sales Director.
     Task: Analyze this inbound email inquiry using First Principles. 
     Context: ${context || 'General Inquiry'}
@@ -1247,104 +1224,104 @@ function updateDashboard() {
         "reply_strategy": "string" (Short paragraph on how to reply)
     }
     `;
-                try {
-                    const result = await callGeminiAPI(prompt + "\n\nEnsure valid JSON.");
-                    if (result) {
-                        try {
-                            const jsonStr = result.replace(/```json/g, '').replace(/```/g, '').trim();
-                            const data = JSON.parse(jsonStr);
-                            renderRFQResult(data);
-                            // Show Action Area (v18.2)
-                            document.getElementById('rfq-action-area').classList.remove('hidden');
-                            // Clear previous draft
-                            document.getElementById('rfq-reply-draft').value = '';
-                        } catch (e) {
-                            // Fallback for parsing error
-                            console.error("JSON Parse Error", e);
-                            renderRFQResult({
-                                score: 50,
-                                intent_type: "Parse Error / Manual Review",
-                                intent_color: "#94a3b8",
-                                analysis_points: ["AI Output was not valid JSON", "Please review manually"],
-                                reply_strategy: result.substring(0, 200) + "..."
-                            });
+                    try {
+                        const result = await callGeminiAPI(prompt + "\n\nEnsure valid JSON.");
+                        if (result) {
+                            try {
+                                const jsonStr = result.replace(/```json/g, '').replace(/```/g, '').trim();
+                                const data = JSON.parse(jsonStr);
+                                renderRFQResult(data);
+                                // Show Action Area (v18.2)
+                                document.getElementById('rfq-action-area').classList.remove('hidden');
+                                // Clear previous draft
+                                document.getElementById('rfq-reply-draft').value = '';
+                            } catch (e) {
+                                // Fallback for parsing error
+                                console.error("JSON Parse Error", e);
+                                renderRFQResult({
+                                    score: 50,
+                                    intent_type: "Parse Error / Manual Review",
+                                    intent_color: "#94a3b8",
+                                    analysis_points: ["AI Output was not valid JSON", "Please review manually"],
+                                    reply_strategy: result.substring(0, 200) + "..."
+                                });
+                            }
+                        } else {
+                            throw new Error("Empty API Response");
                         }
-                    } else {
-                        throw new Error("Empty API Response");
+                    } catch (e) {
+                        showToast('解码失败: ' + e.message, 'error');
+                        loading.classList.add('hidden');
+                        placeholder.classList.remove('hidden');
                     }
-                } catch (e) {
-                    showToast('解码失败: ' + e.message, 'error');
-                    loading.classList.add('hidden');
-                    placeholder.classList.remove('hidden');
                 }
-            }
-            function renderRFQResult(data) {
-                const loading = document.getElementById('rfq-loading');
-                const content = document.getElementById('rfq-content');
-                loading.classList.add('hidden');
-                content.classList.remove('hidden');
-                // Score
-                const circle = document.getElementById('rfq-score-circle');
-                circle.innerText = data.score;
-                // Dynamic color for score border
-                let scoreColor = '#ef4444'; // red
-                if (data.score > 70) scoreColor = '#22c55e'; // green
-                else if (data.score > 40) scoreColor = '#eab308'; // yellow
-                circle.style.borderColor = scoreColor;
-                circle.style.color = scoreColor;
-                // Intent Tag
-                const tag = document.getElementById('rfq-intent-tag');
-                tag.innerText = data.intent_type;
-                tag.style.backgroundColor = data.intent_color + '40'; // 25% opacity
-                tag.style.color = data.intent_color;
-                tag.style.border = `1px solid ${data.intent_color}`;
-                // Analysis List
-                const list = document.getElementById('rfq-analysis-list');
-                list.innerHTML = data.analysis_points.map(p => `<li>${p}</li>`).join('');
-                // Strategy
-                const strat = document.getElementById('rfq-reply-strategy');
-                strat.innerText = data.reply_strategy;
-            }
-            // ----------------------------------------
-            // 2. Dashboard Logic (Smart Briefing 2.0)
-            // ----------------------------------------
-            async function generateDailyBriefing() {
-                const title = document.getElementById('briefing-title');
-                const content = document.getElementById('briefing-content');
-                content.innerHTML = '<span class="animate-pulse">⚡ 正在聚合全网数据 (Radar, Calendar, Finance)...</span>';
-                // 1. Gather Radar Data (Who is awake?)
-                const now = new Date();
-                const zones = [
-                    { id: 'ny', zone: 'America/New_York', name: 'North America' },
-                    { id: 'ldn', zone: 'Europe/London', name: 'Europe' },
-                    { id: 'dxb', zone: 'Asia/Dubai', name: 'Middle East' },
-                    { id: 'bj', zone: 'Asia/Shanghai', name: 'APAC' }
-                ];
-                let activeZones = [];
-                zones.forEach(z => {
-                    const timeStr = now.toLocaleTimeString('en-US', { timeZone: z.zone, hour12: false, hour: '2-digit' });
-                    const hour = parseInt(timeStr);
-                    if (hour >= 9 && hour < 18) activeZones.push(z.name);
-                });
-                const radarContext = activeZones.length > 0
-                    ? `Active Markets (${activeZones.join(', ')} are online)`
-                    : "Global markets are mostly offline";
-                // 2. Gather Calendar Data (What's the plan?)
-                const days = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
-                const today = days[now.getDay()];
-                // Simple mock logic for theme if not generated yet, can be enhanced to read DOM
-                let planContext = `Today is ${today}.`;
-                if (today === 'Monday') planContext += " Focus: Pain Point Attack.";
-                if (today === 'Wednesday') planContext += " Focus: Hardcore Demo.";
-                if (today === 'Friday') planContext += " Focus: Case Study / Testimonial.";
-                // 3. Gather Budget Data
-                // We try to read DOM, fallback to default
-                const budgetTotal = document.getElementById('total-budget')?.value || 266664;
-                const budgetSpent = document.getElementById('spent-amount')?.value || 79600;
-                const percentLeft = Math.round(((budgetTotal - budgetSpent) / budgetTotal) * 100);
-                const budgetContext = `Budget Remaining: ${percentLeft}%`;
-                // 4. AI Synthesis
-                const prompt = `
+                function renderRFQResult(data) {
+                    const loading = document.getElementById('rfq-loading');
+                    const content = document.getElementById('rfq-content');
+                    loading.classList.add('hidden');
+                    content.classList.remove('hidden');
+                    // Score
+                    const circle = document.getElementById('rfq-score-circle');
+                    circle.innerText = data.score;
+                    // Dynamic color for score border
+                    let scoreColor = '#ef4444'; // red
+                    if (data.score > 70) scoreColor = '#22c55e'; // green
+                    else if (data.score > 40) scoreColor = '#eab308'; // yellow
+                    circle.style.borderColor = scoreColor;
+                    circle.style.color = scoreColor;
+                    // Intent Tag
+                    const tag = document.getElementById('rfq-intent-tag');
+                    tag.innerText = data.intent_type;
+                    tag.style.backgroundColor = data.intent_color + '40'; // 25% opacity
+                    tag.style.color = data.intent_color;
+                    tag.style.border = `1px solid ${data.intent_color}`;
+                    // Analysis List
+                    const list = document.getElementById('rfq-analysis-list');
+                    list.innerHTML = data.analysis_points.map(p => `<li>${p}</li>`).join('');
+                    // Strategy
+                    const strat = document.getElementById('rfq-reply-strategy');
+                    strat.innerText = data.reply_strategy;
+                }
+                // ----------------------------------------
+                // 2. Dashboard Logic (Smart Briefing 2.0)
+                // ----------------------------------------
+                async function generateDailyBriefing() {
+                    const title = document.getElementById('briefing-title');
+                    const content = document.getElementById('briefing-content');
+                    content.innerHTML = '<span class="animate-pulse">⚡ 正在聚合全网数据 (Radar, Calendar, Finance)...</span>';
+                    // 1. Gather Radar Data (Who is awake?)
+                    const now = new Date();
+                    const zones = [
+                        { id: 'ny', zone: 'America/New_York', name: 'North America' },
+                        { id: 'ldn', zone: 'Europe/London', name: 'Europe' },
+                        { id: 'dxb', zone: 'Asia/Dubai', name: 'Middle East' },
+                        { id: 'bj', zone: 'Asia/Shanghai', name: 'APAC' }
+                    ];
+                    let activeZones = [];
+                    zones.forEach(z => {
+                        const timeStr = now.toLocaleTimeString('en-US', { timeZone: z.zone, hour12: false, hour: '2-digit' });
+                        const hour = parseInt(timeStr);
+                        if (hour >= 9 && hour < 18) activeZones.push(z.name);
+                    });
+                    const radarContext = activeZones.length > 0
+                        ? `Active Markets (${activeZones.join(', ')} are online)`
+                        : "Global markets are mostly offline";
+                    // 2. Gather Calendar Data (What's the plan?)
+                    const days = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+                    const today = days[now.getDay()];
+                    // Simple mock logic for theme if not generated yet, can be enhanced to read DOM
+                    let planContext = `Today is ${today}.`;
+                    if (today === 'Monday') planContext += " Focus: Pain Point Attack.";
+                    if (today === 'Wednesday') planContext += " Focus: Hardcore Demo.";
+                    if (today === 'Friday') planContext += " Focus: Case Study / Testimonial.";
+                    // 3. Gather Budget Data
+                    // We try to read DOM, fallback to default
+                    const budgetTotal = document.getElementById('total-budget')?.value || 266664;
+                    const budgetSpent = document.getElementById('spent-amount')?.value || 79600;
+                    const percentLeft = Math.round(((budgetTotal - budgetSpent) / budgetTotal) * 100);
+                    const budgetContext = `Budget Remaining: ${percentLeft}%`;
+                    // 4. AI Synthesis
+                    const prompt = `
     Role: Chief of Staff / Strategic Advisor.
     Context:
     - [Time/Radar]: ${radarContext} (It is now ${now.getHours()}:${now.getMinutes()} Local)
@@ -1355,94 +1332,94 @@ function updateDashboard() {
     Format: HTML unordered list (<ul><li>...</li></ul>). Use <b> tags for emphasis.
     Language: Chinese (中文).
     `;
-                try {
-                    // We use callGeminiAPI for the synthesis
-                    const suggestion = await callGeminiAPI(prompt);
-                    // Clean up markdown if present
-                    const cleanHtml = suggestion.replace(/```html/g, '').replace(/```/g, '').trim();
-                    title.innerText = `Good Morning, Director.`;
-                    content.innerHTML = cleanHtml;
-                    // Save history (optional, currently just ephemeral)
-                    // localStorage.setItem('last_briefing', cleanHtml);
-                } catch (e) {
-                    console.error("Briefing Error", e);
-                    // Fallback Rule-based
-                    title.innerText = "System Offline (Fallback Mode)";
-                    content.innerHTML = `
+                    try {
+                        // We use callGeminiAPI for the synthesis
+                        const suggestion = await callGeminiAPI(prompt);
+                        // Clean up markdown if present
+                        const cleanHtml = suggestion.replace(/```html/g, '').replace(/```/g, '').trim();
+                        title.innerText = `Good Morning, Director.`;
+                        content.innerHTML = cleanHtml;
+                        // Save history (optional, currently just ephemeral)
+                        // localStorage.setItem('last_briefing', cleanHtml);
+                    } catch (e) {
+                        console.error("Briefing Error", e);
+                        // Fallback Rule-based
+                        title.innerText = "System Offline (Fallback Mode)";
+                        content.innerHTML = `
             <ul class="list-disc pl-4 space-y-1">
                 <li><b>Radar</b>: ${activeZones.length} zones active. Priority on responding to IDs.</li>
                 <li><b>Plan</b>: ${planContext}</li>
                 <li><b>Budget</b>: Health at ${percentLeft}%.</li>
             </ul>
         `;
-                }
-            }
-            // ----------------------------------------
-            // 12. Global Market Radar
-            // ----------------------------------------
-            function updateGlobalRadar() {
-                const zones = [
-                    { id: 'ny', zone: 'America/New_York', name: 'New York' },
-                    { id: 'ldn', zone: 'Europe/London', name: 'London' },
-                    { id: 'dxb', zone: 'Asia/Dubai', name: 'Dubai' },
-                    { id: 'bj', zone: 'Asia/Shanghai', name: 'Beijing' }
-                ];
-                const now = new Date();
-                document.getElementById('radar-utc').innerText = 'UTC ' + now.toISOString().substring(11, 16);
-                zones.forEach(z => {
-                    try {
-                        const timeStr = now.toLocaleTimeString('en-US', { timeZone: z.zone, hour12: false, hour: '2-digit', minute: '2-digit' });
-                        const hour = parseInt(timeStr.split(':')[0]);
-                        // DOM Elements
-                        const timeEl = document.getElementById(`time-${z.id}`);
-                        const statusDot = document.getElementById(`status-dot-${z.id}`);
-                        const actionEl = document.getElementById(`action-${z.id}`);
-                        if (timeEl) timeEl.innerText = timeStr;
-                        // Logic: Working Hours (9-18), Evening (18-22), Night (22-9)
-                        let statusColor = 'bg-gray-500';
-                        let actionText = 'Sleeping';
-                        let actionClass = 'text-gray-500 bg-gray-800';
-                        if (hour >= 9 && hour < 18) {
-                            statusColor = 'bg-green-500 animate-pulse';
-                            actionText = '🟢 Best for Calls';
-                            actionClass = 'text-green-400 bg-green-900/30 border border-green-500/30';
-                        } else if (hour >= 18 && hour < 22) {
-                            statusColor = 'bg-yellow-500';
-                            actionText = '🟡 Email Only';
-                            actionClass = 'text-yellow-400 bg-yellow-900/30 border border-yellow-500/30';
-                        } else {
-                            statusColor = 'bg-red-500';
-                            actionText = '🔴 Do Not Disturb';
-                            actionClass = 'text-red-400 bg-red-900/30 border border-red-500/30';
-                        }
-                        if (statusDot) statusDot.className = `w-2 h-2 rounded-full ${statusColor}`;
-                        if (actionEl) {
-                            actionEl.innerText = actionText;
-                            actionEl.className = `text-[10px] uppercase font-bold px-2 py-1 rounded inline-block ${actionClass}`;
-                        }
-                    } catch (e) {
-                        console.error('Radar Error', e);
                     }
-                });
-            }
-            // Init Radar Loop
-            setInterval(updateGlobalRadar, 60000); // Every minute
-            setTimeout(updateGlobalRadar, 1000); // Initial call
-            // ----------------------------------------
-            // 13. Competitor Scout (Battle Card)
-            // ----------------------------------------
-            async function analyzeCompetitor() {
-                const name = document.getElementById('scout-name').value;
-                const info = document.getElementById('scout-info').value;
-                if (!name || !info) return showToast('请输入对手名称和相关信息', 'warning');
-                const resultPanel = document.getElementById('scout-content');
-                const placeholder = document.getElementById('scout-placeholder');
-                const loading = document.getElementById('scout-loading');
-                // Reset UI
-                placeholder.classList.add('hidden');
-                resultPanel.classList.add('hidden');
-                loading.classList.remove('hidden');
-                const prompt = `
+                }
+                // ----------------------------------------
+                // 12. Global Market Radar
+                // ----------------------------------------
+                function updateGlobalRadar() {
+                    const zones = [
+                        { id: 'ny', zone: 'America/New_York', name: 'New York' },
+                        { id: 'ldn', zone: 'Europe/London', name: 'London' },
+                        { id: 'dxb', zone: 'Asia/Dubai', name: 'Dubai' },
+                        { id: 'bj', zone: 'Asia/Shanghai', name: 'Beijing' }
+                    ];
+                    const now = new Date();
+                    document.getElementById('radar-utc').innerText = 'UTC ' + now.toISOString().substring(11, 16);
+                    zones.forEach(z => {
+                        try {
+                            const timeStr = now.toLocaleTimeString('en-US', { timeZone: z.zone, hour12: false, hour: '2-digit', minute: '2-digit' });
+                            const hour = parseInt(timeStr.split(':')[0]);
+                            // DOM Elements
+                            const timeEl = document.getElementById(`time-${z.id}`);
+                            const statusDot = document.getElementById(`status-dot-${z.id}`);
+                            const actionEl = document.getElementById(`action-${z.id}`);
+                            if (timeEl) timeEl.innerText = timeStr;
+                            // Logic: Working Hours (9-18), Evening (18-22), Night (22-9)
+                            let statusColor = 'bg-gray-500';
+                            let actionText = 'Sleeping';
+                            let actionClass = 'text-gray-500 bg-gray-800';
+                            if (hour >= 9 && hour < 18) {
+                                statusColor = 'bg-green-500 animate-pulse';
+                                actionText = '🟢 Best for Calls';
+                                actionClass = 'text-green-400 bg-green-900/30 border border-green-500/30';
+                            } else if (hour >= 18 && hour < 22) {
+                                statusColor = 'bg-yellow-500';
+                                actionText = '🟡 Email Only';
+                                actionClass = 'text-yellow-400 bg-yellow-900/30 border border-yellow-500/30';
+                            } else {
+                                statusColor = 'bg-red-500';
+                                actionText = '🔴 Do Not Disturb';
+                                actionClass = 'text-red-400 bg-red-900/30 border border-red-500/30';
+                            }
+                            if (statusDot) statusDot.className = `w-2 h-2 rounded-full ${statusColor}`;
+                            if (actionEl) {
+                                actionEl.innerText = actionText;
+                                actionEl.className = `text-[10px] uppercase font-bold px-2 py-1 rounded inline-block ${actionClass}`;
+                            }
+                        } catch (e) {
+                            console.error('Radar Error', e);
+                        }
+                    });
+                }
+                // Init Radar Loop
+                setInterval(updateGlobalRadar, 60000); // Every minute
+                setTimeout(updateGlobalRadar, 1000); // Initial call
+                // ----------------------------------------
+                // 13. Competitor Scout (Battle Card)
+                // ----------------------------------------
+                async function analyzeCompetitor() {
+                    const name = document.getElementById('scout-name').value;
+                    const info = document.getElementById('scout-info').value;
+                    if (!name || !info) return showToast('请输入对手名称和相关信息', 'warning');
+                    const resultPanel = document.getElementById('scout-content');
+                    const placeholder = document.getElementById('scout-placeholder');
+                    const loading = document.getElementById('scout-loading');
+                    // Reset UI
+                    placeholder.classList.add('hidden');
+                    resultPanel.classList.add('hidden');
+                    loading.classList.remove('hidden');
+                    const prompt = `
     Role: Strategic B2B Sales Consultant.
     Task: Create a "Battle Card" to help a sales rep win against a competitor.
     Competitor Name: ${name}
@@ -1460,171 +1437,171 @@ function updateDashboard() {
         ]
     }
     `;
-                try {
-                    const result = await callGeminiAPI(prompt + "\\n\\nEnsure valid JSON.");
-                    if (result) {
-                        try {
-                            const jsonStr = result.replace(/'```json/g, '').replace(/```/g, '').trim();
-                            let data;
-                            // Simple cleanup if MD block remains
-                            if (jsonStr.startsWith('```json')) {
-                                data = JSON.parse(jsonStr.substring(7, jsonStr.length - 3));
-                            } else if (jsonStr.startsWith('```')) {
-                                data = JSON.parse(jsonStr.substring(3, jsonStr.length - 3));
-                            } else {
-                                data = JSON.parse(jsonStr);
+                    try {
+                        const result = await callGeminiAPI(prompt + "\\n\\nEnsure valid JSON.");
+                        if (result) {
+                            try {
+                                const jsonStr = result.replace(/'```json/g, '').replace(/```/g, '').trim();
+                                let data;
+                                // Simple cleanup if MD block remains
+                                if (jsonStr.startsWith('```json')) {
+                                    data = JSON.parse(jsonStr.substring(7, jsonStr.length - 3));
+                                } else if (jsonStr.startsWith('```')) {
+                                    data = JSON.parse(jsonStr.substring(3, jsonStr.length - 3));
+                                } else {
+                                    data = JSON.parse(jsonStr);
+                                }
+                                renderScoutResult(name, data);
+                            } catch (e) {
+                                console.error("JSON Parse Error", e);
+                                showToast('解析失败，请重试', 'error');
+                                loading.classList.add('hidden');
+                                placeholder.classList.remove('hidden');
                             }
-                            renderScoutResult(name, data);
-                        } catch (e) {
-                            console.error("JSON Parse Error", e);
-                            showToast('解析失败，请重试', 'error');
-                            loading.classList.add('hidden');
-                            placeholder.classList.remove('hidden');
                         }
+                    } catch (e) {
+                        showToast('分析失败: ' + e.message, 'error');
+                        loading.classList.add('hidden');
+                        placeholder.classList.remove('hidden');
                     }
-                } catch (e) {
-                    showToast('分析失败: ' + e.message, 'error');
-                    loading.classList.add('hidden');
-                    placeholder.classList.remove('hidden');
                 }
-            }
-            function renderScoutResult(name, data) {
-                const loading = document.getElementById('scout-loading');
-                const content = document.getElementById('scout-content');
-                loading.classList.add('hidden');
-                content.classList.remove('hidden');
-                document.getElementById('scout-target-name').innerText = name;
-                // Lists
-                document.getElementById('scout-weakness-list').innerHTML = data.weaknesses.map(p => `<li>${p}</li>`).join('');
-                document.getElementById('scout-strength-list').innerHTML = data.strengths_to_avoid.map(p => `<li>${p}</li>`).join('');
-                // Scripts
-                const scriptsContainer = document.getElementById('scout-scripts');
-                scriptsContainer.innerHTML = data.kill_scripts.map(item => `
+                function renderScoutResult(name, data) {
+                    const loading = document.getElementById('scout-loading');
+                    const content = document.getElementById('scout-content');
+                    loading.classList.add('hidden');
+                    content.classList.remove('hidden');
+                    document.getElementById('scout-target-name').innerText = name;
+                    // Lists
+                    document.getElementById('scout-weakness-list').innerHTML = data.weaknesses.map(p => `<li>${p}</li>`).join('');
+                    document.getElementById('scout-strength-list').innerHTML = data.strengths_to_avoid.map(p => `<li>${p}</li>`).join('');
+                    // Scripts
+                    const scriptsContainer = document.getElementById('scout-scripts');
+                    scriptsContainer.innerHTML = data.kill_scripts.map(item => `
         <div class="p-3 bg-black/40 rounded border border-yellow-500/20">
             <div class="text-xs text-gray-400 mb-1 italic">Customer: "${item.situation}"</div>
             <div class="text-sm text-yellow-100 font-bold">💬 "${item.script}"</div>
         </div>
     `).join('');
-            }
-            // [Moved to app_part_calc.js]
-            // ----------------------------------------
-            // 17. Local RAG Knowledge Base (AI Brain)
-            // ----------------------------------------
-            // State
-            let kbChunks = [];
-            const KB_STORAGE_KEY = 'morgan_kb_chunks';
-            const KB_FILES_KEY = 'morgan_kb_files';
-            // Load on Init
-            function initKnowledgeBase() {
-                const stored = localStorage.getItem(KB_STORAGE_KEY);
-                if (stored) kbChunks = JSON.parse(stored);
-                updateKBStats();
-                renderFileList();
-            }
-            // Ingest
-            async function ingestKnowledge(input) {
-                const files = input.files;
-                if (!files.length) return;
-                const overlay = document.getElementById('kb-ingesting');
-                overlay.classList.remove('hidden');
-                // Load File List
-                let storedFiles = JSON.parse(localStorage.getItem(KB_FILES_KEY) || "[]");
-                for (let file of files) {
-                    try {
-                        const text = await readFileText(file);
-                        const chunks = chunkText(text, file.name);
-                        kbChunks.push(...chunks);
-                        storedFiles.push({ name: file.name, size: file.size, date: new Date().toISOString() });
-                    } catch (e) {
-                        console.error("File Read Error", e);
-                        showToast(`读取失败: ${file.name}`, 'error');
-                    }
                 }
-                // Save
-                localStorage.setItem(KB_STORAGE_KEY, JSON.stringify(kbChunks));
-                localStorage.setItem(KB_FILES_KEY, JSON.stringify(storedFiles));
-                updateKBStats();
-                renderFileList();
-                overlay.classList.add('hidden');
-                showToast(`成功学习 ${kbChunks.length} 个知识片段`, 'success');
-            }
-            function readFileText(file) {
-                return new Promise((resolve, reject) => {
-                    const reader = new FileReader();
-                    reader.onload = (e) => resolve(e.target.result);
-                    reader.onerror = (e) => reject(e);
-                    reader.readAsText(file);
-                });
-            }
-            function chunkText(text, source) {
-                // Simple sliding window chunker
-                // Chunk Size: ~300 chars, Overlap: 50 chars
-                const CHUNK_SIZE = 300;
-                const OVERLAP = 50;
-                const chunks = [];
-                // Clean text
-                const clean = text.replace(/\s+/g, ' ').trim();
-                for (let i = 0; i < clean.length; i += (CHUNK_SIZE - OVERLAP)) {
-                    const content = clean.substring(i, i + CHUNK_SIZE);
-                    if (content.length < 50) continue; // Skip tiny chunks
-                    chunks.push({
-                        id: Date.now() + Math.random(),
-                        content: content,
-                        source: source
+                // [Moved to app_part_calc.js]
+                // ----------------------------------------
+                // 17. Local RAG Knowledge Base (AI Brain)
+                // ----------------------------------------
+                // State
+                let kbChunks = [];
+                const KB_STORAGE_KEY = 'morgan_kb_chunks';
+                const KB_FILES_KEY = 'morgan_kb_files';
+                // Load on Init
+                function initKnowledgeBase() {
+                    const stored = localStorage.getItem(KB_STORAGE_KEY);
+                    if (stored) kbChunks = JSON.parse(stored);
+                    updateKBStats();
+                    renderFileList();
+                }
+                // Ingest
+                async function ingestKnowledge(input) {
+                    const files = input.files;
+                    if (!files.length) return;
+                    const overlay = document.getElementById('kb-ingesting');
+                    overlay.classList.remove('hidden');
+                    // Load File List
+                    let storedFiles = JSON.parse(localStorage.getItem(KB_FILES_KEY) || "[]");
+                    for (let file of files) {
+                        try {
+                            const text = await readFileText(file);
+                            const chunks = chunkText(text, file.name);
+                            kbChunks.push(...chunks);
+                            storedFiles.push({ name: file.name, size: file.size, date: new Date().toISOString() });
+                        } catch (e) {
+                            console.error("File Read Error", e);
+                            showToast(`读取失败: ${file.name}`, 'error');
+                        }
+                    }
+                    // Save
+                    localStorage.setItem(KB_STORAGE_KEY, JSON.stringify(kbChunks));
+                    localStorage.setItem(KB_FILES_KEY, JSON.stringify(storedFiles));
+                    updateKBStats();
+                    renderFileList();
+                    overlay.classList.add('hidden');
+                    showToast(`成功学习 ${kbChunks.length} 个知识片段`, 'success');
+                }
+                function readFileText(file) {
+                    return new Promise((resolve, reject) => {
+                        const reader = new FileReader();
+                        reader.onload = (e) => resolve(e.target.result);
+                        reader.onerror = (e) => reject(e);
+                        reader.readAsText(file);
                     });
                 }
-                return chunks;
-            }
-            function updateKBStats() {
-                const countEl = document.getElementById('kb-count');
-                if (countEl) countEl.innerText = kbChunks.length;
-            }
-            function renderFileList() {
-                const list = JSON.parse(localStorage.getItem(KB_FILES_KEY) || "[]");
-                const container = document.getElementById('kb-file-list');
-                if (!container) return;
-                if (list.length === 0) {
-                    container.innerHTML = '<div class="italic text-center py-4">暂无知识库文件</div>';
-                    return;
+                function chunkText(text, source) {
+                    // Simple sliding window chunker
+                    // Chunk Size: ~300 chars, Overlap: 50 chars
+                    const CHUNK_SIZE = 300;
+                    const OVERLAP = 50;
+                    const chunks = [];
+                    // Clean text
+                    const clean = text.replace(/\s+/g, ' ').trim();
+                    for (let i = 0; i < clean.length; i += (CHUNK_SIZE - OVERLAP)) {
+                        const content = clean.substring(i, i + CHUNK_SIZE);
+                        if (content.length < 50) continue; // Skip tiny chunks
+                        chunks.push({
+                            id: Date.now() + Math.random(),
+                            content: content,
+                            source: source
+                        });
+                    }
+                    return chunks;
                 }
-                container.innerHTML = list.map(f => `
+                function updateKBStats() {
+                    const countEl = document.getElementById('kb-count');
+                    if (countEl) countEl.innerText = kbChunks.length;
+                }
+                function renderFileList() {
+                    const list = JSON.parse(localStorage.getItem(KB_FILES_KEY) || "[]");
+                    const container = document.getElementById('kb-file-list');
+                    if (!container) return;
+                    if (list.length === 0) {
+                        container.innerHTML = '<div class="italic text-center py-4">暂无知识库文件</div>';
+                        return;
+                    }
+                    container.innerHTML = list.map(f => `
         <div class="flex justify-between items-center bg-gray-800 p-2 rounded">
             <span class="truncate w-32" title="${f.name}">📄 ${f.name}</span>
             <span class="text-[10px] text-gray-500">${(f.size / 1024).toFixed(1)}KB</span>
         </div>
     `).join('');
-            }
-            function clearKnowledge() {
-                if (!confirm('确定清空所有知识库吗？')) return;
-                kbChunks = [];
-                localStorage.removeItem(KB_STORAGE_KEY);
-                localStorage.removeItem(KB_FILES_KEY);
-                updateKBStats();
-                renderFileList();
-                showToast('知识库已重置', 'info');
-            }
-            // Retrieval & Ask
-            async function askKnowledgeBase() {
-                const input = document.getElementById('kb-query');
-                const query = input.value.trim();
-                if (!query) return;
-                // UI: User Msg
-                appendKBChat('user', query);
-                input.value = '';
-                const working = document.getElementById('kb-ai-working');
-                working.classList.remove('hidden');
-                try {
-                    // 1. Retrieve
-                    const context = retrieveContext(query);
-                    renderContextInspector(context);
-                    // 2. Generate
-                    if (context.length === 0) {
-                        appendKBChat('ai', "抱歉，知识库中没有找到相关信息。请尝试上传相关文档。");
-                        working.classList.add('hidden');
-                        return;
-                    }
-                    const contextText = context.map(c => `- ${c.content} [Source: ${c.source}]`).join('\n');
-                    const prompt = `
+                }
+                function clearKnowledge() {
+                    if (!confirm('确定清空所有知识库吗？')) return;
+                    kbChunks = [];
+                    localStorage.removeItem(KB_STORAGE_KEY);
+                    localStorage.removeItem(KB_FILES_KEY);
+                    updateKBStats();
+                    renderFileList();
+                    showToast('知识库已重置', 'info');
+                }
+                // Retrieval & Ask
+                async function askKnowledgeBase() {
+                    const input = document.getElementById('kb-query');
+                    const query = input.value.trim();
+                    if (!query) return;
+                    // UI: User Msg
+                    appendKBChat('user', query);
+                    input.value = '';
+                    const working = document.getElementById('kb-ai-working');
+                    working.classList.remove('hidden');
+                    try {
+                        // 1. Retrieve
+                        const context = retrieveContext(query);
+                        renderContextInspector(context);
+                        // 2. Generate
+                        if (context.length === 0) {
+                            appendKBChat('ai', "抱歉，知识库中没有找到相关信息。请尝试上传相关文档。");
+                            working.classList.add('hidden');
+                            return;
+                        }
+                        const contextText = context.map(c => `- ${c.content} [Source: ${c.source}]`).join('\n');
+                        const prompt = `
         Role: Expert Support Agent.
         Task: Answer the question using ONLY the provided context. If the answer is not in the context, say "I don't know based on the knowledge base".
         Question: "${query}"
@@ -1634,36 +1611,36 @@ function updateDashboard() {
         """
         Answer (Keep it concise, professional, and cite the source file if possible):
         `;
-                    const answer = await callGeminiAPI(prompt);
-                    appendKBChat('ai', answer);
-                } catch (e) {
-                    console.error("KB Error", e);
-                    appendKBChat('ai', "Error: 知识库大脑过载，请重试。");
+                        const answer = await callGeminiAPI(prompt);
+                        appendKBChat('ai', answer);
+                    } catch (e) {
+                        console.error("KB Error", e);
+                        appendKBChat('ai', "Error: 知识库大脑过载，请重试。");
+                    }
+                    working.classList.add('hidden');
                 }
-                working.classList.add('hidden');
-            }
-            function retrieveContext(query) {
-                if (kbChunks.length === 0) return [];
-                // Simple Bag-of-Words Scoring
-                // Enhance: Use vector embeddings if bringing in tfjs-universal-sentence-encoder (future)
-                const qTokens = query.toLowerCase().split(/\s+/).filter(w => w.length > 1);
-                const scored = kbChunks.map(chunk => {
-                    let score = 0;
-                    const text = chunk.content.toLowerCase();
-                    qTokens.forEach(t => {
-                        if (text.includes(t)) score += 1;
+                function retrieveContext(query) {
+                    if (kbChunks.length === 0) return [];
+                    // Simple Bag-of-Words Scoring
+                    // Enhance: Use vector embeddings if bringing in tfjs-universal-sentence-encoder (future)
+                    const qTokens = query.toLowerCase().split(/\s+/).filter(w => w.length > 1);
+                    const scored = kbChunks.map(chunk => {
+                        let score = 0;
+                        const text = chunk.content.toLowerCase();
+                        qTokens.forEach(t => {
+                            if (text.includes(t)) score += 1;
+                        });
+                        return { ...chunk, score };
                     });
-                    return { ...chunk, score };
-                });
-                // Filter & Sort
-                return scored.filter(c => c.score > 0)
-                    .sort((a, b) => b.score - a.score)
-                    .slice(0, 5); // Top 5
-            }
-            function appendKBChat(role, text) {
-                const history = document.getElementById('kb-chat-history');
-                const isUser = role === 'user';
-                const html = `
+                    // Filter & Sort
+                    return scored.filter(c => c.score > 0)
+                        .sort((a, b) => b.score - a.score)
+                        .slice(0, 5); // Top 5
+                }
+                function appendKBChat(role, text) {
+                    const history = document.getElementById('kb-chat-history');
+                    const isUser = role === 'user';
+                    const html = `
     <div class="flex gap-4 ${isUser ? 'flex-row-reverse' : ''}">
         <div class="w-8 h-8 rounded-full ${isUser ? 'bg-gray-600' : 'bg-blue-600'} flex items-center justify-center text-xs">
             ${isUser ? 'You' : 'AI'}
@@ -1675,15 +1652,15 @@ function updateDashboard() {
         </div>
     </div>
     `;
-                history.insertAdjacentHTML('beforeend', html);
-                history.scrollTop = history.scrollHeight;
-            }
-            function renderContextInspector(chunks) {
-                const inspector = document.getElementById('kb-context-inspector');
-                const content = document.getElementById('kb-context-content');
-                if (chunks.length > 0) {
-                    inspector.classList.remove('hidden');
-                    content.innerHTML = chunks.map(c => `
+                    history.insertAdjacentHTML('beforeend', html);
+                    history.scrollTop = history.scrollHeight;
+                }
+                function renderContextInspector(chunks) {
+                    const inspector = document.getElementById('kb-context-inspector');
+                    const content = document.getElementById('kb-context-content');
+                    if (chunks.length > 0) {
+                        inspector.classList.remove('hidden');
+                        content.innerHTML = chunks.map(c => `
             <div class="p-2 bg-black/40 rounded border border-gray-700 hover:border-blue-500/50 transition-colors">
                 <div class="flex justify-between text-[10px] text-gray-500 mb-1">
                     <span>${c.source}</span>
@@ -1692,32 +1669,32 @@ function updateDashboard() {
                 <div class="truncate text-gray-400">"...${c.content.substring(0, 100)}..."</div>
             </div>
         `).join('');
-                } else {
-                    inspector.classList.add('hidden');
-                }
-            }
-            // Init KB on load
-            setTimeout(initKnowledgeBase, 1000);
-            // ==========================================
-            // 11.1 Smart Responder (RFQ 2.0)
-            // ==========================================
-            async function generateRFQReply() {
-                const input = document.getElementById('rfq-input').value;
-                const draftArea = document.getElementById('rfq-reply-draft');
-                const loading = document.getElementById('rfq-reply-loading');
-                if (!input) return showToast('没有可分析的邮件内容', 'warning');
-                if (loading) loading.classList.remove('hidden');
-                // 1. Retrieve Context from Knowledge Base
-                // Use the existing 'retrieveContext' function if available, otherwise mock it
-                let kbContext = "General B2B Professional reply.";
-                if (typeof retrieveContext === 'function') {
-                    const chunks = retrieveContext(input); // Basic RAG
-                    if (chunks && chunks.length > 0) {
-                        kbContext = chunks.map(c => c.content).join('\n---\n');
-                        showToast(`已引用 ${chunks.length} 条知识库内容`, 'success');
+                    } else {
+                        inspector.classList.add('hidden');
                     }
                 }
-                const prompt = `
+                // Init KB on load
+                setTimeout(initKnowledgeBase, 1000);
+                // ==========================================
+                // 11.1 Smart Responder (RFQ 2.0)
+                // ==========================================
+                async function generateRFQReply() {
+                    const input = document.getElementById('rfq-input').value;
+                    const draftArea = document.getElementById('rfq-reply-draft');
+                    const loading = document.getElementById('rfq-reply-loading');
+                    if (!input) return showToast('没有可分析的邮件内容', 'warning');
+                    if (loading) loading.classList.remove('hidden');
+                    // 1. Retrieve Context from Knowledge Base
+                    // Use the existing 'retrieveContext' function if available, otherwise mock it
+                    let kbContext = "General B2B Professional reply.";
+                    if (typeof retrieveContext === 'function') {
+                        const chunks = retrieveContext(input); // Basic RAG
+                        if (chunks && chunks.length > 0) {
+                            kbContext = chunks.map(c => c.content).join('\n---\n');
+                            showToast(`已引用 ${chunks.length} 条知识库内容`, 'success');
+                        }
+                    }
+                    const prompt = `
     Role: Expert International Sales Manager.
     Task: Write a high-converting reply email to the client.
     Client Original Inquiry:
@@ -1737,36 +1714,36 @@ function updateDashboard() {
        - Clear Call to Action (CTA).
     3. Output: Email Body ONLY. No subject line.
     `;
-                try {
-                    const reply = await callGeminiAPI(prompt);
-                    if (reply) {
-                        typewriterEffect(draftArea, reply);
+                    try {
+                        const reply = await callGeminiAPI(prompt);
+                        if (reply) {
+                            typewriterEffect(draftArea, reply);
+                        }
+                    } catch (e) {
+                        draftArea.value = "Error generating reply: " + e.message;
+                    } finally {
+                        if (loading) loading.classList.add('hidden');
                     }
-                } catch (e) {
-                    draftArea.value = "Error generating reply: " + e.message;
-                } finally {
-                    if (loading) loading.classList.add('hidden');
                 }
-            }
-            function typewriterEffect(element, text, speed = 5) {
-                if (!element) return;
-                element.value = '';
-                let i = 0;
-                const timer = setInterval(() => {
-                    if (i < text.length) {
-                        element.value += text.charAt(i);
-                        element.scrollTop = element.scrollHeight;
-                        i++;
-                    } else {
-                        clearInterval(timer);
-                    }
-                }, speed);
-            }
-            function copyRFQReply() {
-                const text = document.getElementById('rfq-reply-draft').value;
-                if (!text) return;
-                navigator.clipboard.writeText(text).then(() => {
-                    showToast('已复制到剪贴板', 'success');
-                });
-            }
+                function typewriterEffect(element, text, speed = 5) {
+                    if (!element) return;
+                    element.value = '';
+                    let i = 0;
+                    const timer = setInterval(() => {
+                        if (i < text.length) {
+                            element.value += text.charAt(i);
+                            element.scrollTop = element.scrollHeight;
+                            i++;
+                        } else {
+                            clearInterval(timer);
+                        }
+                    }, speed);
+                }
+                function copyRFQReply() {
+                    const text = document.getElementById('rfq-reply-draft').value;
+                    if (!text) return;
+                    navigator.clipboard.writeText(text).then(() => {
+                        showToast('已复制到剪贴板', 'success');
+                    });
+                }
 // ==========================================
