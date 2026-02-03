@@ -86,7 +86,86 @@
         }
         window.marked = marked;
 
-        console.log('✅ callGeminiAPI and marked defined globally');
+        // Configuration Settings (Global)
+        function configureSettings() {
+            const existingKey = localStorage.getItem('tds_gemini_api_key') || '';
+            const existingPersona = localStorage.getItem('tds_target_audience') || '';
+            const modal = `
+<div class="fixed inset-0 bg-black/70 flex items-center justify-center z-50 p-4">
+    <div class="bg-slate-900 rounded-xl p-6 w-full max-w-md border border-gray-700">
+        <h2 class="text-xl font-bold text-white mb-4">⚙️ 全局配置</h2>
+        <label class="block text-xs text-gray-400 mb-1">Gemini API Key</label>
+        <input id="settings-api-key" type="password" value="${existingKey}" class="w-full p-2 rounded bg-slate-800 border border-gray-600 text-white mb-3" placeholder="AIza...">
+        <label class="block text-xs text-gray-400 mb-1">目标客户画像</label>
+        <textarea id="settings-persona" class="w-full p-2 rounded bg-slate-800 border border-gray-600 text-white h-24" placeholder="描述你的理想客户...">${existingPersona}</textarea>
+        <div class="flex gap-2 mt-4">
+            <button onclick="saveSettings()" class="flex-1 bg-blue-600 hover:bg-blue-500 text-white py-2 rounded font-bold">保存</button>
+            <button onclick="this.closest('.fixed').remove()" class="flex-1 bg-gray-700 hover:bg-gray-600 text-white py-2 rounded">取消</button>
+        </div>
+    </div>
+</div>`;
+            document.body.insertAdjacentHTML('beforeend', modal);
+        }
+        window.configureSettings = configureSettings;
+
+        function saveSettings() {
+            const key = document.getElementById('settings-api-key').value;
+            const persona = document.getElementById('settings-persona').value;
+            localStorage.setItem('tds_gemini_api_key', key);
+            localStorage.setItem('tds_target_audience', persona);
+            showToast('全局配置已保存！', 'success');
+            document.querySelector('.fixed.inset-0').remove();
+        }
+        window.saveSettings = saveSettings;
+
+        // Data Export/Import (Global)
+        function exportData() {
+            const backup = {};
+            for (let i = 0; i < localStorage.length; i++) {
+                const key = localStorage.key(i);
+                if (key.startsWith('tds_')) {
+                    backup[key] = localStorage.getItem(key);
+                }
+            }
+            backup['_meta'] = { version: '18.45', date: new Date().toISOString() };
+            const b = new Blob([JSON.stringify(backup, null, 2)], { type: 'application/json' });
+            const a = document.createElement('a');
+            a.href = URL.createObjectURL(b);
+            a.download = `tds_backup_${new Date().toISOString().split('T')[0]}.json`;
+            a.click();
+            showToast('数据备份已下载', 'success');
+        }
+        window.exportData = exportData;
+
+        function importData(input) {
+            const r = new FileReader();
+            r.onload = e => {
+                try {
+                    const data = JSON.parse(e.target.result);
+                    let count = 0;
+                    Object.keys(data).forEach(k => {
+                        if (k.startsWith('tds_')) {
+                            localStorage.setItem(k, data[k]);
+                            count++;
+                        }
+                    });
+                    showToast(`成功恢复 ${count} 项数据，系统即将刷新`, 'success');
+                    setTimeout(() => location.reload(), 1500);
+                } catch (err) {
+                    showToast('备份文件格式无效', 'error');
+                }
+            };
+            r.readAsText(input.files[0]);
+        }
+        window.importData = importData;
+
+        // Radar placeholder (will be overridden by app.js if available)
+        function renderRadar() {
+            console.log('Radar: placeholder');
+        }
+        window.renderRadar = renderRadar;
+
+        console.log('✅ All global utilities defined');
     </script>
 
     <script>
@@ -398,7 +477,7 @@
                     <div class="text-xs text-gray-500">未登录</div>
                 </div>
 
-                <div class="mt-2 text-xs text-green-400 font-bold ml-1">v18.45 SYNTAX FIXED</div>
+                <div class="mt-2 text-xs text-green-400 font-bold ml-1">v18.50 FULL OPT</div>
             </div>
 
             <nav class="flex-1 p-3 overflow-y-auto">
@@ -2826,8 +2905,8 @@ Best regards,
                 }
             </script>
 
-            <!-- Cache Busting: v18.36 (Toast Fix) -->
-            <script src="app.js?v=18.45" defer></script>
+            <!-- Cache Busting: v18.50 (Full Optimization) -->
+            <script src="app.js?v=18.50" defer></script>
             <script>
                 // Init Workflow Engine when tab is shown
                 const originalShowTab = showTab;
