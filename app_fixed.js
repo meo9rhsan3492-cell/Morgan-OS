@@ -1751,3 +1751,21 @@ function updateDashboard() {
     }
 }
 // ==========================================
+// GLOBAL FUNCTION EXPOSURE
+// ==========================================
+// These functions are defined in nested scopes above.
+// We re-expose them globally here for compatibility.
+if (typeof window !== 'undefined') {
+    // Core Functions
+    window.showTab = typeof showTab !== 'undefined' ? showTab : function () { };
+    window.updateDashboard = typeof updateDashboard !== 'undefined' ? updateDashboard : function () { };
+    window.renderRadar = typeof renderRadar !== 'undefined' ? renderRadar : function () { };
+
+    // AI Functions - check if defined in global scope from index.html first
+    if (typeof window.callGeminiAPI === 'undefined' && typeof callGeminiAPI !== 'undefined') {
+        window.callGeminiAPI = callGeminiAPI;
+    }
+
+    // Deep Dive functions are in app_part_deepdive.js
+    console.log('✅ app.js global functions exposed');
+}
