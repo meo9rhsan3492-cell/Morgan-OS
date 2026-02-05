@@ -2920,9 +2920,28 @@ Best regards,
                             window.isGuestMode = false;
                             window.currentUser = { email: 'admin@morgan.com', role: 'admin' };
                             localStorage.setItem('morgan_admin_logged_in', 'true');
+
+                            // Hide auth modal
                             document.getElementById('auth-modal').classList.add('hidden');
-                            document.getElementById('sidebar-username').innerText = 'Admin';
-                            document.getElementById('sidebar-user-status').innerText = '管理员';
+
+                            // Show main app
+                            const appMain = document.getElementById('app-main');
+                            if (appMain) {
+                                appMain.classList.remove('hidden');
+                            }
+
+                            // Update sidebar
+                            const sidebarUsername = document.getElementById('sidebar-username');
+                            const sidebarStatus = document.getElementById('sidebar-user-status');
+                            if (sidebarUsername) sidebarUsername.innerText = 'Admin';
+                            if (sidebarStatus) sidebarStatus.innerText = '管理员';
+
+                            // Initialize app
+                            if (typeof updateDashboard === 'function') updateDashboard();
+                            if (typeof renderDB === 'function') renderDB();
+                            if (typeof renderExpos === 'function') renderExpos();
+                            if (typeof loadTheme === 'function') loadTheme();
+
                             showToast('🎉 欢迎回来，管理员！', 'success');
                             isLoading = false;
                             submitBtn.classList.remove('opacity-75', 'cursor-not-allowed');
