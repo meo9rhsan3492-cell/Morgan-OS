@@ -238,6 +238,76 @@
         }
         window.generateWeeklyPlan = generateWeeklyPlan;
 
+        // Ads Analysis
+        async function analyzeAdsWithAI() {
+            const platform = document.getElementById('ad-platform')?.value || 'Google';
+            const spend = document.getElementById('ad-spend')?.value || '0';
+            const leads = document.getElementById('ad-leads')?.value || '0';
+            const cpl = parseFloat(leads) > 0 ? (parseFloat(spend) / parseFloat(leads)).toFixed(2) : '0';
+
+            const adviceDiv = document.getElementById('ai-doctor-advice');
+            if (!adviceDiv) return showToast('未找到分析面板', 'error');
+
+            adviceDiv.innerHTML = '<div class="animate-pulse text-purple-400">🧠 正在诊断 Campaign 数据...</div>';
+
+            const result = await callGeminiAPI(`Analyze Ads: Platform=${platform}, Spend=$${spend}, Leads=${leads}, CPL=$${cpl}. Provide 3 optimization tips.`);
+            if (result) {
+                adviceDiv.innerHTML = `<div class="text-left text-xs p-3 space-y-2 bg-slate-800 rounded">${marked(result)}</div>`;
+                showToast('分析完成', 'success');
+            } else {
+                adviceDiv.innerText = '分析超时，请重试';
+            }
+        }
+        window.analyzeAdsWithAI = analyzeAdsWithAI;
+
+        // Channel Management
+        function addChannel() {
+            const name = document.getElementById('channel-name')?.value;
+            const budget = document.getElementById('channel-budget')?.value || '0';
+
+            if (!name) return showToast('请输入渠道名称', 'warning');
+
+            let channels = JSON.parse(localStorage.getItem('tds_channels') || '[]');
+            channels.push({ name, budget: parseFloat(budget), spent: 0, date: new Date().toISOString() });
+            localStorage.setItem('tds_channels', JSON.stringify(channels));
+
+            if (typeof renderChannels === 'function') renderChannels();
+            showToast('渠道已添加', 'success');
+
+            // Clear inputs
+            if (document.getElementById('channel-name')) document.getElementById('channel-name').value = '';
+            if (document.getElementById('channel-budget')) document.getElementById('channel-budget').value = '';
+        }
+        window.addChannel = addChannel;
+
+        function renderChannels() {
+            const container = document.getElementById('channel-list');
+            if (!container) return;
+
+            const channels = JSON.parse(localStorage.getItem('tds_channels') || '[]');
+            if (channels.length === 0) {
+                container.innerHTML = '<div class="text-center text-gray-500 py-4">暂无渠道数据</div>';
+                return;
+            }
+
+            container.innerHTML = channels.map((ch, i) => `
+                <div class="flex justify-between items-center p-3 bg-slate-800 rounded mb-2">
+                    <span class="font-bold">${ch.name}</span>
+                    <span class="text-green-400">¥${ch.budget.toLocaleString()}</span>
+                    <button onclick="removeChannel(${i})" class="text-red-400 hover:text-red-300">×</button>
+                </div>
+            `).join('');
+        }
+        window.renderChannels = renderChannels;
+
+        function removeChannel(index) {
+            let channels = JSON.parse(localStorage.getItem('tds_channels') || '[]');
+            channels.splice(index, 1);
+            localStorage.setItem('tds_channels', JSON.stringify(channels));
+            renderChannels();
+            showToast('渠道已删除', 'info');
+        }
+        window.removeChannel = removeChannel;
         console.log('✅ All global utilities defined');
     </script>
 
@@ -550,7 +620,7 @@
                     <div class="text-xs text-gray-500">未登录</div>
                 </div>
 
-                <div class="mt-2 text-xs text-green-400 font-bold ml-1">v18.60 ALL MODULES</div>
+                <div class="mt-2 text-xs text-green-400 font-bold ml-1">v18.65 FULL FIX</div>
             </div>
 
             <nav class="flex-1 p-3 overflow-y-auto">
