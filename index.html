@@ -2914,6 +2914,22 @@ Best regards,
                     );
 
                     try {
+                        // 🔐 Local Admin Account (Bypass Supabase)
+                        if (email === 'admin@morgan.com' && password === 'Morgan2026!') {
+                            console.log('✅ Admin login successful');
+                            window.isGuestMode = false;
+                            window.currentUser = { email: 'admin@morgan.com', role: 'admin' };
+                            localStorage.setItem('morgan_admin_logged_in', 'true');
+                            document.getElementById('auth-modal').classList.add('hidden');
+                            document.getElementById('sidebar-username').innerText = 'Admin';
+                            document.getElementById('sidebar-user-status').innerText = '管理员';
+                            showToast('🎉 欢迎回来，管理员！', 'success');
+                            isLoading = false;
+                            submitBtn.classList.remove('opacity-75', 'cursor-not-allowed');
+                            btnSpan.innerText = originalText;
+                            return;
+                        }
+
                         if (!window.sb) throw new Error('System initializing... please wait 1s');
 
                         let result;
