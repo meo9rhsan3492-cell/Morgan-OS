@@ -165,6 +165,79 @@
         }
         window.renderRadar = renderRadar;
 
+        // ==============================
+        // FUNCTION STUBS for nested functions
+        // These will be overridden by app.js if it loads correctly
+        // ==============================
+
+        // Briefing
+        function generateBriefing() {
+            if (typeof generateDailyBriefing === 'function') {
+                generateDailyBriefing();
+            } else {
+                showToast('简报功能加载中...', 'info');
+            }
+        }
+        window.generateBriefing = generateBriefing;
+
+        // Keyword functions
+        function expandKeywords() {
+            showToast('关键词扩展功能需要 API Key', 'warning');
+        }
+        window.expandKeywords = expandKeywords;
+
+        function analyzeKeywordIntent() {
+            showToast('意图分析功能需要 API Key', 'warning');
+        }
+        window.analyzeKeywordIntent = analyzeKeywordIntent;
+
+        // Competitor Scout
+        function analyzeCompetitor() {
+            showToast('竞争分析功能需要 API Key', 'warning');
+        }
+        window.analyzeCompetitor = analyzeCompetitor;
+
+        // RFQ Functions
+        function analyzeRFQ() {
+            showToast('RFQ 解码功能需要 API Key', 'warning');
+        }
+        window.analyzeRFQ = analyzeRFQ;
+
+        function generateRFQReply() {
+            showToast('回复生成功能需要 API Key', 'warning');
+        }
+        window.generateRFQReply = generateRFQReply;
+
+        function copyReply() {
+            const text = document.getElementById('rfq-reply-draft')?.value;
+            if (text) {
+                navigator.clipboard.writeText(text).then(() => showToast('已复制', 'success'));
+            }
+        }
+        window.copyReply = copyReply;
+
+        // Knowledge Base
+        function askKnowledgeBase() {
+            showToast('知识库功能需要先上传文档', 'warning');
+        }
+        window.askKnowledgeBase = askKnowledgeBase;
+
+        function clearKnowledge() {
+            if (confirm('确定清空知识库？')) {
+                localStorage.removeItem('morgan_kb_chunks');
+                localStorage.removeItem('morgan_kb_files');
+                showToast('知识库已清空', 'info');
+                location.reload();
+            }
+        }
+        window.clearKnowledge = clearKnowledge;
+
+        // Weekly Plan
+        function generateWeeklyPlan() {
+            showToast('周计划生成功能需要 API Key', 'warning');
+        }
+        window.generateWeeklyPlan = generateWeeklyPlan;
+
         console.log('✅ All global utilities defined');
     </script>
 
@@ -477,7 +550,7 @@
                     <div class="text-xs text-gray-500">未登录</div>
                 </div>
 
-                <div class="mt-2 text-xs text-green-400 font-bold ml-1">v18.55 STRUCTURE</div>
+                <div class="mt-2 text-xs text-green-400 font-bold ml-1">v18.60 ALL MODULES</div>
             </div>
 
             <nav class="flex-1 p-3 overflow-y-auto">
@@ -2906,7 +2979,7 @@ Best regards,
             </script>
 
             <!-- Cache Busting: v18.55 (Structure Fix) -->
-            <script src="app.js?v=18.55" defer></script>
+            <script src="app.js?v=18.60" defer></script>
             <script>
                 // Init Workflow Engine when tab is shown
                 const originalShowTab = showTab;
