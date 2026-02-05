@@ -29,6 +29,16 @@ async function startDeepDive() {
     resultContainer.classList.add('hidden'); // Hide previous results
 
     try {
+        // Check API Key first
+        const apiKey = localStorage.getItem('tds_gemini_api_key');
+        if (!apiKey) {
+            showToast('⚠️ 请先配置 Gemini API Key（点击左下角设置）', 'warning');
+            searchHero.classList.remove('opacity-50', 'pointer-events-none');
+            document.getElementById('dive-loading').classList.add('hidden');
+            if (typeof configureSettings === 'function') configureSettings();
+            return;
+        }
+
         showToast('正在派遣 AI 侦探访问目标...', 'info');
 
         // 1. Scrape with Jina Reader (Free, clean Markdown)
