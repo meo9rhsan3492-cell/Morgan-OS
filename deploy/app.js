@@ -4174,16 +4174,27 @@ function updateUserDisplay(profile) {
 
 // Auth Actions
 window.handleLogin = async function () {
-    if (!supabase) {
-        alert('请先配置 Supabase URL 和 Key');
-        return;
-    }
-
     const email = document.getElementById('auth-email').value;
     const password = document.getElementById('auth-password').value;
 
     if (!email || !password) {
         showAuthError('请输入邮箱和密码');
+        return;
+    }
+
+    // 🔐 Local Admin Account (Bypass Supabase)
+    if (email === 'admin@morgan.com' && password === 'Morgan2026!') {
+        console.log('✅ Admin login successful');
+        window.currentUser = { email: 'admin@morgan.com', role: 'admin' };
+        localStorage.setItem('morgan_admin_logged_in', 'true');
+        hideAuthModal();
+        updateUserDisplay({ email: 'admin@morgan.com', roles: { display_name: '管理员' } });
+        showToast('🎉 欢迎回来，管理员！', 'success');
+        return;
+    }
+
+    if (!supabase) {
+        showAuthError('Supabase 未初始化，请使用管理员账号: admin@morgan.com');
         return;
     }
 
