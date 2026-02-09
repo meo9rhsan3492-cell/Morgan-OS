@@ -45,6 +45,189 @@
         window.showToast = showToast; // Expose globally
         console.log('✅ showToast defined globally');
 
+        // ==========================================
+        // AI: Brand Content (Global Fix)
+        // ==========================================
+        async function generateBrandContent() {
+            const themeEl = document.getElementById('brand-theme');
+            const prodEl = document.getElementById('brand-product');
+            const toneEl = document.getElementById('brand-tone');
+
+            if (!themeEl || !prodEl || !toneEl) {
+                console.warn("Brand generation elements missing in this view.");
+                return;
+            }
+
+            const theme = themeEl.value;
+            const product = prodEl.value;
+            const tone = toneEl.value;
+
+            if (!theme || !product) return showToast('请输入核心主题和产品名称', 'warning');
+
+            // Get Selected Platforms
+            const selectedPlatforms = Array.from(document.querySelectorAll('.platform-checkbox:checked')).map(cb => cb.value);
+            if (selectedPlatforms.length === 0) return showToast('请至少选择一个发布平台', 'warning');
+
+            // UI Loading
+            document.getElementById('brand-placeholder')?.classList.add('hidden');
+            document.getElementById('brand-loading')?.classList.remove('hidden');
+            document.getElementById('brand-channels')?.classList.add('hidden');
+            document.getElementById('brand-core-card')?.classList.add('hidden');
+
+            // Reset output visibilities
+            ['linkedin', 'twitter', 'instagram', 'blog', 'facebook', 'youtube'].forEach(p => {
+                const el = document.getElementById(`card-${p}`);
+                if (el) el.classList.add('hidden');
+            });
+
+            // Construct Dynamic Prompt
+            let deliverables = [];
+            deliverables.push(`1. core_concept: A 1-sentence "Big Idea" slogan/hook.`);
+
+            if (selectedPlatforms.includes('linkedin')) deliverables.push(`- linkedin_post: Professional B2B insight.`);
+            if (selectedPlatforms.includes('twitter')) deliverables.push(`- twitter_thread: Viral hook + 3 bullets.`);
+            if (selectedPlatforms.includes('instagram')) deliverables.push(`- instagram_caption: Lifestyle vibe + visual cue.`);
+            if (selectedPlatforms.includes('blog')) deliverables.push(`- blog_outline: Title + 3 headers.`);
+            if (selectedPlatforms.includes('facebook')) deliverables.push(`- facebook_post: Engaging community question + soft sell.`);
+            if (selectedPlatforms.includes('youtube')) deliverables.push(`- youtube_desc: SEO optimized video description + title.`);
+
+            const prompt = `
+            Role: Chief Content Officer (CCO).
+            Task: Create multi-channel content.
+            Theme: "${theme}"
+            Product: "${product}"
+            Tone: "${tone}"
+
+            Deliverables (JSON):
+            ${deliverables.join('\n    ')}
+
+            Return STRICT JSON with keys: "core_concept", ${selectedPlatforms.map(p => `"${p === 'twitter' ? 'twitter_thread' : (p === 'instagram' ? 'instagram_caption' : (p === 'blog' ? 'blog_outline' : (p === 'youtube' ? 'youtube_desc' : p + '_post')))}"`).join(', ')}.
+            `;
+
+            try {
+                if (typeof callGeminiAPI !== 'function') {
+                    throw new Error('callGeminiAPI is not available');
+                }
+                const result = await callGeminiAPI(prompt + "\n\nEnsure valid JSON.");
+                if (result) {
+                    const jsonStr = result.replace(/```json/g, '').replace(/```/g, '').trim();
+                    const data = JSON.parse(jsonStr);
+
+                    // Render Core
+                    const coreText = document.getElementById('brand-core-text');
+                    if (coreText) coreText.innerText = data.core_concept || '生成中...';
+                    document.getElementById('brand-core-card')?.classList.remove('hidden');
+                    document.getElementById('brand-channels')?.classList.remove('hidden');
+
+                    // Render Channels
+                    const mapping = {
+                        'linkedin': 'linkedin_post',
+                        'twitter': 'twitter_thread',
+                        'instagram': 'instagram_caption',
+                        'blog': 'blog_outline',
+                        'facebook': 'facebook_post',
+                        'youtube': 'youtube_desc'
+                    };
+
+                    selectedPlatforms.forEach(p => {
+                        const key = mapping[p];
+                        if (data[key]) {
+                            const el = document.getElementById(`content-${p}`);
+                            const card = document.getElementById(`card-${p}`);
+                            if (el && card) {
+                                el.innerText = data[key];
+                                card.classList.remove('hidden');
+                            }
+                        }
+                    });
+
+                    document.getElementById('brand-channels')?.classList.remove('hidden');
+                    showToast('全渠道内容矩阵已生成', 'success');
+                }
+            } catch (e) {
+                console.error(e);
+                showToast('生成失败: ' + e.message, 'error');
+            } finally {
+                document.getElementById('brand-loading')?.classList.add('hidden');
+            }
+        }
+        window.generateBrandContent = generateBrandContent;
+
+        // ==========================================
+        // AI: Daily Briefing (Global Fix)
+        // ==========================================
+        async function generateDailyBriefing() {
+            const title = document.getElementById('briefing-title');
+            const content = document.getElementById('briefing-content');
+            if (content) content.innerHTML = '<span class="animate-pulse">⚡ 正在聚合全网数据 (Radar, Calendar, Finance)...</span>';
+
+            // 1. Gather Radar Data (Who is awake?)
+            const now = new Date();
+            const zones = [
+                { id: 'ny', zone: 'America/New_York', name: 'North America' },
+                { id: 'ldn', zone: 'Europe/London', name: 'Europe' },
+                { id: 'dxb', zone: 'Asia/Dubai', name: 'Middle East' },
+                { id: 'bj', zone: 'Asia/Shanghai', name: 'APAC' }
+            ];
+            let activeZones = [];
+            zones.forEach(z => {
+                try {
+                    const timeStr = now.toLocaleTimeString('en-US', { timeZone: z.zone, hour12: false, hour: '2-digit' });
+                    const hour = parseInt(timeStr);
+                    if (hour >= 9 && hour < 18) activeZones.push(z.name);
+                } catch (e) { }
+            });
+            const radarContext = activeZones.length > 0
+                ? `Active Markets (${activeZones.join(', ')} are online)`
+                : "Global markets are mostly offline";
+
+            // 2. Gather Calendar Data
+            const days = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+            const today = days[now.getDay()];
+            let planContext = `Today is ${today}.`;
+            if (today === 'Monday') planContext += " Focus: Pain Point Attack.";
+            if (today === 'Wednesday') planContext += " Focus: Hardcore Demo.";
+            if (today === 'Friday') planContext += " Focus: Case Study / Testimonial.";
+
+            // 3. Gather Budget Data
+            const budgetTotal = document.getElementById('total-budget')?.value || 266664;
+            const budgetSpent = document.getElementById('spent-amount')?.value || 79600;
+            const percentLeft = Math.round(((budgetTotal - budgetSpent) / budgetTotal) * 100);
+            const budgetContext = `Budget Remaining: ${percentLeft}%`;
+
+            // 4. AI Synthesis
+            const prompt = `
+            Role: Chief of Staff / Strategic Advisor.
+            Context:
+            - [Time/Radar]: ${radarContext} (It is now ${now.getHours()}:${now.getMinutes()} Local)
+            - [Content Plan]: ${planContext}
+            - [Finance]: ${budgetContext}
+            Task: Generate a 3-bullet daily morning briefing for the Sales Director.
+            Tone: Professional, urgent, result-oriented.
+            Format: HTML unordered list (<ul><li>...</li></ul>). Use <b> tags for emphasis.
+            Language: Chinese (中文).
+            `;
+
+            try {
+                if (typeof callGeminiAPI !== 'function') throw new Error('API not available');
+
+                const suggestion = await callGeminiAPI(prompt);
+                const cleanHtml = suggestion.replace(/```html/g, '').replace(/```/g, '').trim();
+                if (title) title.innerText = `Good Morning, Director.`;
+                if (content) content.innerHTML = cleanHtml;
+            } catch (e) {
+                console.error("Briefing Error", e);
+                if (title) title.innerText = "System Offline (Fallback Mode)";
+                if (content) content.innerHTML = `
+                    <ul class="list-disc pl-4 space-y-1">
+                        <li><b>Radar</b>: ${activeZones.length} zones active. Priority on responding to IDs.</li>
+                        <li><b>Plan</b>: ${planContext}</li>
+                        <li><b>Budget</b>: Health at ${percentLeft}%.</li>
+                    </ul>
+                `;
+            }
+        }
+        window.generateDailyBriefing = generateDailyBriefing;
         // Gemini API Helper (Global Definition)
         async function callGeminiAPI(prompt) {
             const apiKey = localStorage.getItem('tds_gemini_api_key');
@@ -620,7 +803,7 @@
                     <div class="text-xs text-gray-500">未登录</div>
                 </div>
 
-                <div class="mt-2 text-xs text-green-400 font-bold ml-1">v18.65 FULL FIX</div>
+                <div class="mt-2 text-xs text-green-400 font-bold ml-1">v18.75 BRAND FIX</div>
             </div>
 
             <nav class="flex-1 p-3 overflow-y-auto">
