@@ -363,11 +363,7 @@ function renderPipelineResult(result) {
 // Legacy: Single Analysis (keep working)
 // ========================================
 async function analyzeRFQ() {
-    // If pipeline button exists, redirect to pipeline
-    const pipelineBtn = document.getElementById('btn-run-pipeline');
-    if (pipelineBtn) {
-        return runRFQPipeline();
-    }
+    // Standalone analysis (no pipeline, no quote, no email)
 
     const input = document.getElementById('rfq-input');
     const content = input?.value.trim();
@@ -497,6 +493,8 @@ function savePipelineToCRM() {
             date: new Date().toISOString()
         }],
         quoteData: lastPipelineResult.quoteData,
+        source: 'rfq_pipeline',
+        followUpCount: 0,
         createdAt: new Date().toISOString()
     };
 
