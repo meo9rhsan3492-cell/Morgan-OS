@@ -748,35 +748,74 @@ function updateDashboard() {
                 showToast('全局配置已保存！AI 已更新', 'success');
                 document.querySelector('.fixed.inset-0').remove();
             }
-            async function callGeminiAPI(prompt) {
-                const apiKey = localStorage.getItem('tds_gemini_api_key');
-                if (!apiKey) {
-                    if (confirm('需配置 API Key 才能使用此功能。去配置？')) {
-                        configureSettings();
+            // AI API Helper (Supports Gemini & Qwen)
+            async function callAIAPI(prompt) {
+                const provider = localStorage.getItem('tds_ai_provider') || 'gemini';
+                const geminiKey = localStorage.getItem('tds_gemini_api_key');
+                const qwenKey = localStorage.getItem('tds_qwen_api_key');
+
+                if (provider === 'gemini') {
+                    if (!geminiKey) {
+                        if (confirm('需配置 API Key 才能使用此功能。去配置？')) configureSettings();
+                        return null;
                     }
-                    return null;
-                }
-                try {
-                    const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`, {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({
-                            contents: [{ parts: [{ text: prompt }] }],
-                            generationConfig: { temperature: 0.7 }
-                        })
-                    });
-                    if (!response.ok) {
-                        const err = await response.json();
-                        throw new Error(err.error?.message || 'Unknown API Error');
+                    try {
+                        const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${geminiKey}`, {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({
+                                contents: [{ parts: [{ text: prompt }] }],
+                                generationConfig: { temperature: 0.7 }
+                            })
+                        });
+                        if (!response.ok) {
+                            const err = await response.json();
+                            throw new Error(err.error?.message || 'Gemini API Error');
+                        }
+                        const data = await response.json();
+                        return data.candidates[0]?.content?.parts[0]?.text || '';
+                    } catch (error) {
+                        console.error('Gemini Error:', error);
+                        showToast(`Gemini 调用失败: ${error.message}`, 'error');
+                        return null;
                     }
-                    const data = await response.json();
-                    return data.candidates[0]?.content?.parts[0]?.text || '';
-                } catch (error) {
-                    console.error('Gemini API Error:', error);
-                    showToast(`AI 调用失败: ${error.message}`, 'error');
-                    return null;
+                } else if (provider === 'qwen') {
+                    if (!qwenKey) {
+                        if (confirm('需配置 Qwen API Key 才能使用此功能。去配置？')) configureSettings();
+                        return null;
+                    }
+                    try {
+                        const response = await fetch(`https://dashscope.aliyuncs.com/compatible-mode/v1/chat/completions`, {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json',
+                                'Authorization': `Bearer ${qwenKey}`
+                            },
+                            body: JSON.stringify({
+                                model: "qwen-plus",
+                                messages: [
+                                    { role: "system", content: "You are a professional marketing assistant." },
+                                    { role: "user", content: prompt }
+                                ],
+                                temperature: 0.7
+                            })
+                        });
+                        if (!response.ok) {
+                            const err = await response.json();
+                            throw new Error(err.error?.message || 'Qwen API Error');
+                        }
+                        const data = await response.json();
+                        return data.choices[0]?.message?.content || '';
+                    } catch (error) {
+                        console.error('Qwen Error:', error);
+                        showToast(`Qwen 调用失败: ${error.message}`, 'error');
+                        return null;
+                    }
                 }
             }
+            window.callGeminiAPI = callAIAPI; // Keep alias
+            window.callAIAPI = callAIAPI;
+            const callGeminiAPI = callAIAPI; // Local alias for internal calls
             function marked(text) {
                 if (!text) return '';
                 // A simplified markdown parser ensuring safety
@@ -1780,7 +1819,7 @@ if (typeof window !== 'undefined') {
 const SUPABASE_URL = 'https://ftcaijvfvypcwjgetkvp.supabase.co';
 const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZ0Y2FpanZmdnlwY3dqZ2V0a3ZwIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjQ1NzM0MDYsImV4cCI6MjA4MDE0OTQwNn0.TQ-ayMDAVizgCxEly_ahflzZYXnBYhQ1sBjQnZ636gQ';
 
-// Use var to allow redeclaration if script is loaded twice
+// FINAL RESCUE FIX v18.90 - Prevent Redeclaration
 var supabase = window.supabase || null;
 let currentUser = null;
 let userRole = null;

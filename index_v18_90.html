@@ -330,35 +330,74 @@
             }
         }
         window.copyReply = copyReply;
-        // Gemini API Helper (Global Definition)
-        async function callGeminiAPI(prompt) {
-            const apiKey = localStorage.getItem('tds_gemini_api_key');
-            if (!apiKey) {
-                showToast('需配置 Gemini API Key 才能使用此功能', 'warning');
-                return null;
-            }
-            try {
-                const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({
-                        contents: [{ parts: [{ text: prompt }] }],
-                        generationConfig: { temperature: 0.7 }
-                    })
-                });
-                if (!response.ok) {
-                    const err = await response.json();
-                    throw new Error(err.error?.message || 'Unknown API Error');
+        // AI API Helper (Supports Gemini & Qwen)
+        async function callAIAPI(prompt) {
+            const provider = localStorage.getItem('tds_ai_provider') || 'gemini';
+            const geminiKey = localStorage.getItem('tds_gemini_api_key');
+            const qwenKey = localStorage.getItem('tds_qwen_api_key');
+
+            if (provider === 'gemini') {
+                if (!geminiKey) {
+                    showToast('需配置 Gemini API Key', 'warning');
+                    return null;
                 }
-                const data = await response.json();
-                return data.candidates[0]?.content?.parts[0]?.text || '';
-            } catch (error) {
-                console.error('Gemini API Error:', error);
-                showToast(`AI 调用失败: ${error.message}`, 'error');
-                return null;
+                try {
+                    const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${geminiKey}`, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            contents: [{ parts: [{ text: prompt }] }],
+                            generationConfig: { temperature: 0.7 }
+                        })
+                    });
+                    if (!response.ok) {
+                        const err = await response.json();
+                        throw new Error(err.error?.message || 'Gemini API Error');
+                    }
+                    const data = await response.json();
+                    return data.candidates[0]?.content?.parts[0]?.text || '';
+                } catch (error) {
+                    console.error('Gemini Error:', error);
+                    showToast(`Gemini 调用失败: ${error.message}`, 'error');
+                    return null;
+                }
+            } else if (provider === 'qwen') {
+                if (!qwenKey) {
+                    showToast('需配置 Qwen API Key', 'warning');
+                    return null;
+                }
+                try {
+                    // Qwen DashScope OpenAI Compatible Mode
+                    const response = await fetch(`https://dashscope.aliyuncs.com/compatible-mode/v1/chat/completions`, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'Authorization': `Bearer ${qwenKey}`
+                        },
+                        body: JSON.stringify({
+                            model: "qwen-plus",
+                            messages: [
+                                { role: "system", content: "You are a professional marketing assistant." },
+                                { role: "user", content: prompt }
+                            ],
+                            temperature: 0.7
+                        })
+                    });
+                    if (!response.ok) {
+                        const err = await response.json();
+                        throw new Error(err.error?.message || 'Qwen API Error');
+                    }
+                    const data = await response.json();
+                    return data.choices[0]?.message?.content || '';
+                } catch (error) {
+                    console.error('Qwen Error:', error);
+                    showToast(`Qwen 调用失败: ${error.message}`, 'error');
+                    return null;
+                }
             }
         }
-        window.callGeminiAPI = callGeminiAPI;
+        window.callGeminiAPI = callAIAPI; // Keep alias for backward compatibility
+        window.callAIAPI = callAIAPI;
 
         // Simple Markdown Parser (Global Definition)
         function marked(text) {
@@ -373,31 +412,70 @@
 
         // Configuration Settings (Global)
         function configureSettings() {
-            const existingKey = localStorage.getItem('tds_gemini_api_key') || '';
+            const provider = localStorage.getItem('tds_ai_provider') || 'gemini';
+            const geminiKey = localStorage.getItem('tds_gemini_api_key') || '';
+            const qwenKey = localStorage.getItem('tds_qwen_api_key') || '';
             const existingPersona = localStorage.getItem('tds_target_audience') || '';
+
             const modal = `
 <div class="fixed inset-0 bg-black/70 flex items-center justify-center z-50 p-4">
     <div class="bg-slate-900 rounded-xl p-6 w-full max-w-md border border-gray-700">
-        <h2 class="text-xl font-bold text-white mb-4">⚙️ 全局配置</h2>
-        <label class="block text-xs text-gray-400 mb-1">Gemini API Key</label>
-        <input id="settings-api-key" type="password" value="${existingKey}" class="w-full p-2 rounded bg-slate-800 border border-gray-600 text-white mb-3" placeholder="AIza...">
-        <label class="block text-xs text-gray-400 mb-1">目标客户画像</label>
-        <textarea id="settings-persona" class="w-full p-2 rounded bg-slate-800 border border-gray-600 text-white h-24" placeholder="描述你的理想客户...">${existingPersona}</textarea>
-        <div class="flex gap-2 mt-4">
-            <button onclick="saveSettings()" class="flex-1 bg-blue-600 hover:bg-blue-500 text-white py-2 rounded font-bold">保存</button>
-            <button onclick="this.closest('.fixed').remove()" class="flex-1 bg-gray-700 hover:bg-gray-600 text-white py-2 rounded">取消</button>
+        <div class="flex justify-between items-center mb-4">
+            <h2 class="text-xl font-bold text-white">⚙️ 全局配置</h2>
+            <button onclick="this.closest('.fixed').remove()" class="text-gray-400 hover:text-white">✕</button>
+        </div>
+        <div class="space-y-4">
+            <div>
+                <label class="block text-xs text-gray-400 mb-1">AI 模型供应商</label>
+                <select id="settings-provider" class="w-full p-2 rounded bg-slate-800 border border-gray-600 text-white" onchange="toggleApiKeyFields()">
+                    <option value="gemini" ${provider === 'gemini' ? 'selected' : ''}>Google Gemini</option>
+                    <option value="qwen" ${provider === 'qwen' ? 'selected' : ''}>阿里千问 (Qwen)</option>
+                </select>
+            </div>
+            
+            <div id="gemini-key-group" class="${provider === 'gemini' ? '' : 'hidden'}">
+                <label class="block text-xs text-gray-400 mb-1">Gemini API Key</label>
+                <input id="settings-gemini-key" type="password" value="${geminiKey}" class="w-full p-2 rounded bg-slate-800 border border-gray-600 text-white" placeholder="AIza...">
+            </div>
+            
+            <div id="qwen-key-group" class="${provider === 'qwen' ? '' : 'hidden'}">
+                <label class="block text-xs text-gray-400 mb-1">Qwen API Key (DashScope)</label>
+                <input id="settings-qwen-key" type="password" value="${qwenKey}" class="w-full p-2 rounded bg-slate-800 border border-gray-600 text-white" placeholder="sk-...">
+            </div>
+
+            <div>
+                <label class="block text-xs text-gray-400 mb-1">目标客户画像</label>
+                <textarea id="settings-persona" class="w-full p-2 rounded bg-slate-800 border border-gray-600 text-white h-24" placeholder="描述你的理想客户...">${existingPersona}</textarea>
+            </div>
+        </div>
+
+        <div class="flex gap-2 mt-6">
+            <button onclick="saveSettings()" class="flex-1 bg-blue-600 hover:bg-blue-500 text-white py-2 rounded font-bold">保存配置</button>
         </div>
     </div>
 </div>`;
             document.body.insertAdjacentHTML('beforeend', modal);
+
+            // Local helper for UI toggling
+            window.toggleApiKeyFields = function () {
+                const prov = document.getElementById('settings-provider').value;
+                document.getElementById('gemini-key-group').classList.toggle('hidden', prov !== 'gemini');
+                document.getElementById('qwen-key-group').classList.toggle('hidden', prov !== 'qwen');
+            };
         }
         window.configureSettings = configureSettings;
 
         function saveSettings() {
-            const key = document.getElementById('settings-api-key').value;
+            const provider = document.getElementById('settings-provider').value;
+            const geminiKey = document.getElementById('settings-gemini-key').value;
+            const qwenKey = document.getElementById('settings-qwen-key').value;
             const persona = document.getElementById('settings-persona').value;
-            localStorage.setItem('tds_gemini_api_key', key);
+
+            localStorage.setItem('tds_ai_provider', provider);
+            localStorage.setItem('tds_gemini_api_key', geminiKey);
+            localStorage.setItem('tds_qwen_api_key', qwenKey);
             localStorage.setItem('tds_target_audience', persona);
+
             showToast('全局配置已保存！', 'success');
             document.querySelector('.fixed.inset-0').remove();
         }
@@ -905,7 +983,7 @@
                     <div class="text-xs text-gray-500">未登录</div>
                 </div>
 
-                <div class="mt-2 text-xs text-green-400 font-bold ml-1">v18.80 MODULES FIX</div>
+                <div class="mt-2 text-xs text-green-400 font-bold ml-1">v18.90 FINAL RESCUE</div>
             </div>
 
             <nav class="flex-1 p-3 overflow-y-auto">
@@ -3368,8 +3446,8 @@ Best regards,
                 }
             </script>
 
-            <!-- Cache Busting: v18.80 (Module Fix) -->
-            <script src="app.js?v=18.80" defer></script>
+            <!-- FINAL RESCUE: v18.90 -->
+            <script src="app_v18_90.js" defer></script>
             <script>
                 // Init Workflow Engine when tab is shown
                 const originalShowTab = showTab;
