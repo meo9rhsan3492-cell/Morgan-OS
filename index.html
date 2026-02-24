@@ -875,7 +875,9 @@
             try {
                 if (tabId === 'exhibition' && typeof renderExpos === 'function') renderExpos();
                 if (tabId === 'dashboard' && typeof updateDashboard === 'function') updateDashboard();
+                if (tabId === 'dashboard' && typeof renderTodayFollowUps === 'function') renderTodayFollowUps();
                 if (tabId === 'email-templates' && typeof renderTemplateList === 'function') renderTemplateList();
+                if (tabId === 'customer-pipeline' && typeof renderPipeline === 'function') renderPipeline();
             } catch (e) {
                 console.warn('App logic not fully loaded yet:', e);
             }
@@ -983,7 +985,7 @@
                     <div class="text-xs text-gray-500">未登录</div>
                 </div>
 
-                <div class="mt-2 text-xs text-green-400 font-bold ml-1">v18.90 QWEN READY</div>
+                <div class="mt-2 text-xs text-green-400 font-bold ml-1">v19.0 AGENT</div>
             </div>
 
             <nav class="flex-1 p-3 overflow-y-auto">
@@ -1012,10 +1014,12 @@
                 <button onclick="switchTab('price-calculator')" class="nav-item"
                     id="nav-price-calculator"><span>💰</span><span>报价计算器</span></button>
                 <div class="px-4 mb-2 mt-4 text-xs font-bold text-blue-400 uppercase">工具</div>
+                <button onclick="switchTab('customer-pipeline')" class="nav-item"
+                    id="nav-pipeline"><span>🚀</span><span>客户管道 (CRM)</span></button>
                 <button onclick="switchTab('customer-deep-dive')" class="nav-item"
                     id="nav-deep-dive"><span>🕵️</span><span>客户背调
                         (KYC)</span></button>
-                <button onclick="switchTab('rfq-decoder')" class="nav-item" id="nav-rfq"><span>🧩</span><span>询盘解码
+                <button onclick="switchTab('rfq-decoder')" class="nav-item" id="nav-rfq"><span>🧩</span><span>询盘流水线
                         (RFQ)</span></button>
                 <button onclick="switchTab('email-templates')" class="nav-item"
                     id="nav-email-templates"><span>📧</span><span>邮件模板库</span></button>
@@ -1067,6 +1071,8 @@
                 <div id="dashboard" class="tab-content active">
                     <h2 class="text-4xl font-black mb-2" style="color: var(--text-primary);">战略指挥舱</h2>
                     <p class="text-sm mb-8" style="color: var(--text-secondary);">Overview · 一键直达作战前线</p>
+                    <!-- Today's Follow-up Alert (P2) -->
+                    <div id="today-followup"></div>
                     <!-- Morning Briefing Card -->
                     <div class="panel mb-6 border-l-4 border-purple-500 relative overflow-hidden group">
                         <div
@@ -1696,10 +1702,16 @@
                                             placeholder="例如：来自官网表单、德国客户、老客户推荐...">
                                     </div>
 
+                                    <button id="btn-run-pipeline" onclick="runRFQPipeline()"
+                                        class="mt-4 w-full py-4 text-base font-bold shadow-lg shadow-emerald-900/50 flex items-center justify-center gap-2 group bg-gradient-to-r from-emerald-600 to-blue-600 hover:from-emerald-500 hover:to-blue-500 text-white rounded-lg transition-all hover:scale-[1.02]">
+                                        <span>🚀</span>
+                                        <span class="group-hover:tracking-widest transition-all">一键流水线
+                                            (解码→匹配→报价→邮件)</span>
+                                    </button>
                                     <button onclick="analyzeRFQ()"
-                                        class="mt-6 btn-primary w-full py-4 text-base font-bold shadow-lg shadow-blue-900/50 flex items-center justify-center gap-2 group">
+                                        class="mt-2 w-full py-2 text-xs font-medium text-gray-400 hover:text-white bg-slate-800/50 hover:bg-slate-700/50 rounded-lg border border-gray-700/50 transition flex items-center justify-center gap-1">
                                         <span>🔍</span>
-                                        <span class="group-hover:tracking-widest transition-all">深度解码 (Analyze)</span>
+                                        <span>仅解码分析 (不触发报价和邮件)</span>
                                     </button>
                                 </div>
                             </div>
@@ -1818,6 +1830,28 @@
                             </div>
                         </div>
                     </div>
+                    <!-- Pipeline Result (injected by JS) -->
+                    <div id="pipeline-result" class="hidden mt-6"></div>
+                </div>
+
+                <!-- Customer Pipeline (Kanban CRM) -->
+                <div id="customer-pipeline" class="tab-content">
+                    <div class="flex items-center justify-between mb-6">
+                        <div>
+                            <h2 class="text-3xl font-black flex items-center gap-3" style="color: var(--text-primary);">
+                                <span class="text-blue-500">🚀</span> 客户管道 (CRM Pipeline)
+                            </h2>
+                            <p class="text-sm" style="color: var(--text-secondary);">Kanban View · 拖拽式客户管理</p>
+                        </div>
+                        <div class="flex gap-2">
+                            <button onclick="showAddCustomerForm()"
+                                class="px-4 py-2 bg-blue-600 hover:bg-blue-500 text-white rounded-lg text-sm font-bold transition flex items-center gap-1">
+                                ➕ 手动添加客户
+                            </button>
+                        </div>
+                    </div>
+                    <div id="pipeline-stats" class="mb-4"></div>
+                    <div id="pipeline-board"></div>
                 </div>
 
                 <!-- Auto-Flow (Workflow Generator) -->
@@ -3446,8 +3480,17 @@ Best regards,
                 }
             </script>
 
-            <!-- FINAL RESCUE: v18.90 -->
+            <!-- v19.0 AGENT -->
             <script src="app_v18_90.js" defer></script>
+            <script src="app_part_rfq.js" defer></script>
+            <script src="app_part_deepdive.js" defer></script>
+            <script src="app_part_pipeline.js" defer></script>
+            <script src="app_part_briefing.js" defer></script>
+            <script src="app_part_calc.js" defer></script>
+            <script src="app_part_calendar.js" defer></script>
+            <script src="app_part_rag.js" defer></script>
+            <script src="app_part_radar.js" defer></script>
+            <script src="app_part_workflow.js" defer></script>
             <script>
                 // Init Workflow Engine when tab is shown
                 const originalShowTab = showTab;
