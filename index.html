@@ -2971,19 +2971,26 @@ Campaign B | $1200 | 0.8% | $45 | 1.1
 
     <!-- 🆕 Phase 16: Email Template Library -->
     <div id="email-templates" class="tab-content">
-        <h2 class="text-3xl font-black mb-2" style="color: var(--text-primary);">📧 邮件模板库</h2>
-        <p class="text-sm mb-8" style="color: var(--text-secondary);">专业外贸邮件模板 · AI智能生成 · 多语言支持</p>
+        <div class="flex items-center justify-between mb-2">
+            <h2 class="text-3xl font-black" style="color: var(--text-primary);">📧 邮件模板库</h2>
+            <div class="text-xs text-gray-500">10 个内置模板 · AI 生成 · 变量填充一键复制</div>
+        </div>
+        <p class="text-sm mb-6" style="color: var(--text-secondary);">选择模板 → ⚡ 快速使用（填写变量+复制）· 或 🤖 AI改写后保存为自定义版本</p>
 
         <div class="grid grid-cols-12 gap-6">
             <!-- Left: Template List -->
-            <div class="col-span-4 panel">
-                <div class="flex justify-between items-center mb-4">
-                    <h3 class="font-bold text-white">模板列表</h3>
+            <div class="col-span-4 panel flex flex-col">
+                <div class="flex justify-between items-center mb-3">
+                    <h3 class="font-bold text-white text-sm">模板列表</h3>
                     <button onclick="createNewTemplate()"
-                        class="px-3 py-1 bg-blue-600 hover:bg-blue-500 text-white text-xs font-bold rounded-lg">+
+                        class="px-3 py-1 bg-blue-600 hover:bg-blue-500 text-white text-xs font-bold rounded-lg transition">+
                         新建</button>
                 </div>
-                <div class="space-y-1 mb-4">
+                <!-- Search -->
+                <input type="text" id="template-search" class="input-box w-full text-sm mb-2" placeholder="🔍 搜索模板..."
+                    oninput="searchTemplates()">
+                <!-- Category Filter -->
+                <div class="mb-3">
                     <select id="template-category-filter" class="input-box w-full text-sm" onchange="filterTemplates()">
                         <option value="all">全部类别</option>
                         <option value="inquiry_reply">询盘回复</option>
@@ -2994,30 +3001,31 @@ Campaign B | $1200 | 0.8% | $45 | 1.1
                         <option value="post_exhibition">展后感谢</option>
                     </select>
                 </div>
-                <div id="template-list" class="space-y-2 max-h-[500px] overflow-y-auto">
-                    <div class="text-gray-500 text-sm text-center py-8">点击"新建"创建您的第一个模板</div>
+                <div id="template-list" class="space-y-2 overflow-y-auto flex-1" style="max-height: 520px;">
+                    <div class="text-gray-500 text-xs text-center py-8 animate-pulse">正在加载模板...</div>
                 </div>
             </div>
 
             <!-- Right: Template Editor -->
             <div class="col-span-8 panel">
                 <div class="flex justify-between items-center mb-4">
-                    <h3 class="font-bold text-white">模板编辑器</h3>
+                    <h3 class="font-bold text-white text-sm">模板编辑器</h3>
                     <div class="flex gap-2">
                         <button onclick="aiGenerateTemplate()"
-                            class="px-3 py-1 bg-purple-600 hover:bg-purple-500 text-white text-xs font-bold rounded-lg flex items-center gap-1">
+                            class="px-3 py-1.5 bg-purple-600 hover:bg-purple-500 text-white text-xs font-bold rounded-lg flex items-center gap-1 transition">
                             🤖 AI生成
                         </button>
                         <button onclick="saveTemplate()"
-                            class="px-3 py-1 bg-green-600 hover:bg-green-500 text-white text-xs font-bold rounded-lg">
-                            💾 保存
+                            class="px-3 py-1.5 bg-green-600 hover:bg-green-500 text-white text-xs font-bold rounded-lg transition">
+                            💾 保存模板
                         </button>
                     </div>
                 </div>
 
-                <div class="space-y-4">
-                    <div class="grid grid-cols-3 gap-4">
-                        <input type="text" id="tpl-name" class="input-box" placeholder="模板名称...">
+                <div class="space-y-3">
+                    <input type="hidden" id="tpl-id">
+                    <div class="grid grid-cols-3 gap-3">
+                        <input type="text" id="tpl-name" class="input-box" placeholder="模板名称（描述用途）...">
                         <select id="tpl-category" class="input-box">
                             <option value="inquiry_reply">询盘回复</option>
                             <option value="follow_up">跟进邮件</option>
@@ -3032,7 +3040,13 @@ Campaign B | $1200 | 0.8% | $45 | 1.1
                             <option value="Spanish">Spanish</option>
                             <option value="French">French</option>
                             <option value="German">German</option>
+                            <option value="Arabic">Arabic</option>
                         </select>
+                    </div>
+
+                    <div>
+                        <label class="block text-xs text-gray-400 mb-1">标签（逗号分隔）</label>
+                        <input type="text" id="tpl-tags" class="input-box w-full text-sm" placeholder="例如：首次回复, 报价, 专业">
                     </div>
 
                     <div>
@@ -3042,43 +3056,48 @@ Campaign B | $1200 | 0.8% | $45 | 1.1
                     </div>
 
                     <div>
-                        <label class="block text-xs text-gray-400 mb-1">邮件正文</label>
-                        <textarea id="tpl-content" class="input-box w-full h-64 font-mono text-sm" placeholder="Dear {{客户名}},
+                        <label class="block text-xs text-gray-400 mb-1">邮件正文（支持变量 {{变量名}})</label>
+                        <textarea id="tpl-content" class="input-box w-full font-mono text-sm" style="height: 220px;"
+                            oninput="updatePreview()" placeholder="Dear {{客户名}},
 
-Thank you for your inquiry about our {{产品名}}...
+Thank you for your inquiry...
 
 Best regards,
-{{我方姓名}}
-{{公司名}}"></textarea>
+{{我方姓名}}"></textarea>
                     </div>
 
                     <!-- Variable Chips -->
-                    <div class="flex flex-wrap gap-2">
-                        <span class="text-xs text-gray-500">可用变量：</span>
+                    <div class="flex flex-wrap gap-1.5 items-center">
+                        <span class="text-[10px] text-gray-500">插入变量：</span>
                         <button onclick="insertVariable('{{客户名}}')"
-                            class="px-2 py-1 bg-slate-700 hover:bg-slate-600 text-blue-400 text-xs rounded">[客户名]</button>
+                            class="px-2 py-1 bg-slate-700 hover:bg-blue-600 text-blue-400 hover:text-white text-[10px] rounded transition">{{客户名}}</button>
                         <button onclick="insertVariable('{{公司名}}')"
-                            class="px-2 py-1 bg-slate-700 hover:bg-slate-600 text-blue-400 text-xs rounded">[公司名]</button>
+                            class="px-2 py-1 bg-slate-700 hover:bg-blue-600 text-blue-400 hover:text-white text-[10px] rounded transition">{{公司名}}</button>
                         <button onclick="insertVariable('{{产品名}}')"
-                            class="px-2 py-1 bg-slate-700 hover:bg-slate-600 text-blue-400 text-xs rounded">[产品名]</button>
+                            class="px-2 py-1 bg-slate-700 hover:bg-blue-600 text-blue-400 hover:text-white text-[10px] rounded transition">{{产品名}}</button>
                         <button onclick="insertVariable('{{报价金额}}')"
-                            class="px-2 py-1 bg-slate-700 hover:bg-slate-600 text-blue-400 text-xs rounded">[报价金额]</button>
+                            class="px-2 py-1 bg-slate-700 hover:bg-blue-600 text-blue-400 hover:text-white text-[10px] rounded transition">{{报价金额}}</button>
                         <button onclick="insertVariable('{{交期}}')"
-                            class="px-2 py-1 bg-slate-700 hover:bg-slate-600 text-blue-400 text-xs rounded">[交期]</button>
+                            class="px-2 py-1 bg-slate-700 hover:bg-blue-600 text-blue-400 hover:text-white text-[10px] rounded transition">{{交期}}</button>
                         <button onclick="insertVariable('{{我方姓名}}')"
-                            class="px-2 py-1 bg-slate-700 hover:bg-slate-600 text-blue-400 text-xs rounded">[我方姓名]</button>
+                            class="px-2 py-1 bg-slate-700 hover:bg-blue-600 text-blue-400 hover:text-white text-[10px] rounded transition">{{我方姓名}}</button>
+                        <button onclick="insertVariable('{{数量}}')"
+                            class="px-2 py-1 bg-slate-700 hover:bg-blue-600 text-blue-400 hover:text-white text-[10px] rounded transition">{{数量}}</button>
+                        <button onclick="insertVariable('{{日期}}')"
+                            class="px-2 py-1 bg-slate-700 hover:bg-blue-600 text-blue-400 hover:text-white text-[10px] rounded transition">{{日期}}</button>
                     </div>
                 </div>
 
                 <!-- Preview Area -->
-                <div class="mt-6 pt-4 border-t border-gray-700">
+                <div class="mt-4 pt-4 border-t border-gray-700">
                     <div class="flex justify-between items-center mb-2">
-                        <span class="text-xs text-gray-400">预览</span>
-                        <button onclick="copyTemplateContent()" class="text-xs text-blue-400 hover:text-blue-300">📋
-                            复制内容</button>
+                        <span class="text-xs text-gray-400">实时预览 ({{变量}} 已高亮)</span>
+                        <button onclick="copyTemplateContent()"
+                            class="text-xs text-blue-400 hover:text-blue-300 transition">📋 复制正文</button>
                     </div>
-                    <div id="tpl-preview" class="bg-slate-900/50 p-4 rounded-lg text-sm text-gray-300 min-h-[100px]">
-                        <em class="text-gray-500">编辑内容后在此预览...</em>
+                    <div id="tpl-preview"
+                        class="bg-slate-900/50 p-4 rounded-lg text-sm text-gray-300 min-h-[80px] leading-relaxed">
+                        <em class="text-gray-500">编辑上方内容后在此预览...</em>
                     </div>
                 </div>
             </div>
@@ -3485,6 +3504,7 @@ Best regards,
             <script src="app_part_rfq.js" defer></script>
             <script src="app_part_deepdive.js" defer></script>
             <script src="app_part_pipeline.js" defer></script>
+            <script src="app_part_email.js" defer></script>
             <script src="app_part_briefing.js" defer></script>
             <script src="app_part_calc.js" defer></script>
             <script src="app_part_calendar.js" defer></script>
