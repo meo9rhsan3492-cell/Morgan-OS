@@ -67,7 +67,7 @@ var AgentWorkspaceUI = {
 
     runTask: function () {
         var input = document.getElementById('agent-task-input');
-        if (!input || !input.value.trim()) { if (window.showToast) window.showToast('\u8BF7\u8F93\u5165\u4EFB\u52A1\u6307\u4EE4', 'warning'); return; }
+        if (!input || !input.value.trim()) { if (window.showToast) window.showToast('请输入任务指令', 'warning'); return; }
 
         var task = input.value.trim();
         var ep = document.getElementById('agent-execution-panel');
@@ -75,21 +75,25 @@ var AgentWorkspaceUI = {
         var rp = document.getElementById('agent-result-panel');
         var rd = document.getElementById('agent-final-result');
         var rb = document.getElementById('agent-run-btn');
+        var sb = document.getElementById('agent-stop-btn');
 
         if (ep) ep.style.display = 'block';
         if (sd) sd.innerHTML = '';
         if (rp) rp.style.display = 'none';
         if (rd) rd.innerHTML = '';
-        if (rb) { rb.disabled = true; rb.textContent = '\u2699\uFE0F \u6267\u884C\u4E2D...'; }
+        if (rb) { rb.disabled = true; rb.classList.add('opacity-50', 'cursor-not-allowed'); rb.innerHTML = '<span class="animate-spin inline-block mr-1">⚙️</span>执行中'; }
+        if (sb) sb.classList.remove('hidden');
 
         var self = this;
         AgentRuntime.executeTask(task, function (step) {
             self.renderStep(step);
         }).then(function (result) {
-            if (rb) { rb.disabled = false; rb.textContent = '\uD83D\uDE80 \u6267\u884C'; }
+            if (rb) { rb.disabled = false; rb.classList.remove('opacity-50', 'cursor-not-allowed'); rb.innerHTML = '🚀 执行'; }
+            if (sb) sb.classList.add('hidden');
             if (result && rp && rd) {
                 rp.style.display = 'block';
-                var html = result
+                // 使用全局的 marked() 如果有的话，否则回退简易正则
+                var html = typeof window.marked === 'function' ? window.marked(result) : result
                     .replace(/\*\*(.*?)\*\*/g, '<strong class="text-white">$1</strong>')
                     .replace(/### (.*?)$/gm, '<h3 class="text-blue-400 font-bold mt-3 mb-1">$1</h3>')
                     .replace(/## (.*?)$/gm, '<h2 class="text-blue-300 font-bold mt-4 mb-2 text-lg">$1</h2>')
@@ -98,6 +102,24 @@ var AgentWorkspaceUI = {
                 rd.innerHTML = html;
                 rp.scrollIntoView({ behavior: 'smooth', block: 'start' });
             }
+        });
+    },
+
+    stopTask: function () {
+        AgentRuntime.abortTask();
+        var rb = document.getElementById('agent-run-btn');
+        var sb = document.getElementById('agent-stop-btn');
+        if (rb) { rb.disabled = false; rb.classList.remove('opacity-50', 'cursor-not-allowed'); rb.innerHTML = '🚀 执行'; }
+        if (sb) sb.classList.add('hidden');
+        this.renderStep({ type: 'error', message: '⚠️ 用户手动终止了任务' });
+        if (window.showToast) window.showToast('任务已终止', 'info');
+    },
+
+    copyResult: function () {
+        var rd = document.getElementById('agent-final-result');
+        if (!rd || !rd.innerText) return;
+        navigator.clipboard.writeText(rd.innerText).then(function () {
+            if (window.showToast) window.showToast('结果已复制到剪贴板', 'success');
         });
     },
 
@@ -122,12 +144,11 @@ var AgentWorkspaceUI = {
         var extra = '';
 
         if (step.type === 'tool_call' && step.args) {
-            extra = '<pre class="text-[10px] text-gray-500 mt-1">' + JSON.stringify(step.args, null, 2) + '</pre>';
+            extra = '<details class="mt-2"><summary class="text-[10px] text-gray-500 cursor-pointer hover:text-gray-300 outline-none select-none">查看参数详情 (JSON)</summary><pre class="text-[10px] text-gray-400 mt-1 bg-slate-900/50 p-2 rounded max-h-32 overflow-auto">' + JSON.stringify(step.args, null, 2) + '</pre></details>';
         }
         if (step.type === 'tool_result' && step.result) {
-            var preview = JSON.stringify(step.result);
-            if (preview.length > 300) preview = preview.substring(0, 300) + '...';
-            extra = '<pre class="text-[10px] text-gray-500 mt-1 max-h-32 overflow-auto">' + preview + '</pre>';
+            var preview = JSON.stringify(step.result, null, 2);
+            extra = '<details class="mt-2"><summary class="text-[10px] text-gray-500 cursor-pointer hover:text-gray-300 outline-none select-none">查看返回数据 (JSON)</summary><pre class="text-[10px] text-gray-400 mt-1 bg-slate-900/50 p-2 rounded max-h-48 overflow-auto">' + preview + '</pre></details>';
         }
 
         el.innerHTML = '<span class="text-lg shrink-0">' + icon + '</span>'

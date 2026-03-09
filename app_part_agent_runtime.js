@@ -6,6 +6,7 @@ const AgentRuntime = {
 
     // 最大循环次数，防止无限执行
     MAX_ITERATIONS: 8,
+    _abortController: null,
 
     // ================================================================
     // Tool Registry — 7 个外贸实战工具
@@ -237,6 +238,37 @@ const AgentRuntime = {
             execute: async function (args) {
                 return { status: 'ready', context: args, instruction: '请分析以上数据并给出专业洞察。' };
             }
+        },
+
+        get_current_time: {
+            declaration: {
+                name: 'get_current_time',
+                description: '获取当前的日期和时间。用于需要时效性的操作，确定今天是几号或星期几。',
+                parameters: {
+                    type: 'object',
+                    properties: {},
+                }
+            },
+            execute: async function (args) {
+                var now = new Date();
+                var days = ['周日', '周一', '周二', '周三', '周四', '周五', '周六'];
+                return {
+                    current_date: now.toLocaleDateString(),
+                    current_time: now.toLocaleTimeString(),
+                    day_of_week: days[now.getDay()],
+                    timestamp: now.getTime()
+                };
+            }
+        }
+    },
+
+    // ================================================================
+    // 中止任务机制
+    // ================================================================
+    abortTask: function () {
+        if (this._abortController) {
+            this._abortController.abort();
+            this._abortController = null;
         }
     },
 
@@ -250,9 +282,13 @@ const AgentRuntime = {
             return null;
         }
 
+        // 初始化 AbortController
+        this._abortController = new AbortController();
+        var signal = this._abortController.signal;
+
         // 组装 system prompt
         var agentPrompt = window.getActiveAgentPrompt ? window.getActiveAgentPrompt() : '';
-        var systemInstruction = agentPrompt + '\n\n## Agent 模式\n你现在是一个自主执行任务的 AI Agent。你可以调用工具来获取信息、计算数据、生成内容。\n请按以下步骤工作：\n1. 分析用户任务，拆解为步骤\n2. 调用合适的工具获取所需信息\n3. 基于工具返回的结果继续推理\n4. 如果需要更多信息，继续调用工具\n5. 所有必要信息收集完毕后，给出完整详细的最终回答\n\n重要规则：\n- 所有回复使用简体中文\n- 每次只调用一个工具\n- 不要编造数据，必须通过工具获取\n- 最终回答要结构化、可执行';
+        var systemInstruction = agentPrompt + '\n\n## Agent 模式\n你现在是一个自主执行任务的 AI Agent。你可以调用工具来获取信息、计算数据、生成内容。\n请按以下步骤工作：\n1. 分析用户任务，拆解为步骤\n2. 调用合适的工具获取所需信息 (如需获取实时新闻，请先使用 get_current_time 确认今天是哪天)\n3. 基于工具返回的结果继续推理\n4. 如果需要更多信息，继续调用工具\n5. 所有必要信息收集完毕后，给出完整详细的最终回答\n\n重要规则：\n- 所有回复使用简体中文(除英文邮件外)\n- 每次只调用一个工具，等待结果后再决定下一步\n- 不要编造数据，必须通过工具获取\n- 对于市场分析类任务，在最终回答时必须使用清晰的排版格式和图表思维（要点、加粗、列表）';
 
         // 构建 tools 声明
         var toolDeclarations = [];
@@ -282,9 +318,10 @@ const AgentRuntime = {
                         headers: { 'Content-Type': 'application/json' },
                         body: JSON.stringify({
                             contents: contents,
-                            tools: [{ function_declarations: toolDeclarations }],
+                            tools: [{ functionDeclarations: toolDeclarations }],
                             generationConfig: { temperature: 0.3 }
-                        })
+                        }),
+                        signal: signal
                     }
                 );
 
@@ -366,6 +403,10 @@ const AgentRuntime = {
                 }
 
             } catch (e) {
+                if (e.name === 'AbortError') {
+                    // 已经被 abortTask 处理了，静默退出
+                    return null;
+                }
                 onStep({ type: 'error', message: '执行出错: ' + e.message });
                 return null;
             }
@@ -377,11 +418,11 @@ const AgentRuntime = {
 
     // 工具图标映射
     _getToolIcon: function (name) {
-        var map = { web_search: '🔍', price_calculate: '💰', get_exchange_rate: '🧮', draft_email: '📧', crm_query: '📊', read_signals: '📡', analyze_data: '📈' };
+        var map = { web_search: '🔍', price_calculate: '💰', get_exchange_rate: '🧮', draft_email: '📧', crm_query: '📊', read_signals: '📡', analyze_data: '📈', get_current_time: '🕒' };
         return map[name] || '🔧';
     },
     _getToolLabel: function (name) {
-        var map = { web_search: '搜索互联网', price_calculate: '计算报价', get_exchange_rate: '查询汇率', draft_email: '生成邮件草稿', crm_query: '查询CRM', read_signals: '读取情报信号', analyze_data: '分析数据' };
+        var map = { web_search: '搜索互联网', price_calculate: '计算报价', get_exchange_rate: '查询汇率', draft_email: '生成邮件草稿', crm_query: '查询CRM', read_signals: '读取情报信号', analyze_data: '分析数据', get_current_time: '获取当前时间' };
         return map[name] || name;
     }
 };
